@@ -1,50 +1,32 @@
-/* ===== OneMoreThing — app.js =====
-   Wishlist logic: CRUD, localStorage, filtering, search
-================================================== */
-
 'use strict';
 
 // ── State ──────────────────────────────────────────────────
-const STORAGE_KEY = 'omt_wishes_v1';
+const STORAGE_KEY = 'omt_v2';
 let wishes = [];
 let editingId = null;
 let activeFilter = 'all';
 let searchQuery = '';
 
 // ── DOM refs ───────────────────────────────────────────────
-const modal        = document.getElementById('wish-modal');
-const form         = document.getElementById('wish-form');
-const grid         = document.getElementById('wishlist-grid');
-const emptyState   = document.getElementById('empty-state');
+const modal       = document.getElementById('wish-modal');
+const form        = document.getElementById('wish-form');
+const grid        = document.getElementById('wishlist-grid');
+const emptyState  = document.getElementById('empty-state');
+const pageCount   = document.getElementById('page-count');
+const modalTitle  = document.getElementById('modal-title');
+const submitLabel = document.getElementById('submit-label');
 
-const modalTitle   = document.getElementById('modal-title');
-const submitLabel  = document.getElementById('submit-label');
-
-const titleInput   = document.getElementById('wish-title');
-const descInput    = document.getElementById('wish-desc');
-const linkInput    = document.getElementById('wish-link');
-const priceInput   = document.getElementById('wish-price');
-const currencyInput= document.getElementById('wish-currency');
-const priorityInput= document.getElementById('wish-priority');
-const emojiInput   = document.getElementById('wish-emoji');
-const priorityDisp = document.getElementById('priority-display');
-
-const titleCount   = document.getElementById('title-count');
-const descCount    = document.getElementById('desc-count');
-
-const statTotal    = document.getElementById('stat-total-num');
-const statDream    = document.getElementById('stat-dream-num');
-const statDone     = document.getElementById('stat-done-num');
-
-const searchInput  = document.getElementById('search-input');
+const titleInput  = document.getElementById('wish-title');
+const linkInput   = document.getElementById('wish-link');
+const imageInput  = document.getElementById('wish-image');
+const imagePreview = document.getElementById('image-preview');
+const previewImg  = document.getElementById('preview-img');
+const searchInput = document.getElementById('search-input');
 
 // ── Storage ────────────────────────────────────────────────
 function load() {
-  try {
-    wishes = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-  } catch {
-    wishes = [];
-  }
+  try { wishes = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+  catch { wishes = []; }
 }
 
 function save() {
@@ -56,246 +38,179 @@ function uid() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 }
 
-function escHtml(str) {
-  const el = document.createElement('div');
-  el.textContent = str;
-  return el.innerHTML;
+function escHtml(str = '') {
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
 }
 
-const PRIORITY_STARS = ['', '⭐', '⭐⭐', '⭐⭐⭐', '⭐⭐⭐⭐', '⭐⭐⭐⭐⭐'];
-const CATEGORY_LABELS = { want: '🛍️ Хочу', dream: '🌠 Мрію', done: '✅ Здійснилось' };
-const CURRENCY_SYMBOLS = { UAH: '₴', USD: '$', EUR: '€', GBP: '£' };
+const PRIORITY_LABELS = {
+  want:   'Хочу',
+  nice:   'Було б добре',
+  unsure: 'Не певен',
+};
 
-function formatPrice(price, currency) {
-  if (!price) return '';
-  const sym = CURRENCY_SYMBOLS[currency] || currency;
-  return `${sym}${parseFloat(price).toLocaleString('uk-UA', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
-}
-
-function isUrl(str) {
+function isValidUrl(str) {
   try { return /^https?:\/\//.test(str); } catch { return false; }
 }
 
+// ── Image preview in form ──────────────────────────────────
+function updateFormPreview() {
+  const url = imageInput.value.trim();
+  if (isValidUrl(url)) {
+    previewImg.src = url;
+    previewImg.onerror = () => { imagePreview.hidden = true; };
+    previewImg.onload  = () => { imagePreview.hidden = false; };
+  } else {
+    imagePreview.hidden = true;
+    previewImg.src = '';
+  }
+}
+
 // ── Render ─────────────────────────────────────────────────
-function getFilteredWishes() {
+function filtered() {
   return wishes.filter(w => {
-    const matchFilter = activeFilter === 'all' || w.category === activeFilter;
+    const matchFilter = activeFilter === 'all' || w.priority === activeFilter;
     const q = searchQuery.toLowerCase();
-    const matchSearch = !q ||
-      w.title.toLowerCase().includes(q) ||
-      (w.description || '').toLowerCase().includes(q);
+    const matchSearch = !q || w.title.toLowerCase().includes(q);
     return matchFilter && matchSearch;
   });
 }
 
-function renderStats() {
-  statTotal.textContent = wishes.length;
-  statDream.textContent = wishes.filter(w => w.category === 'dream').length;
-  statDone.textContent  = wishes.filter(w => w.category === 'done').length;
+function updateCount() {
+  const n = filtered().length;
+  pageCount.textContent = `${n} ${n === 1 ? 'річ' : n < 5 ? 'речі' : 'речей'}`;
 }
 
-function buildCardHTML(wish) {
-  const visual = isUrl(wish.emoji)
-    ? `<img src="${escHtml(wish.emoji)}" alt="${escHtml(wish.title)}" loading="lazy" />`
-    : `<span aria-hidden="true">${escHtml(wish.emoji || '🌟')}</span>`;
+function buildCard(wish) {
+  const prioClass = `card-priority--${wish.priority}`;
+  const prioLabel = PRIORITY_LABELS[wish.priority] || wish.priority;
 
-  const priceHTML = wish.price
-    ? `<span class="card-price">${escHtml(formatPrice(wish.price, wish.currency))}</span>`
-    : '';
+  const imageHTML = isValidUrl(wish.image)
+    ? `<div class="card-image"><img src="${escHtml(wish.image)}" alt="${escHtml(wish.title)}" loading="lazy" /></div>`
+    : `<div class="card-image card-image--empty"><span>без фото</span></div>`;
 
-  const linkBtn = wish.link
-    ? `<a href="${escHtml(wish.link)}" target="_blank" rel="noopener noreferrer" class="card-btn card-btn--link" aria-label="Відкрити посилання">🔗 Відкрити</a>`
-    : '';
-
-  const catLabel = CATEGORY_LABELS[wish.category] || wish.category;
-  const catClass = `card-badge--${wish.category}`;
+  const linkHTML = isValidUrl(wish.link)
+    ? `<a href="${escHtml(wish.link)}" target="_blank" rel="noopener noreferrer" class="card-link-btn" aria-label="Відкрити посилання для ${escHtml(wish.title)}">↗ Відкрити</a>`
+    : `<span></span>`;
 
   return `
-    <div class="card-visual">${visual}</div>
-    <span class="card-badge ${catClass}">${catLabel}</span>
-    <p class="card-title">${escHtml(wish.title)}</p>
-    ${wish.description ? `<p class="card-desc">${escHtml(wish.description)}</p>` : ''}
-    <div class="card-meta">
-      ${priceHTML}
-      <span class="card-priority" aria-label="Пріоритет ${wish.priority} з 5">${PRIORITY_STARS[wish.priority] || ''}</span>
-    </div>
-    <div class="card-actions" role="group" aria-label="Дії з бажанням">
-      <button class="card-btn card-btn--edit" data-id="${wish.id}" aria-label="Редагувати: ${escHtml(wish.title)}">✏️ Редагувати</button>
-      ${linkBtn}
-      <button class="card-btn card-btn--delete" data-id="${wish.id}" aria-label="Видалити: ${escHtml(wish.title)}">🗑️ Видалити</button>
+    ${imageHTML}
+    <div class="card-body">
+      <span class="card-priority ${prioClass}">${escHtml(prioLabel)}</span>
+      <p class="card-title">${escHtml(wish.title)}</p>
+      <div class="card-footer">
+        ${linkHTML}
+        <div class="card-actions" role="group" aria-label="Дії">
+          <button class="card-icon-btn card-icon-btn--edit" data-id="${wish.id}" aria-label="Редагувати ${escHtml(wish.title)}">✏</button>
+          <button class="card-icon-btn card-icon-btn--delete" data-id="${wish.id}" aria-label="Видалити ${escHtml(wish.title)}">✕</button>
+        </div>
+      </div>
     </div>
   `;
 }
 
 function renderGrid() {
-  const filtered = getFilteredWishes();
+  const list = filtered();
+  updateCount();
 
-  if (filtered.length === 0) {
+  if (list.length === 0) {
     grid.innerHTML = '';
     emptyState.hidden = false;
     return;
   }
+
   emptyState.hidden = true;
 
-  // Diff: remove cards not in filtered
-  const existingIds = new Set([...grid.querySelectorAll('.wish-card')].map(el => el.dataset.id));
-  const filteredIds = new Set(filtered.map(w => w.id));
-
-  // Remove stale cards
+  // Remove cards not in current filter
+  const keep = new Set(list.map(w => w.id));
   grid.querySelectorAll('.wish-card').forEach(el => {
-    if (!filteredIds.has(el.dataset.id)) {
-      el.style.transition = 'opacity 200ms, transform 200ms';
-      el.style.opacity = '0';
-      el.style.transform = 'scale(0.95)';
-      setTimeout(() => el.remove(), 210);
-    }
+    if (!keep.has(el.dataset.id)) el.remove();
   });
 
-  // Add or update cards
-  filtered.forEach((wish, i) => {
+  // Add or update
+  list.forEach((wish, i) => {
     let card = grid.querySelector(`.wish-card[data-id="${wish.id}"]`);
     if (!card) {
       card = document.createElement('article');
       card.className = 'wish-card';
       card.setAttribute('role', 'listitem');
       card.dataset.id = wish.id;
-      card.style.animationDelay = `${i * 50}ms`;
+      card.style.animationDelay = `${i * 40}ms`;
       grid.appendChild(card);
     }
-    card.dataset.category = wish.category;
-    card.innerHTML = buildCardHTML(wish);
+    card.innerHTML = buildCard(wish);
   });
-
-  renderStats();
-}
-
-function renderAll() {
-  renderGrid();
-  renderStats();
 }
 
 // ── Modal ──────────────────────────────────────────────────
 function openModal(wish = null) {
-  editingId = wish ? wish.id : null;
-  modalTitle.textContent = wish ? 'Редагувати бажання' : 'Нове бажання';
+  editingId = wish?.id ?? null;
+  modalTitle.textContent = wish ? 'Редагувати' : 'Нова річ';
   submitLabel.textContent = wish ? 'Оновити' : 'Зберегти';
 
-  // Populate form
-  titleInput.value   = wish?.title || '';
-  descInput.value    = wish?.description || '';
-  linkInput.value    = wish?.link || '';
-  priceInput.value   = wish?.price || '';
-  currencyInput.value= wish?.currency || 'UAH';
-  emojiInput.value   = wish?.emoji || '';
-  priorityInput.value= wish?.priority || 3;
+  titleInput.value  = wish?.title  || '';
+  linkInput.value   = wish?.link   || '';
+  imageInput.value  = wish?.image  || '';
 
-  // Category radio
-  const cat = wish?.category || 'want';
-  const catRadio = form.querySelector(`input[name="category"][value="${cat}"]`);
-  if (catRadio) catRadio.checked = true;
+  const prio = wish?.priority || 'want';
+  const radio = form.querySelector(`input[name="priority"][value="${prio}"]`);
+  if (radio) radio.checked = true;
 
-  updateTitleCount();
-  updateDescCount();
-  updatePriorityDisplay();
-  updateSliderTrack();
-
+  updateFormPreview();
   modal.showModal();
-  // Wait for animation frame, then focus
   requestAnimationFrame(() => titleInput.focus());
 }
 
 function closeModal() {
   modal.close();
   form.reset();
+  imagePreview.hidden = true;
   editingId = null;
-}
-
-// ── Form helpers ───────────────────────────────────────────
-function updateTitleCount() {
-  titleCount.textContent = titleInput.value.length;
-}
-
-function updateDescCount() {
-  descCount.textContent = descInput.value.length;
-}
-
-function updatePriorityDisplay() {
-  const val = parseInt(priorityInput.value);
-  priorityDisp.textContent = PRIORITY_STARS[val] || '';
-  priorityInput.setAttribute('aria-valuenow', val);
-}
-
-function updateSliderTrack() {
-  const min = 1, max = 5;
-  const val = parseInt(priorityInput.value);
-  const pct = ((val - min) / (max - min)) * 100;
-  priorityInput.style.setProperty('--slider-pct', pct + '%');
-  priorityInput.style.background = `linear-gradient(to right, #8b5cf6 0%, #8b5cf6 ${pct}%, rgba(255,255,255,0.1) ${pct}%, rgba(255,255,255,0.1) 100%)`;
 }
 
 // ── CRUD ───────────────────────────────────────────────────
 function getFormData() {
-  const cat = form.querySelector('input[name="category"]:checked')?.value || 'want';
   return {
-    title:       titleInput.value.trim(),
-    description: descInput.value.trim(),
-    link:        linkInput.value.trim(),
-    price:       priceInput.value ? parseFloat(priceInput.value) : null,
-    currency:    currencyInput.value,
-    category:    cat,
-    priority:    parseInt(priorityInput.value),
-    emoji:       emojiInput.value.trim() || '🌟',
-    updatedAt:   Date.now(),
+    title:    titleInput.value.trim(),
+    link:     linkInput.value.trim(),
+    image:    imageInput.value.trim(),
+    priority: form.querySelector('input[name="priority"]:checked')?.value || 'want',
   };
 }
 
 function saveWish(e) {
   e.preventDefault();
-
   const data = getFormData();
-  if (!data.title) {
-    titleInput.focus();
-    titleInput.classList.add('shake');
-    setTimeout(() => titleInput.classList.remove('shake'), 400);
-    return;
-  }
+  if (!data.title) { titleInput.focus(); return; }
 
   if (editingId) {
     const idx = wishes.findIndex(w => w.id === editingId);
-    if (idx !== -1) wishes[idx] = { ...wishes[idx], ...data };
+    if (idx !== -1) wishes[idx] = { ...wishes[idx], ...data, updatedAt: Date.now() };
   } else {
-    wishes.unshift({ id: uid(), createdAt: Date.now(), ...data });
+    wishes.unshift({ id: uid(), createdAt: Date.now(), updatedAt: Date.now(), ...data });
   }
 
   save();
   closeModal();
-  renderAll();
+  renderGrid();
 }
 
 function deleteWish(id) {
+  const wish = wishes.find(w => w.id === id);
+  if (!wish) return;
+  if (!confirm(`Видалити «${wish.title}»?`)) return;
   wishes = wishes.filter(w => w.id !== id);
   save();
-  renderAll();
+  renderGrid();
 }
 
 // ── Event delegation ───────────────────────────────────────
 grid.addEventListener('click', e => {
-  const editBtn   = e.target.closest('.card-btn--edit');
-  const deleteBtn = e.target.closest('.card-btn--delete');
-
-  if (editBtn) {
-    const id = editBtn.dataset.id;
-    const wish = wishes.find(w => w.id === id);
-    if (wish) openModal(wish);
-  }
-
-  if (deleteBtn) {
-    const id = deleteBtn.dataset.id;
-    const wish = wishes.find(w => w.id === id);
-    if (wish && confirm(`Видалити «${wish.title}»?`)) {
-      deleteWish(id);
-    }
-  }
+  const editBtn   = e.target.closest('.card-icon-btn--edit');
+  const deleteBtn = e.target.closest('.card-icon-btn--delete');
+  if (editBtn)   openModal(wishes.find(w => w.id === editBtn.dataset.id));
+  if (deleteBtn) deleteWish(deleteBtn.dataset.id);
 });
 
 // ── Filters ────────────────────────────────────────────────
@@ -304,99 +219,35 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     activeFilter = btn.dataset.filter;
-    renderAll();
+    renderGrid();
   });
 });
 
 // ── Search ─────────────────────────────────────────────────
 searchInput.addEventListener('input', () => {
   searchQuery = searchInput.value.trim();
-  renderAll();
+  renderGrid();
 });
 
-// ── Open/close modal listeners ─────────────────────────────
+// ── Open / close ───────────────────────────────────────────
 document.getElementById('btn-open-modal').addEventListener('click', () => openModal());
-document.getElementById('btn-hero-add').addEventListener('click', () => openModal());
 document.getElementById('btn-empty-add').addEventListener('click', () => openModal());
 document.getElementById('btn-close-modal').addEventListener('click', closeModal);
 document.getElementById('btn-cancel').addEventListener('click', closeModal);
 document.getElementById('modal-backdrop').addEventListener('click', closeModal);
+modal.addEventListener('cancel', () => { form.reset(); imagePreview.hidden = true; editingId = null; });
 
-// Close on Escape (native dialog handles this, but reset form too)
-modal.addEventListener('cancel', () => { form.reset(); editingId = null; });
+// Image URL live preview
+imageInput.addEventListener('input', updateFormPreview);
 
-// ── Form input listeners ───────────────────────────────────
-titleInput.addEventListener('input', updateTitleCount);
-descInput.addEventListener('input', updateDescCount);
-priorityInput.addEventListener('input', () => {
-  updatePriorityDisplay();
-  updateSliderTrack();
-});
-
+// Form submit
 form.addEventListener('submit', saveWish);
 
-// ── Keyboard: close with Escape ────────────────────────────
+// Escape key
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && modal.open) closeModal();
 });
 
-// ── Demo data (first visit) ────────────────────────────────
-function seedDemo() {
-  if (wishes.length > 0) return;
-  wishes = [
-    {
-      id: uid(), createdAt: Date.now(), updatedAt: Date.now(),
-      title: 'MacBook Pro M4',
-      description: 'Ноутбук мрії для роботи та творчості. Space Black, 16 дюймів.',
-      link: 'https://www.apple.com/ua/macbook-pro/',
-      price: 89999, currency: 'UAH',
-      category: 'dream', priority: 5, emoji: '💻',
-    },
-    {
-      id: uid(), createdAt: Date.now() - 1000, updatedAt: Date.now() - 1000,
-      title: 'Бездротові навушники Sony WH-1000XM5',
-      description: 'Найкращі навушники з шумозаглушенням. Чорний колір.',
-      link: 'https://www.sony.com.ua/',
-      price: 11500, currency: 'UAH',
-      category: 'want', priority: 4, emoji: '🎧',
-    },
-    {
-      id: uid(), createdAt: Date.now() - 2000, updatedAt: Date.now() - 2000,
-      title: 'Подорож до Японії 🇯🇵',
-      description: 'Токіо, Кіото, Осака. Весняний сезон, цвітіння сакури.',
-      link: '',
-      price: 3500, currency: 'USD',
-      category: 'dream', priority: 5, emoji: '🌸',
-    },
-    {
-      id: uid(), createdAt: Date.now() - 3000, updatedAt: Date.now() - 3000,
-      title: 'Курс з UI/UX дизайну',
-      description: 'Закінчив! Отримав сертифікат від Google.',
-      link: 'https://www.coursera.org/',
-      price: null, currency: 'UAH',
-      category: 'done', priority: 3, emoji: '🎨',
-    },
-    {
-      id: uid(), createdAt: Date.now() - 4000, updatedAt: Date.now() - 4000,
-      title: 'Механічна клавіатура Keychron Q1',
-      description: 'Gasket mount, Gateron G Pro Red switches.',
-      link: 'https://www.keychron.com/',
-      price: 180, currency: 'USD',
-      category: 'want', priority: 3, emoji: '⌨️',
-    },
-    {
-      id: uid(), createdAt: Date.now() - 5000, updatedAt: Date.now() - 5000,
-      title: 'Електро-скутер Xiaomi',
-      description: 'Для зручного пересування містом.',
-      link: '',
-      price: 25000, currency: 'UAH',
-      category: 'want', priority: 2, emoji: '🛵',
-    },
-  ];
-  save();
-}
-
 // ── Init ───────────────────────────────────────────────────
 load();
-seedDemo();
-renderAll();
+renderGrid();
