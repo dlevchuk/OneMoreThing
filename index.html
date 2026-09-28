@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OneMoreThing — Мій Вішліст</title>
+  <meta name="description" content="Мій персональний вішліст — місце для мрій, бажань та речей, які надихають." />
+  <meta property="og:title" content="OneMoreThing — Мій Вішліст" />
+  <meta property="og:description" content="Персональний вішліст із красивими картками бажань." />
+  <meta property="og:type" content="website" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="bg-particles" aria-hidden="true">
+    <div class="particle"></div><div class="particle"></div><div class="particle"></div>
+    <div class="particle"></div><div class="particle"></div><div class="particle"></div>
+    <div class="particle"></div><div class="particle"></div>
+  </div>
+
+  <header class="site-header" role="banner">
+    <div class="header-inner">
+      <a href="#" class="logo" aria-label="OneMoreThing — на головну">
+        <span class="logo-icon" aria-hidden="true">✦</span>
+        <span class="logo-text">OneMoreThing</span>
+      </a>
+      <nav class="header-nav" aria-label="Фільтри">
+        <button class="filter-btn active" data-filter="all" id="filter-all">Всі</button>
+        <button class="filter-btn" data-filter="want" id="filter-want">Хочу 🛍️</button>
+        <button class="filter-btn" data-filter="dream" id="filter-dream">Мрію 🌠</button>
+        <button class="filter-btn" data-filter="done" id="filter-done">Здійснилось ✅</button>
+      </nav>
+      <button class="btn-add-header" id="btn-open-modal" aria-label="Додати нове бажання">
+        <span aria-hidden="true">+</span> Додати
+      </button>
+    </div>
+  </header>
+
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="hero-glow" aria-hidden="true"></div>
+    <div class="hero-content">
+      <p class="hero-eyebrow">✦ Персональний вішліст</p>
+      <h1 class="hero-title" id="hero-title">
+        Одна річ за раз,<br />
+        <span class="hero-gradient-text">але мрій — без кордонів</span>
+      </h1>
+      <p class="hero-subtitle">Зберігай речі, які надихають. Мрій великого. Відзначай здійснені бажання.</p>
+      <div class="hero-actions">
+        <button class="btn-primary" id="btn-hero-add">✦ Додати бажання</button>
+        <a href="#wishlist-section" class="btn-secondary">Переглянути список</a>
+      </div>
+    </div>
+    <div class="hero-stats" role="region" aria-label="Статистика">
+      <div class="stat-pill">
+        <span class="stat-num" id="stat-total-num">0</span>
+        <span class="stat-label">бажань</span>
+      </div>
+      <div class="stat-pill">
+        <span class="stat-num" id="stat-dream-num">0</span>
+        <span class="stat-label">мрій</span>
+      </div>
+      <div class="stat-pill">
+        <span class="stat-num" id="stat-done-num">0</span>
+        <span class="stat-label">здійснилось</span>
+      </div>
+    </div>
+  </section>
+
+  <main id="wishlist-section" class="wishlist-main">
+    <div class="section-header">
+      <h2 class="section-title">Мої бажання</h2>
+      <div class="search-wrap">
+        <span class="search-icon" aria-hidden="true">🔍</span>
+        <input type="search" id="search-input" class="search-input" placeholder="Пошук..." aria-label="Пошук бажань" />
+      </div>
+    </div>
+    <div class="wishlist-grid" id="wishlist-grid" role="list" aria-live="polite"></div>
+    <div class="empty-state" id="empty-state" hidden>
+      <div class="empty-icon" aria-hidden="true">🌟</div>
+      <h3>Тут поки порожньо</h3>
+      <p>Додай своє перше бажання</p>
+      <button class="btn-primary" id="btn-empty-add">✦ Перше бажання</button>
+    </div>
+  </main>
+
+  <dialog class="modal" id="wish-modal" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-backdrop" id="modal-backdrop"></div>
+    <div class="modal-box">
+      <button class="modal-close" id="btn-close-modal" aria-label="Закрити">✕</button>
+      <div class="modal-header">
+        <span class="modal-icon" aria-hidden="true">✦</span>
+        <h2 class="modal-title" id="modal-title">Нове бажання</h2>
+      </div>
+      <form id="wish-form" novalidate>
+        <div class="form-group">
+          <label for="wish-title" class="form-label">Назва <span aria-hidden="true">*</span></label>
+          <input type="text" id="wish-title" name="title" class="form-input" placeholder="Наприклад: MacBook Pro M4..." maxlength="80" required aria-required="true" aria-describedby="title-hint" />
+          <span id="title-hint" class="form-hint"><span id="title-count">0</span>/80</span>
+        </div>
+        <div class="form-group">
+          <label for="wish-desc" class="form-label">Опис</label>
+          <textarea id="wish-desc" name="description" class="form-input form-textarea" placeholder="Чому хочеш саме це? Де бачив?" maxlength="300" rows="3" aria-describedby="desc-hint"></textarea>
+          <span id="desc-hint" class="form-hint"><span id="desc-count">0</span>/300</span>
+        </div>
+        <div class="form-group">
+          <label for="wish-link" class="form-label">Посилання</label>
+          <input type="url" id="wish-link" name="link" class="form-input" placeholder="https://..." />
+        </div>
+        <div class="form-row">
+          <div class="form-group form-group--half">
+            <label for="wish-price" class="form-label">Ціна</label>
+            <input type="number" id="wish-price" name="price" class="form-input" placeholder="0" min="0" step="0.01" />
+          </div>
+          <div class="form-group form-group--half">
+            <label for="wish-currency" class="form-label">Валюта</label>
+            <select id="wish-currency" name="currency" class="form-input form-select">
+              <option value="UAH">₴ UAH</option>
+              <option value="USD">$ USD</option>
+              <option value="EUR">€ EUR</option>
+              <option value="GBP">£ GBP</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Категорія</label>
+          <div class="category-pills" role="radiogroup">
+            <label class="cat-pill" for="cat-want"><input type="radio" id="cat-want" name="category" value="want" checked /><span>🛍️ Хочу</span></label>
+            <label class="cat-pill" for="cat-dream"><input type="radio" id="cat-dream" name="category" value="dream" /><span>🌠 Мрію</span></label>
+            <label class="cat-pill" for="cat-done-r"><input type="radio" id="cat-done-r" name="category" value="done" /><span>✅ Здійснилось</span></label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="wish-priority" class="form-label">Пріоритет</label>
+          <div class="priority-slider-wrap">
+            <input type="range" id="wish-priority" name="priority" class="priority-slider" min="1" max="5" value="3" aria-valuemin="1" aria-valuemax="5" aria-valuenow="3" />
+            <div class="priority-labels" aria-hidden="true">
+              <span>Низький</span>
+              <span id="priority-display">⭐⭐⭐</span>
+              <span>Високий</span>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="wish-emoji" class="form-label">Емодзі або URL зображення</label>
+          <input type="text" id="wish-emoji" name="emoji" class="form-input" placeholder="🎸 або https://..." />
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" id="btn-cancel">Скасувати</button>
+          <button type="submit" class="btn-primary" id="btn-submit-wish">✦ <span id="submit-label">Зберегти</span></button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <footer class="site-footer" role="contentinfo">
+    <p>✦ <strong>OneMoreThing</strong> — твій персональний вішліст</p>
+    <p class="footer-sub">Всі дані зберігаються локально у браузері</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
