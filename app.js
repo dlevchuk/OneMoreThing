@@ -37,7 +37,8 @@ function filteredWishes() {
 
 function buildCard(wish) {
   const image = safeUrl(wish.image);
-  const link = safeUrl(wish.link);
+  const originalUrl = safeUrl(wish.originalUrl);
+  const localUrl = safeUrl(wish.localUrl);
   const priority = PRIORITY_LABELS[wish.priority] || PRIORITY_LABELS.want;
   return `
     ${image
@@ -48,7 +49,10 @@ function buildCard(wish) {
       <p class="card-title">${escHtml(wish.title)}</p>
       ${wish.description ? `<p class="card-description">${escHtml(wish.description)}</p>` : ''}
       <div class="card-footer">
-        ${link ? `<a href="${escHtml(link)}" target="_blank" rel="noopener noreferrer" class="card-link-btn">↗ Відкрити</a>` : '<span></span>'}
+        <div class="card-links">
+          ${originalUrl ? `<a href="${escHtml(originalUrl)}" target="_blank" rel="noopener noreferrer" class="card-link-btn">↗ Офіційний сайт</a>` : ''}
+          ${localUrl ? `<a href="${escHtml(localUrl)}" target="_blank" rel="noopener noreferrer" class="card-link-btn card-link-btn--local">↗ Локальний ринок</a>` : ''}
+        </div>
       </div>
     </div>`;
 }

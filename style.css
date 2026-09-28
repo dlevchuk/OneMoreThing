@@ -347,12 +347,11 @@ img     { display: block; max-width: 100%; }
 
 /* Card footer */
 .card-footer {
-  display: flex; align-items: center;
-  justify-content: space-between;
-  gap: 8px;
   margin-top: auto;
   padding-top: 4px;
 }
+
+.card-links { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; }
 
 .card-link-btn {
   font-size: 0.78rem; font-weight: 500;
@@ -365,7 +364,12 @@ img     { display: block; max-width: 100%; }
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 120px;
+  max-width: 100%;
+}
+
+.card-link-btn--local {
+  color: var(--green);
+  border-color: var(--green-border);
 }
 
 .card-link-btn:hover {

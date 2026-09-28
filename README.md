@@ -15,13 +15,14 @@ GitHub Pages не має сервера, який міг би перевірит
     "title": "Steam Deck",
     "description": "Портативна ігрова консоль",
     "image": "https://example.com/steam-deck.jpg",
-    "link": "https://example.com/product",
+    "originalUrl": "https://example.com/product",
+    "localUrl": "https://local-market.example/product",
     "priority": "want"
   }
 ]
 ```
 
-`image`, `link` і `description` необов'язкові. `priority`: `want`, `nice` або `unsure`. Після збереження змін GitHub Pages оновить сайт.
+`image`, `originalUrl`, `localUrl` і `description` необов'язкові. Кнопки посилань показуються лише для заповнених полів. `priority`: `want`, `nice` або `unsure`. Після збереження змін GitHub Pages оновить сайт.
 
 ## Анімації та доступність
 
