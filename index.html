@@ -24,9 +24,9 @@
         <button class="filter-btn" data-filter="nice" id="filter-nice">Було б добре</button>
         <button class="filter-btn" data-filter="unsure" id="filter-unsure">Не певен</button>
       </nav>
-      <button class="btn-add" id="btn-open-modal" aria-label="Додати бажання">
-        + Додати
-      </button>
+      <a class="btn-add" id="btn-edit-wishes" href="https://github.com/dlevchuk/OneMoreThing/edit/main/data/wishes.json" target="_blank" rel="noopener noreferrer" aria-label="Редагувати список у GitHub">
+        Редагувати список ↗
+      </a>
     </div>
   </header>
 
@@ -58,97 +58,14 @@
     <div class="empty-state" id="empty-state" hidden role="status">
       <p class="empty-icon" aria-hidden="true">—</p>
       <p class="empty-title">Список порожній</p>
-      <p class="empty-sub">Додай першу річ зі свого вішлісту</p>
-      <button class="btn-add" id="btn-empty-add">+ Додати</button>
+      <p class="empty-sub">Нові бажання з’являться тут після оновлення списку.</p>
     </div>
 
   </main>
 
-  <!-- MODAL -->
-  <dialog class="modal" id="wish-modal" aria-modal="true" aria-labelledby="modal-title">
-    <div class="modal-backdrop" id="modal-backdrop"></div>
-    <div class="modal-box" role="document">
-      <button class="modal-close" id="btn-close-modal" aria-label="Закрити">✕</button>
-      <h2 class="modal-title" id="modal-title">Нова річ</h2>
-
-      <form id="wish-form" novalidate>
-
-        <!-- Image URL -->
-        <div class="form-group">
-          <label for="wish-image" class="form-label">URL зображення</label>
-          <input
-            type="url"
-            id="wish-image"
-            name="image"
-            class="form-input"
-            placeholder="https://..."
-            aria-label="Посилання на зображення"
-          />
-          <div class="image-preview" id="image-preview" hidden>
-            <img id="preview-img" src="" alt="Прев'ю зображення" />
-          </div>
-        </div>
-
-        <!-- Title -->
-        <div class="form-group">
-          <label for="wish-title" class="form-label">Назва <span class="req" aria-hidden="true">*</span></label>
-          <input
-            type="text"
-            id="wish-title"
-            name="title"
-            class="form-input"
-            placeholder="Що хочеш?"
-            maxlength="80"
-            required
-            aria-required="true"
-          />
-        </div>
-
-        <!-- Link -->
-        <div class="form-group">
-          <label for="wish-link" class="form-label">Посилання</label>
-          <input
-            type="url"
-            id="wish-link"
-            name="link"
-            class="form-input"
-            placeholder="https://..."
-          />
-        </div>
-
-        <!-- Priority -->
-        <div class="form-group">
-          <label class="form-label">Пріоритет</label>
-          <div class="priority-group" role="radiogroup" aria-label="Пріоритет бажання">
-            <label class="priority-option" for="p-want">
-              <input type="radio" id="p-want" name="priority" value="want" checked />
-              <span class="priority-label" data-value="want">Хочу</span>
-            </label>
-            <label class="priority-option" for="p-nice">
-              <input type="radio" id="p-nice" name="priority" value="nice" />
-              <span class="priority-label" data-value="nice">Було б добре</span>
-            </label>
-            <label class="priority-option" for="p-unsure">
-              <input type="radio" id="p-unsure" name="priority" value="unsure" />
-              <span class="priority-label" data-value="unsure">Не певен</span>
-            </label>
-          </div>
-        </div>
-
-        <div class="form-actions">
-          <button type="button" class="btn-ghost" id="btn-cancel">Скасувати</button>
-          <button type="submit" class="btn-add" id="btn-submit">
-            <span id="submit-label">Зберегти</span>
-          </button>
-        </div>
-
-      </form>
-    </div>
-  </dialog>
-
   <!-- FOOTER -->
   <footer class="site-footer" role="contentinfo">
-    <span>OneMoreThing · дані у браузері</span>
+    <span>OneMoreThing · список бажань</span>
   </footer>
 
   <script src="app.js"></script>

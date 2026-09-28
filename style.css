@@ -49,6 +49,23 @@ body {
   min-height: 100dvh;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+  position: relative;
+}
+body::before {
+  content: "";
+  position: fixed;
+  z-index: -1;
+  width: 520px; height: 520px;
+  top: -250px; right: -170px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(74, 222, 128, 0.09), transparent 68%);
+  filter: blur(12px);
+  pointer-events: none;
+  animation: ambient-drift 14s ease-in-out infinite alternate;
+}
+[hidden] { display: none !important; }
+@keyframes ambient-drift {
+  to { transform: translate(-45px, 65px) scale(1.15); opacity: 0.65; }
 }
 button  { cursor: pointer; border: none; background: none; font-family: inherit; color: inherit; }
 a       { color: inherit; text-decoration: none; }
@@ -159,6 +176,12 @@ img     { display: block; max-width: 100%; }
   max-width: 1100px; margin: 0 auto;
   padding: 52px 24px 100px;
 }
+.page-title-group { animation: rise-in 650ms both; }
+.search-wrap { animation: rise-in 650ms 100ms both; }
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 
 /* Page top: title + search */
 .page-top {
@@ -233,7 +256,8 @@ img     { display: block; max-width: 100%; }
   border-radius: var(--radius-lg);
   overflow: hidden;
   display: flex; flex-direction: column;
-  animation: card-in var(--t-med) var(--ease) both;
+  animation: card-in 500ms var(--ease) both;
+  animation-delay: calc(var(--card-index, 0) * 55ms);
   transition: border-color var(--t-fast) var(--ease),
               transform    var(--t-fast) var(--ease),
               box-shadow   var(--t-fast) var(--ease);
@@ -314,6 +338,12 @@ img     { display: block; max-width: 100%; }
   line-height: 1.4;
   color: var(--text);
 }
+.card-description {
+  color: var(--text-muted);
+  font-size: 0.84rem;
+  line-height: 1.55;
+  white-space: pre-line;
+}
 
 /* Card footer */
 .card-footer {
@@ -343,32 +373,14 @@ img     { display: block; max-width: 100%; }
   border-color: var(--green-border);
 }
 
-.card-actions {
-  display: flex; gap: 6px;
-  opacity: 0;
-  transition: opacity var(--t-fast) var(--ease);
-  margin-left: auto;
-  flex-shrink: 0;
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
-
-.wish-card:hover .card-actions,
-.wish-card:focus-within .card-actions { opacity: 1; }
-
-.card-icon-btn {
-  width: 28px; height: 28px;
-  border-radius: var(--radius-sm);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 0.8rem;
-  color: var(--text-subtle);
-  border: 1px solid var(--border);
-  transition: color var(--t-fast) var(--ease),
-              border-color var(--t-fast) var(--ease),
-              background  var(--t-fast) var(--ease);
-}
-
-.card-icon-btn:hover { color: var(--text); border-color: var(--border-hover); background: var(--surface-2); }
-.card-icon-btn--edit:hover  { color: var(--green); border-color: var(--green-border); }
-.card-icon-btn--delete:hover { color: #f87171; border-color: rgba(248,113,113,0.3); }
 
 /* ── EMPTY STATE ─────────────────────────────────────────── */
 .empty-state {
