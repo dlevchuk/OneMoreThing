@@ -45,7 +45,7 @@
     "id": "steam-deck-oled",
     "title": "Steam Deck OLED",
     "description": "Ігровий ПК, який можна взяти в ліжко. Плани на вечір скасовано.",
-    "image": "https://images.hind.ee/167/7/steam-deck-oled-512gb-3.jpg",
+    "image": "https://content.rozetka.com.ua/goods/images/big/279840474.png",
     "originalUrl": "https://www.steamdeck.com/en/oled",
     "localUrl": "https://hotline.ua/ua/computer-igrovye-pristavki/valve-steam-deck-oled-512-gb/",
     "priority": "nice"
@@ -65,5 +65,22 @@
     "image": "https://content.rozetka.com.ua/goods/images/big/562860166.jpg",
     "localUrl": "https://rozetka.com.ua/ua/193771222/p193771222/",
     "priority": "unsure"
+  },
+  {
+    "id": "herman-miller-aeron-office-chair",
+    "title": "Herman Miller Aeron",
+    "description": "Крісло для довгих робочих днів і коротких поглядів на ціну.",
+    "image": "https://www.hermanmiller.com/content/dam/hmi/hmidam/active/2016/08/11/REK_18354_20160811174723758.tif.rendition.1920.1920.jpg",
+    "originalUrl": "https://eustore.hermanmiller.com/products/aeron-office-chair?variant=56420138058107",
+    "localUrl": "https://hotline.ua/dom-ofisnye-kresla/herman-miller-aeron-c-chornij/",
+    "priority": "unsure"
+  },
+  {
+    "id": "uniqlo-pufftech-parka-navy",
+    "title": "UNIQLO PUFFTECH Parka — Navy",
+    "description": "Легка тепла куртка. Бо погода знову не читала календар.",
+    "image": "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/470118/item/goods_69_470118_3x4.jpg?width=600",
+    "originalUrl": "https://www.uniqlo.com/us/en/products/E470118-000/00?colorDisplayCode=69&sizeDisplayCode=004",
+    "priority": "nice"
   }
 ]
