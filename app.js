@@ -8,8 +8,7 @@ const grid = document.getElementById('wishlist-grid');
 const emptyState = document.getElementById('empty-state');
 const pageCount = document.getElementById('page-count');
 const searchInput = document.getElementById('search-input');
-
-const PRIORITY_LABELS = { want: 'Хочу', nice: 'Було б добре', unsure: 'Не певен' };
+const PRIORITY_LABELS = { want: 'Хочу. Дуже.', nice: 'Було б файно', unsure: 'Поки вагаюсь' };
 
 function escHtml(value = '') {
   const element = document.createElement('span');
@@ -21,9 +20,7 @@ function safeUrl(value = '') {
   try {
     const url = new URL(value);
     return ['http:', 'https:'].includes(url.protocol) ? url.href : '';
-  } catch {
-    return '';
-  }
+  } catch { return ''; }
 }
 
 function filteredWishes() {
@@ -41,18 +38,14 @@ function buildCard(wish) {
   const localUrl = safeUrl(wish.localUrl);
   const priority = PRIORITY_LABELS[wish.priority] || PRIORITY_LABELS.want;
   return `
-    ${image
-      ? `<div class="card-image"><img src="${escHtml(image)}" alt="${escHtml(wish.title)}" loading="lazy" /></div>`
-      : '<div class="card-image card-image--empty"><span>без фото</span></div>'}
+    ${image ? `<div class="card-image"><img src="${escHtml(image)}" alt="${escHtml(wish.title)}" loading="lazy" /></div>` : '<div class="card-image card-image--empty"><span>фото ще в планах</span></div>'}
     <div class="card-body">
       <span class="card-priority card-priority--${escHtml(wish.priority || 'want')}">${priority}</span>
       <p class="card-title">${escHtml(wish.title)}</p>
       ${wish.description ? `<p class="card-description">${escHtml(wish.description)}</p>` : ''}
-      <div class="card-footer">
-        <div class="card-links">
-          ${originalUrl ? `<a href="${escHtml(originalUrl)}" target="_blank" rel="noopener noreferrer" class="card-link-btn">↗ Офіційний сайт</a>` : ''}
-          ${localUrl ? `<a href="${escHtml(localUrl)}" target="_blank" rel="noopener noreferrer" class="card-link-btn card-link-btn--local">↗ Локальний ринок</a>` : ''}
-        </div>
+      <div class="card-links">
+        ${originalUrl ? `<a href="${escHtml(originalUrl)}" target="_blank" rel="noopener noreferrer" class="card-link-btn">↗ Оригінал</a>` : ''}
+        ${localUrl ? `<a href="${escHtml(localUrl)}" target="_blank" rel="noopener noreferrer" class="card-link-btn card-link-btn--local">↗ Де купити тут</a>` : ''}
       </div>
     </div>`;
 }
@@ -60,27 +53,19 @@ function buildCard(wish) {
 function renderGrid() {
   const list = filteredWishes();
   const count = list.length;
-  pageCount.textContent = `${count} ${count === 1 ? 'річ' : count > 1 && count < 5 ? 'речі' : 'речей'}`;
+  const ending = count === 1 ? 'забаганка' : count > 1 && count < 5 ? 'забаганки' : 'забаганок';
+  pageCount.textContent = `${count} ${ending}`;
   emptyState.hidden = count !== 0;
   grid.hidden = count === 0;
-  grid.innerHTML = list.map((wish, index) => `
-    <article class="wish-card" role="listitem" style="--card-index:${index}" data-id="${escHtml(wish.id || '')}">
-      ${buildCard(wish)}
-    </article>`).join('');
+  grid.innerHTML = list.map((wish, index) => `<article class="wish-card" role="listitem" style="--card-index:${index}" data-id="${escHtml(wish.id || '')}">${buildCard(wish)}</article>`).join('');
 }
 
-document.querySelectorAll('.filter-btn').forEach(button => {
-  button.addEventListener('click', () => {
-    document.querySelectorAll('.filter-btn').forEach(item => item.classList.toggle('active', item === button));
-    activeFilter = button.dataset.filter;
-    renderGrid();
-  });
-});
-
-searchInput.addEventListener('input', () => {
-  searchQuery = searchInput.value.trim();
+document.querySelectorAll('.filter-btn').forEach(button => button.addEventListener('click', () => {
+  document.querySelectorAll('.filter-btn').forEach(item => item.classList.toggle('active', item === button));
+  activeFilter = button.dataset.filter;
   renderGrid();
-});
+}));
+searchInput.addEventListener('input', () => { searchQuery = searchInput.value.trim(); renderGrid(); });
 
 async function init() {
   try {

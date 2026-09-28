@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>OneMoreThing — Вішліст</title>
-  <meta name="description" content="Персональний вішліст — речі, які хочу отримати." />
+  <title>OneMoreThing — список хотілок</title>
+  <meta name="description" content="Речі, без яких я якось виживаю. Поки що." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -19,14 +19,12 @@
         OneMoreThing
       </a>
       <nav class="header-nav" role="navigation" aria-label="Фільтри пріоритету">
-        <button class="filter-btn active" data-filter="all" id="filter-all">Всі</button>
-        <button class="filter-btn" data-filter="want" id="filter-want">Хочу</button>
-        <button class="filter-btn" data-filter="nice" id="filter-nice">Було б добре</button>
-        <button class="filter-btn" data-filter="unsure" id="filter-unsure">Не певен</button>
+        <button class="filter-btn active" data-filter="all" id="filter-all">Усе цікаве</button>
+        <button class="filter-btn" data-filter="want" id="filter-want">Хочу. Дуже.</button>
+        <button class="filter-btn" data-filter="nice" id="filter-nice">Було б файно</button>
+        <button class="filter-btn" data-filter="unsure" id="filter-unsure">Поки вагаюсь</button>
       </nav>
-      <a class="btn-add" id="btn-edit-wishes" href="https://github.com/dlevchuk/OneMoreThing/edit/main/data/wishes.json" target="_blank" rel="noopener noreferrer" aria-label="Редагувати список у GitHub">
-        Редагувати список ↗
-      </a>
+      <a class="btn-add" id="btn-edit-wishes" href="https://github.com/dlevchuk/OneMoreThing/edit/main/data/wishes.json" target="_blank" rel="noopener noreferrer">Додати хотілку ↗</a>
     </div>
   </header>
 
@@ -36,8 +34,11 @@
     <!-- Page title + search -->
     <div class="page-top">
       <div class="page-title-group">
-        <h1 class="page-title">Мій вішліст</h1>
-        <span class="page-count" id="page-count" aria-live="polite">0 речей</span>
+        <div class="page-heading">
+          <h1 class="page-title">Мої хотілки</h1>
+          <p class="page-subtitle">Речі, без яких я якось виживаю. Поки що.</p>
+        </div>
+          <span class="page-count" id="page-count" aria-live="polite">0 забаганок</span>
       </div>
       <div class="search-wrap">
         <label for="search-input" class="sr-only">Пошук</label>
@@ -45,8 +46,8 @@
           type="search"
           id="search-input"
           class="search-input"
-          placeholder="Пошук..."
-          aria-label="Шукати по списку"
+          placeholder="Знайти наступну спокусу…"
+          aria-label="Знайти бажання"
         />
       </div>
     </div>
@@ -57,15 +58,15 @@
     <!-- Empty state -->
     <div class="empty-state" id="empty-state" hidden role="status">
       <p class="empty-icon" aria-hidden="true">—</p>
-      <p class="empty-title">Список порожній</p>
-      <p class="empty-sub">Нові бажання з’являться тут після оновлення списку.</p>
+      <p class="empty-title">Поки що порожньо. Тримаюсь молодцем.</p>
+      <p class="empty-sub">Гаманець може видихнути. Це ненадовго.</p>
     </div>
 
   </main>
 
   <!-- FOOTER -->
   <footer class="site-footer" role="contentinfo">
-    <span>OneMoreThing · список бажань</span>
+    <span>OneMoreThing · список фінансових спокус</span>
   </footer>
 
   <script src="app.js"></script>
