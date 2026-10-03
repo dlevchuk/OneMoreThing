@@ -5,9 +5,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#080d0a" />
-  <title>Дошка контрактів</title>
-  <meta name="description"
-    content="Небо над портом кольору мертвого каналу. Досьє, бажані речі й маршрути до продавців." />
+  <title>Прокинься, ковбою</title>
+  <meta name="description" content="Особиста дошка контрактів у мережі Чіба-Сіті." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
@@ -17,19 +16,9 @@
   <link rel="stylesheet" href="theme.css" />
 </head>
 
-<body>
+<body class="home-page">
   <div class="ambient ambient--one" aria-hidden="true"></div>
   <div class="ambient ambient--two" aria-hidden="true"></div>
-
-  <header class="site-header" role="banner">
-    <div class="header-inner">
-      <a href="#top" class="logo" aria-label="На початок">
-        <span class="logo-mark" aria-hidden="true">✦</span>
-        <span>ЧІБА-СІТІ // ДОШКА КОНТРАКТІВ</span>
-      </a>
-      <a class="header-link" href="#quests">Підключитись <span aria-hidden="true">↓</span></a>
-    </div>
-  </header>
 
   <main id="top">
     <section class="hero" aria-labelledby="hero-title">
@@ -37,68 +26,21 @@
         <p class="eyebrow"><span></span>ВХІДНІ КОНТРАКТИ</p>
         <h1 id="hero-title"><em data-text="Прокинься, ковбою.">Прокинься, ковбою.</em></h1>
         <p class="hero-subtitle">Небо над портом — як екран, налаштований на мертвий канал.</p>
-        <a class="hero-cta" href="#quests">Зайти в матрицю <span aria-hidden="true">↘</span></a>
+        <a class="hero-cta" href="board.html" aria-label="Зайти в матрицю">
+          <span class="enter-key-label">Зайти в матрицю</span>
+          <span class="enter-key-arrow" aria-hidden="true">↵</span>
+        </a>
       </div>
       <div class="hero-bottom" aria-hidden="true"><span>SECTION 9 · NODE 01 // ONLINE</span></div>
-    </section>
-
-    <div class="ticker" aria-hidden="true">
-      <div class="ticker-track">
-        <span>NEUROMANCER <b>◆</b> COUNT ZERO <b>◆</b> MONA LISA OVERDRIVE <b>◆</b> BURNING CHROME <b>◆</b> VIRTUAL
-          LIGHT <b>◆</b> IDORU <b>◆</b> PATTERN RECOGNITION <b>◆</b> СПРОУЛ <b>◆</b> ЧІБА-СІТІ <b>◆</b> ТЕСЬЄ-ЕШПУЛ
-          <b>◆</b> ВІНТЕРМЬЮТ <b>◆</b> СТРЕЙЛАЙТ <b>◆</b></span>
-        <span>NEUROMANCER <b>◆</b> COUNT ZERO <b>◆</b> MONA LISA OVERDRIVE <b>◆</b> BURNING CHROME <b>◆</b> VIRTUAL
-          LIGHT <b>◆</b> IDORU <b>◆</b> PATTERN RECOGNITION <b>◆</b> СПРОУЛ <b>◆</b> ЧІБА-СІТІ <b>◆</b> ТЕСЬЄ-ЕШПУЛ
-          <b>◆</b> ВІНТЕРМЬЮТ <b>◆</b> СТРЕЙЛАЙТ <b>◆</b></span>
-      </div>
-    </div>
-
-    <section class="quest-section" id="quests" aria-labelledby="quest-heading">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow"><span></span>ДОСТУПНІ КОНТРАКТИ</p>
-          <h2 id="quest-heading">Контракти</h2>
-          <p class="section-subtitle">Вибери запис — досьє розгорнеться в кіберпросторі.</p>
-        </div>
-        <span class="page-count" id="page-count" aria-live="polite">0 контрактів</span>
-      </div>
-
-      <div class="quest-controls">
-        <nav class="header-nav" role="navigation" aria-label="Фільтри контрактів">
-          <button class="filter-btn active" data-filter="all" id="filter-all">Усі контракти</button>
-          <button class="filter-btn" data-filter="want" id="filter-want">Червона пігулка</button>
-          <button class="filter-btn" data-filter="nice" id="filter-nice">Віртуальне світло</button>
-          <button class="filter-btn" data-filter="unsure" id="filter-unsure">Мертвий канал</button>
-        </nav>
-        <div class="search-wrap">
-          <label for="search-input" class="sr-only">Пошук у мережі</label>
-          <span class="search-icon" aria-hidden="true">⌕</span>
-          <input type="search" id="search-input" class="search-input" placeholder="Зламати ICE… знайти запис"
-            aria-label="Пошук у контрактах" />
-        </div>
-      </div>
-
-      <div class="board-layout">
-        <div class="wishlist-grid" id="wishlist-grid" role="list" aria-live="polite"
-          aria-label="Контракти на бажані речі"></div>
-        <aside class="quest-details" id="quest-details" aria-live="polite" aria-label="Вибраний контракт"></aside>
-      </div>
-      <div class="empty-state" id="empty-state" hidden role="status">
-        <p class="empty-icon" aria-hidden="true">✧</p>
-        <p class="empty-title">Мертвий канал. Лише білий шум.</p>
-        <p class="empty-sub">ICE не пропустив запит. Спробуй інші ключові слова, ковбою.</p>
-      </div>
     </section>
   </main>
 
   <footer class="site-footer">
-    <span class="footer-mark" aria-hidden="true">✦</span>
     <p>Архів веде <strong>оператор</strong></p>
     <span class="footer-note">ДОСТУП ДО ЗАПИСІВ — ЛИШЕ У ВЛАСНИКА РЕПОЗИТОРІЮ</span>
   </footer>
 
   <script src="rain.js"></script>
-  <script src="app.js"></script>
 </body>
 
 </html>

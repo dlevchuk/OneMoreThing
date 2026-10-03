@@ -65,14 +65,14 @@ function renderDetails(wish) {
       <span class="card-priority card-priority--${escHtml(wish.priority || 'want')}">${priority}</span>
       <h3 class="detail-title">${escHtml(wish.title)}</h3>
       <p class="detail-description">${escHtml(wish.description || 'Опису немає. Дані теж іноді мовчать.')}</p>
-      <div class="detail-divider"><span>✦</span></div>
+      <div class="detail-divider" aria-hidden="true"></div>
       <p class="detail-note">Перевір ціну й наявність перед переходом. У цьому місті цінники міняються швидше за прогнози.</p>
       <div class="card-links detail-links">
         ${originalUrl ? `<a href="${escHtml(originalUrl)}" target="_blank" rel="noopener noreferrer" class="card-link-btn">Джерело</a>` : ''}
         ${localUrl ? `<a href="${escHtml(localUrl)}" target="_blank" rel="noopener noreferrer" class="card-link-btn card-link-btn--local">Місцевий ринок</a>` : ''}
       </div>
     </div>
-    <span class="detail-seal" aria-hidden="true">✦</span>`;
+  `;
 }
 
 function renderGrid() {

@@ -1,11 +1,11 @@
 /* Matrix green neon layer for the cyberpunk notice board. */
-:root { --neon: #42ff62; --neon-soft: #a5ff55; --phosphor: #d0ffd5; }
+:root { --neon: #42ff62; --neon-soft: #a5ff55; }
 #rain { position: fixed; z-index: 0; inset: 0; width: 100%; height: 100%; opacity: .26; pointer-events: none; }
 .ambient--one { background: var(--neon); opacity: .15; }
 .ambient--two { background: var(--neon-soft); opacity: .11; }
 body::after { position: fixed; z-index: 30; inset: 0; content: ''; pointer-events: none; background: repeating-linear-gradient(0deg, rgba(0,0,0,.2) 0 1px, transparent 1px 3px), radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,.5)); }
 
-.logo-mark, .footer-mark, .empty-icon { color: var(--neon); text-shadow: 0 0 12px var(--neon); }
+.empty-icon { color: var(--neon); text-shadow: 0 0 12px var(--neon); }
 .hero .eyebrow { color: var(--neon-soft); animation: neon-flicker 5s infinite; }
 @keyframes neon-flicker { 0%, 18%, 22%, 62%, 66%, 100% { opacity: 1; } 20%, 64% { opacity: .35; } }
 .hero h1 { text-shadow: 2px 0 rgba(66,255,98,.35), -2px 0 rgba(165,255,85,.3); }
@@ -15,7 +15,7 @@ body::after { position: fixed; z-index: 30; inset: 0; content: ''; pointer-event
 .hero h1 em::after { color: var(--neon-soft); animation: glitch 4s infinite reverse; }
 @keyframes glitch { 0%, 91%, 100% { clip-path: inset(0); transform: none; } 92% { clip-path: inset(20% 0 55% 0); transform: translate(-5px); } 94% { clip-path: inset(62% 0 8% 0); transform: translate(5px); } 96% { clip-path: inset(36% 0 36% 0); transform: translate(-3px); } }
 .hero-cta { border-color: var(--neon); color: var(--neon); background: rgba(66,255,98,.08); box-shadow: 0 0 16px rgba(66,255,98,.2); }
-.hero-cta span, .header-link span { color: var(--neon-soft); }
+.hero-cta span { color: var(--neon-soft); }
 .hero-bottom { color: var(--neon-soft); opacity: .65; }
 
 .ticker { overflow: hidden; margin: 0; padding: 11px 0; border-bottom: 1px solid rgba(66,255,98,.35); background: rgba(66,255,98,.04); }
@@ -35,8 +35,7 @@ body::after { position: fixed; z-index: 30; inset: 0; content: ''; pointer-event
 .notice-pin { background: radial-gradient(circle at 35% 25%, #d3ffd1, var(--neon) 45%, #174c27 78%); box-shadow: 0 0 11px var(--neon); }
 .card-link-btn { border-color: rgba(66,255,98,.55); color: var(--neon); }
 .card-link-btn--local { border-color: rgba(165,255,85,.55); color: var(--neon-soft); }
-.detail-seal { border-color: var(--neon); color: var(--phosphor); }
-.detail-divider, .detail-divider span { color: var(--neon); }
+.detail-divider { color: var(--neon); }
 .search-input:focus { border-color: var(--neon); box-shadow: 0 0 0 3px rgba(66,255,98,.12); }
 .footer-note { color: var(--neon-soft); opacity: .6; }
 
