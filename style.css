@@ -41,12 +41,12 @@ main, .site-footer { position: relative; z-index: 1; }
 .hero h1 { max-width: 100%; margin: 0; color: #effff1; font: 700 clamp(1.65rem, 7.15vw, 6.4rem)/1 var(--display); letter-spacing: -.055em; white-space: nowrap; text-shadow: 0 0 34px rgba(53,255,81,.13); }
 .hero h1 em { display: inline-block; color: var(--lime); font-style: normal; text-shadow: 0 0 20px rgba(173,255,38,.35); }
 .hero-subtitle { max-width: 535px; margin: 24px 0 0; color: #a9bca9; font-size: clamp(.95rem, 1.4vw, 1.07rem); line-height: 1.5; }
-.hero-cta { position: relative; display: block; width: min(264px, 84vw); height: 78px; margin-top: 29px; clip-path: polygon(0 0, 100% 0, 100% 100%, 76% 100%, 76% 72%, 0 72%); filter: drop-shadow(0 0 7px rgba(53,255,81,.2)); color: var(--matrix); font: 600 .68rem var(--mono); letter-spacing: .08em; text-transform: uppercase; transition: filter .2s, transform .2s; }
-.hero-cta::before { position: absolute; inset: 2px; clip-path: polygon(0 0, 100% 0, 100% 100%, 76% 100%, 76% 72%, 0 72%); background: linear-gradient(145deg, rgba(53,255,81,.1), rgba(9,27,13,.94) 64%, rgba(173,255,38,.1)); content: ''; }
-.enter-key-label { position: absolute; z-index: 1; top: 0; left: 0; display: grid; width: 100%; height: 72%; place-items: center; color: var(--neon, var(--matrix)); font-size: .68rem !important; }
-.enter-key-arrow { position: absolute; z-index: 1; right: 8%; bottom: 1%; color: var(--lime); font-size: 1.15rem !important; line-height: 1; }
-.hero-cta:hover { filter: drop-shadow(0 0 11px rgba(53,255,81,.38)); transform: translateY(-1px); }
-.hero-cta:active { transform: translateY(1px); filter: drop-shadow(0 0 4px rgba(53,255,81,.28)); }
+.hero-cta { position: relative; display: block; width: min(204px, 76vw); height: 60px; margin-top: 24px; color: var(--matrix); font: 600 .58rem var(--mono); letter-spacing: .06em; text-transform: uppercase; transition: filter .2s, transform .2s; }
+.enter-key-outline { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; fill: none; stroke: currentColor; stroke-width: 1.5; vector-effect: non-scaling-stroke; filter: drop-shadow(0 0 3px rgba(53,255,81,.16)); }
+.enter-key-label { position: absolute; z-index: 1; top: 0; left: 0; display: grid; width: 100%; height: 70%; place-items: center; color: var(--neon, var(--matrix)); font-size: .58rem !important; }
+.enter-key-arrow { position: absolute; z-index: 1; right: 7%; bottom: 0; color: var(--lime); font-size: .9rem !important; line-height: 1; }
+.hero-cta:hover { filter: drop-shadow(0 0 6px rgba(53,255,81,.25)); transform: translateY(-1px); }
+.hero-cta:active { transform: translateY(1px); filter: drop-shadow(0 0 3px rgba(53,255,81,.2)); }
 .hero-bottom { position: absolute; right: 0; bottom: 21px; left: 0; display: flex; justify-content: space-between; color: #66806a; font: 500 .53rem var(--mono); letter-spacing: .13em; }
 
 /* Transparent notice board: let the Matrix rain remain visible behind the content. */

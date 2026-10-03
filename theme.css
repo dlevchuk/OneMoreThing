@@ -14,7 +14,7 @@ body::after { position: fixed; z-index: 30; inset: 0; content: ''; pointer-event
 .hero h1 em::before { color: var(--neon); animation: glitch 4s infinite; }
 .hero h1 em::after { color: var(--neon-soft); animation: glitch 4s infinite reverse; }
 @keyframes glitch { 0%, 91%, 100% { clip-path: inset(0); transform: none; } 92% { clip-path: inset(20% 0 55% 0); transform: translate(-5px); } 94% { clip-path: inset(62% 0 8% 0); transform: translate(5px); } 96% { clip-path: inset(36% 0 36% 0); transform: translate(-3px); } }
-.hero-cta { border-color: var(--neon); color: var(--neon); background: rgba(66,255,98,.08); box-shadow: 0 0 16px rgba(66,255,98,.2); }
+.hero-cta { color: var(--neon); background: transparent; box-shadow: none; }
 .hero-cta span { color: var(--neon-soft); }
 .hero-bottom { color: var(--neon-soft); opacity: .65; }
 
