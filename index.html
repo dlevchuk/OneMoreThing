@@ -3,69 +3,87 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>OneMoreThing — список хотілок</title>
-  <meta name="description" content="Речі, без яких я якось виживаю. Поки що." />
+  <meta name="theme-color" content="#090b13" />
+  <title>Дошка контрактів — міська мережа</title>
+  <meta name="description" content="У міській мережі завжди є ще один контракт. Досьє, бажані речі й маршрути до продавців." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Oxanium:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <div class="ambient ambient--one" aria-hidden="true"></div>
+  <div class="ambient ambient--two" aria-hidden="true"></div>
 
-  <!-- HEADER -->
   <header class="site-header" role="banner">
     <div class="header-inner">
-      <a href="#" class="logo" aria-label="OneMoreThing — на головну">
-        OneMoreThing
+      <a href="#top" class="logo" aria-label="Дошка контрактів — на початок">
+        <span class="logo-mark" aria-hidden="true">✦</span>
+        <span>ДОШКА ПРИГОД</span>
       </a>
-      <nav class="header-nav" role="navigation" aria-label="Фільтри пріоритету">
-        <button class="filter-btn active" data-filter="all" id="filter-all">Усе цікаве</button>
-        <button class="filter-btn" data-filter="want" id="filter-want">Хочу. Дуже.</button>
-        <button class="filter-btn" data-filter="nice" id="filter-nice">Було б файно</button>
-        <button class="filter-btn" data-filter="unsure" id="filter-unsure">Поки вагаюсь</button>
-      </nav>
+      <a class="header-link" href="#quests">До оголошень <span aria-hidden="true">↓</span></a>
     </div>
   </header>
 
-  <!-- MAIN -->
-  <main class="main" id="main-content">
+  <main id="top">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <p class="eyebrow"><span></span> МЕРЕЖА НЕ СПИТЬ · ВХІДНІ КОНТРАКТИ</p>
+        <h1 id="hero-title">Мережа пам’ятає.<br /><em>Гаманець — ні.</em></h1>
+        <p class="hero-subtitle">Місто продає майбутнє в розстрочку. Цей список принаймні не бреше про те, чого хочеться.</p>
+        <a class="hero-cta" href="#quests">Перевірити дошку <span aria-hidden="true">↘</span></a>
+      </div>
+      <div class="hero-art" aria-hidden="true">
+        <div class="orbit orbit--outer"></div>
+        <div class="orbit orbit--inner"></div>
+        <span class="hero-star hero-star--one">✦</span>
+        <span class="hero-star hero-star--two">✧</span>
+        <span class="hero-star hero-star--three">✦</span>
+        <div class="hero-seal"><span>З’ЄДНАННЯ<br />СТАБІЛЬНЕ<br />ПОКИ ЩО</span><b>⬡</b></div>
+      </div>
+      <div class="hero-bottom" aria-hidden="true"><span>CITY GRID · NODE 01 // ONLINE</span><span>СПРАВИ № 001 — ∞</span></div>
+    </section>
 
-    <!-- Page title + search -->
-    <div class="page-top">
-      <div class="page-title-group">
-        <div class="page-heading">
-          <h1 class="page-title">Мої хотілки</h1>
-          <p class="page-subtitle">Речі, без яких я якось виживаю. Поки що.</p>
+    <section class="quest-section" id="quests" aria-labelledby="quest-heading">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow"><span></span> CITY GRID · ДОСТУПНІ СПРАВИ</p>
+          <h2 id="quest-heading">Дошка оголошень</h2>
+          <p class="section-subtitle">Обери запис. Досьє відкриється в терміналі. Слід не загуби.</p>
         </div>
-          <span class="page-count" id="page-count" aria-live="polite">0 забаганок</span>
+        <span class="page-count" id="page-count" aria-live="polite">0 контрактів</span>
       </div>
-      <div class="search-wrap">
-        <label for="search-input" class="sr-only">Пошук</label>
-        <input
-          type="search"
-          id="search-input"
-          class="search-input"
-          placeholder="Знайти наступну спокусу…"
-          aria-label="Знайти бажання"
-        />
+
+      <div class="quest-controls">
+        <nav class="header-nav" role="navigation" aria-label="Фільтри квестів">
+          <button class="filter-btn active" data-filter="all" id="filter-all">Усі контракти</button>
+          <button class="filter-btn" data-filter="want" id="filter-want">На радарі</button>
+          <button class="filter-btn" data-filter="nice" id="filter-nice">Було б файно</button>
+          <button class="filter-btn" data-filter="unsure" id="filter-unsure">У сліпій зоні</button>
+        </nav>
+        <div class="search-wrap">
+          <label for="search-input" class="sr-only">Пошук у мережі</label>
+          <span class="search-icon" aria-hidden="true">⌕</span>
+          <input type="search" id="search-input" class="search-input" placeholder="Знайти шум у мережі…" aria-label="Пошук у контрактах" />
+        </div>
       </div>
-    </div>
 
-    <!-- Grid -->
-    <div class="wishlist-grid" id="wishlist-grid" role="list" aria-live="polite" aria-label="Картки бажань"></div>
-
-    <!-- Empty state -->
-    <div class="empty-state" id="empty-state" hidden role="status">
-      <p class="empty-icon" aria-hidden="true">—</p>
-      <p class="empty-title">Поки що порожньо. Тримаюсь молодцем.</p>
-      <p class="empty-sub">Гаманець може видихнути. Це ненадовго.</p>
-    </div>
-
+      <div class="board-layout">
+        <div class="wishlist-grid" id="wishlist-grid" role="list" aria-live="polite" aria-label="Оголошення про бажані речі"></div>
+        <aside class="quest-details" id="quest-details" aria-live="polite" aria-label="Вибране оголошення"></aside>
+      </div>
+      <div class="empty-state" id="empty-state" hidden role="status">
+        <p class="empty-icon" aria-hidden="true">✧</p>
+        <p class="empty-title">Тут тільки статика.</p>
+        <p class="empty-sub">Мережа не знайшла збігів. Перефразуй запит — іноді це допомагає.</p>
+      </div>
+    </section>
   </main>
 
-  <!-- FOOTER -->
-  <footer class="site-footer" role="contentinfo">
-    <span>OneMoreThing · список фінансових спокус</span>
+  <footer class="site-footer">
+    <span class="footer-mark" aria-hidden="true">✦</span>
+    <p>Архів оновлює <strong>оператор</strong></p>
+    <span class="footer-note">ДОСТУП ДО ЗАПИСІВ МАЄ ВЛАСНИК РЕПОЗИТОРІЮ</span>
   </footer>
 
   <script src="app.js"></script>
