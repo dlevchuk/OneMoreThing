@@ -50,7 +50,7 @@ function buildCard(wish) {
 
 function renderDetails(wish) {
   if (!wish) {
-    details.innerHTML = '<div class="details-empty"><span aria-hidden="true">✧</span><p>Передавач мовчить. Обери запис.</p></div>';
+    details.innerHTML = '<div class="details-empty"><span aria-hidden="true">✧</span><p>Лінія мовчить. Обери запис.</p></div>';
     return;
   }
 
@@ -59,17 +59,17 @@ function renderDetails(wish) {
   const localUrl = safeUrl(wish.localUrl);
   const priority = PRIORITY_LABELS[wish.priority] || PRIORITY_LABELS.want;
   details.innerHTML = `
-    <div class="detail-topline"><span>⬡ CITY GRID / ДОСЬЄ</span><span>№ ${String(wishes.indexOf(wish) + 1).padStart(2, '0')}</span></div>
+    <div class="detail-topline"><span>⬡ CHIBA CITY / ДОСЬЄ</span><span>№ ${String(wishes.indexOf(wish) + 1).padStart(2, '0')}</span></div>
     ${image ? `<div class="detail-image"><img src="${escHtml(image)}" alt="${escHtml(wish.title)}" /></div>` : ''}
     <div class="detail-content">
       <span class="card-priority card-priority--${escHtml(wish.priority || 'want')}">${priority}</span>
       <h3 class="detail-title">${escHtml(wish.title)}</h3>
-      <p class="detail-description">${escHtml(wish.description || 'Опису немає. Дані теж знають, коли треба мовчати.')}</p>
+      <p class="detail-description">${escHtml(wish.description || 'Опису немає. Дані теж іноді мовчать.')}</p>
       <div class="detail-divider"><span>✦</span></div>
-      <p class="detail-note">Перевір ціну й наявність перед переходом. У місті майбутнього цінники змінюються швидше за політичні гасла.</p>
+      <p class="detail-note">Перевір ціну й наявність перед переходом. У цьому місті цінники міняються швидше за прогнози.</p>
       <div class="card-links detail-links">
         ${originalUrl ? `<a href="${escHtml(originalUrl)}" target="_blank" rel="noopener noreferrer" class="card-link-btn">Джерело</a>` : ''}
-        ${localUrl ? `<a href="${escHtml(localUrl)}" target="_blank" rel="noopener noreferrer" class="card-link-btn card-link-btn--local">Місцева мережа</a>` : ''}
+        ${localUrl ? `<a href="${escHtml(localUrl)}" target="_blank" rel="noopener noreferrer" class="card-link-btn card-link-btn--local">Місцевий ринок</a>` : ''}
       </div>
     </div>
     <span class="detail-seal" aria-hidden="true">✦</span>`;
@@ -110,7 +110,7 @@ async function init() {
   } catch (error) {
     console.error('Не вдалося завантажити список бажань:', error);
     emptyState.querySelector('.empty-title').textContent = 'Зв’язок обірвався';
-    emptyState.querySelector('.empty-sub').textContent = 'Перезавантаж сторінку пізніше. Мережі теж іноді треба зникнути.';
+    emptyState.querySelector('.empty-sub').textContent = 'Перезавантаж сторінку пізніше. Мережа іноді зникає.';
   }
   renderGrid();
 }

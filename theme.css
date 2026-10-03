@@ -1,0 +1,45 @@
+/* CYBERPUNK LAYER: Matrix rain · Blade Runner neon · Ghost in the Shell glitch · Gibson sprawl */
+:root { --pink: #ff2a6d; --cyan: #05d9e8; --amber: #ff9d00; }
+#rain { position: fixed; z-index: -1; inset: 0; width: 100%; height: 100%; opacity: .26; pointer-events: none; }
+.ambient--one { background: var(--pink); opacity: .15; }
+.ambient--two { background: var(--cyan); opacity: .11; }
+body::after { position: fixed; z-index: 30; inset: 0; content: ''; pointer-events: none; background: repeating-linear-gradient(0deg, rgba(0,0,0,.2) 0 1px, transparent 1px 3px), radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,.5)); }
+
+.logo-mark, .footer-mark, .empty-icon { color: var(--pink); text-shadow: 0 0 12px var(--pink); }
+.hero .eyebrow { color: var(--amber); animation: neon-flicker 5s infinite; }
+@keyframes neon-flicker { 0%, 18%, 22%, 62%, 66%, 100% { opacity: 1; } 20%, 64% { opacity: .35; } }
+.hero h1 { text-shadow: 2px 0 rgba(255,42,109,.55), -2px 0 rgba(5,217,232,.5); }
+.hero h1 em { position: relative; color: var(--lime); }
+.hero h1 em::before, .hero h1 em::after { position: absolute; top: 0; left: 0; content: attr(data-text); }
+.hero h1 em::before { color: var(--pink); animation: glitch 4s infinite; }
+.hero h1 em::after { color: var(--cyan); animation: glitch 4s infinite reverse; }
+@keyframes glitch { 0%, 91%, 100% { clip-path: inset(0); transform: none; } 92% { clip-path: inset(20% 0 55% 0); transform: translate(-5px); } 94% { clip-path: inset(62% 0 8% 0); transform: translate(5px); } 96% { clip-path: inset(36% 0 36% 0); transform: translate(-3px); } }
+.hero-cta { border-color: var(--pink); color: var(--pink); background: rgba(255,42,109,.08); box-shadow: 0 0 16px rgba(255,42,109,.2); }
+.hero-cta span, .header-link span { color: var(--cyan); }
+.hero-seal { border-color: var(--cyan); color: #d7ffff; text-shadow: 0 0 12px var(--cyan); }
+.hero-bottom { color: var(--amber); opacity: .65; }
+
+.ticker { overflow: hidden; margin: 0; padding: 11px 0; border-bottom: 1px solid rgba(255,42,109,.35); background: rgba(255,42,109,.04); }
+.ticker-track { display: flex; width: max-content; gap: 34px; color: var(--amber); font: 600 .62rem var(--mono); letter-spacing: .2em; white-space: nowrap; text-shadow: 0 0 8px rgba(255,157,0,.45); animation: ticker 55s linear infinite; }
+.ticker-track b { color: var(--pink); font-weight: 400; }
+@keyframes ticker { to { transform: translateX(-50%); } }
+
+.quest-section { outline-color: rgba(255,42,109,.4); border-color: rgba(5,217,232,.4); }
+.page-count { border-color: rgba(255,157,0,.55); background: rgba(255,157,0,.07); color: var(--amber); text-shadow: 0 0 9px rgba(255,157,0,.4); }
+.section-heading .eyebrow, .detail-topline { color: var(--cyan); text-shadow: 0 0 8px rgba(5,217,232,.4); }
+.filter-btn.active { border-color: var(--pink); background: rgba(255,42,109,.09); color: var(--pink); text-shadow: 0 0 9px rgba(255,42,109,.5); }
+
+.notice-priority--want, .card-priority--want { color: var(--pink); border-color: rgba(255,42,109,.6); }
+.notice-priority--nice, .card-priority--nice { color: var(--cyan); border-color: rgba(5,217,232,.6); }
+.notice-priority--unsure, .card-priority--unsure { color: var(--amber); border-color: rgba(255,157,0,.6); }
+.notice-select:hover, .notice-select.is-selected { box-shadow: 0 0 0 1px var(--pink), 0 0 20px rgba(255,42,109,.3), 3px 9px 18px #000a; }
+.notice-pin { background: radial-gradient(circle at 35% 25%, #ffd1e0, var(--pink) 45%, #5a0f2a 78%); box-shadow: 0 0 11px var(--pink); }
+.quest-details::before { background: linear-gradient(90deg, var(--pink), var(--amber), var(--cyan)); box-shadow: 0 0 12px var(--pink); }
+.card-link-btn { border-color: rgba(5,217,232,.55); color: var(--cyan); }
+.card-link-btn--local { border-color: rgba(255,157,0,.55); color: var(--amber); }
+.detail-seal { border-color: var(--pink); color: #ffd1e0; }
+.detail-divider, .detail-divider span { color: var(--pink); }
+.search-input:focus { border-color: var(--pink); box-shadow: 0 0 0 3px rgba(255,42,109,.12); }
+.footer-note { color: var(--amber); opacity: .6; }
+
+@media (prefers-reduced-motion: reduce) { .ticker-track { animation: none; } }

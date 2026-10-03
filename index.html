@@ -3,13 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#090b13" />
-  <title>Дошка контрактів — міська мережа</title>
-  <meta name="description" content="У міській мережі завжди є ще один контракт. Досьє, бажані речі й маршрути до продавців." />
+  <meta name="theme-color" content="#080d0a" />
+  <title>Місто на лінії · Дошка контрактів</title>
+  <meta name="description" content="Кіберпанкова дошка контрактів: бажані речі, досьє та маршрути до продавців." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Oxanium:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="theme.css" />
 </head>
 <body>
   <div class="ambient ambient--one" aria-hidden="true"></div>
@@ -19,19 +20,19 @@
     <div class="header-inner">
       <a href="#top" class="logo" aria-label="Дошка контрактів — на початок">
         <span class="logo-mark" aria-hidden="true">✦</span>
-        <span>ДОШКА ПРИГОД</span>
+        <span>МІСТО НА ЛІНІЇ // ДОШКА КОНТРАКТІВ</span>
       </a>
-      <a class="header-link" href="#quests">До оголошень <span aria-hidden="true">↓</span></a>
+      <a class="header-link" href="#quests">Підключитись <span aria-hidden="true">↓</span></a>
     </div>
   </header>
 
   <main id="top">
     <section class="hero" aria-labelledby="hero-title">
       <div class="hero-copy">
-        <p class="eyebrow"><span></span> МЕРЕЖА НЕ СПИТЬ · ВХІДНІ КОНТРАКТИ</p>
-        <h1 id="hero-title">Мережа пам’ятає.<br /><em>Гаманець — ні.</em></h1>
-        <p class="hero-subtitle">Місто продає майбутнє в розстрочку. Цей список принаймні не бреше про те, чого хочеться.</p>
-        <a class="hero-cta" href="#quests">Перевірити дошку <span aria-hidden="true">↘</span></a>
+        <p class="eyebrow"><span></span> МІСЬКА МЕРЕЖА · ВХІДНІ КОНТРАКТИ</p>
+        <h1 id="hero-title">Місто продає майбутнє.<br /><em data-text="Я записав суму.">Я записав суму.</em></h1>
+        <p class="hero-subtitle">Неон гуде. Оренда росте. Тут речі, які могли б зробити ще одну зміну стерпною.</p>
+        <a class="hero-cta" href="#quests">Відкрити канал <span aria-hidden="true">↘</span></a>
       </div>
       <div class="hero-art" aria-hidden="true">
         <div class="orbit orbit--outer"></div>
@@ -39,23 +40,30 @@
         <span class="hero-star hero-star--one">✦</span>
         <span class="hero-star hero-star--two">✧</span>
         <span class="hero-star hero-star--three">✦</span>
-        <div class="hero-seal"><span>З’ЄДНАННЯ<br />СТАБІЛЬНЕ<br />ПОКИ ЩО</span><b>⬡</b></div>
+        <div class="hero-seal"><span>КАНАЛ<br />ВІДКРИТИЙ<br />ONLINE</span><b>⬡</b></div>
       </div>
-      <div class="hero-bottom" aria-hidden="true"><span>CITY GRID · NODE 01 // ONLINE</span><span>СПРАВИ № 001 — ∞</span></div>
+      <div class="hero-bottom" aria-hidden="true"><span>SECTOR 09 · NODE 01 // ONLINE</span><span>ЦІНИ СТАРІЮТЬ ШВИДШЕ ЗА ПЛАНИ</span></div>
     </section>
+
+    <div class="ticker" aria-hidden="true">
+      <div class="ticker-track">
+        <span>ЗОВНІШНІЙ СЕКТОР <b>◆</b> НИЖНІЙ РІВЕНЬ <b>◆</b> ПРИВАТНИЙ КАНАЛ <b>◆</b> ШУМ У ЛІНІЇ <b>◆</b> НІЧНА ЗМІНА <b>◆</b> ВІДКРИТИЙ КОНТРАКТ <b>◆</b> СІРА ЗОНА <b>◆</b> РЕЗЕРВНИЙ ВУЗОЛ <b>◆</b> ПОШКОДЖЕНИЙ ПАКЕТ <b>◆</b> ПЛАНИ НА ПОТІМ <b>◆</b></span>
+        <span>ЗОВНІШНІЙ СЕКТОР <b>◆</b> НИЖНІЙ РІВЕНЬ <b>◆</b> ПРИВАТНИЙ КАНАЛ <b>◆</b> ШУМ У ЛІНІЇ <b>◆</b> НІЧНА ЗМІНА <b>◆</b> ВІДКРИТИЙ КОНТРАКТ <b>◆</b> СІРА ЗОНА <b>◆</b> РЕЗЕРВНИЙ ВУЗОЛ <b>◆</b> ПОШКОДЖЕНИЙ ПАКЕТ <b>◆</b> ПЛАНИ НА ПОТІМ <b>◆</b></span>
+      </div>
+    </div>
 
     <section class="quest-section" id="quests" aria-labelledby="quest-heading">
       <div class="section-heading">
         <div>
-          <p class="eyebrow"><span></span> CITY GRID · ДОСТУПНІ СПРАВИ</p>
-          <h2 id="quest-heading">Дошка оголошень</h2>
-          <p class="section-subtitle">Обери запис. Досьє відкриється в терміналі. Слід не загуби.</p>
+          <p class="eyebrow"><span></span> МІСЬКА МЕРЕЖА · ДОСТУПНІ КОНТРАКТИ</p>
+          <h2 id="quest-heading">Дошка контрактів</h2>
+          <p class="section-subtitle">Вибери запис. Досьє відкриється в терміналі. Сигнал може зникнути.</p>
         </div>
         <span class="page-count" id="page-count" aria-live="polite">0 контрактів</span>
       </div>
 
       <div class="quest-controls">
-        <nav class="header-nav" role="navigation" aria-label="Фільтри квестів">
+        <nav class="header-nav" role="navigation" aria-label="Фільтри контрактів">
           <button class="filter-btn active" data-filter="all" id="filter-all">Усі контракти</button>
           <button class="filter-btn" data-filter="want" id="filter-want">На радарі</button>
           <button class="filter-btn" data-filter="nice" id="filter-nice">Було б файно</button>
@@ -64,28 +72,29 @@
         <div class="search-wrap">
           <label for="search-input" class="sr-only">Пошук у мережі</label>
           <span class="search-icon" aria-hidden="true">⌕</span>
-          <input type="search" id="search-input" class="search-input" placeholder="Знайти шум у мережі…" aria-label="Пошук у контрактах" />
+          <input type="search" id="search-input" class="search-input" placeholder="Знайти запис у мережі…" aria-label="Пошук у контрактах" />
         </div>
       </div>
 
       <div class="board-layout">
-        <div class="wishlist-grid" id="wishlist-grid" role="list" aria-live="polite" aria-label="Оголошення про бажані речі"></div>
-        <aside class="quest-details" id="quest-details" aria-live="polite" aria-label="Вибране оголошення"></aside>
+        <div class="wishlist-grid" id="wishlist-grid" role="list" aria-live="polite" aria-label="Контракти на бажані речі"></div>
+        <aside class="quest-details" id="quest-details" aria-live="polite" aria-label="Вибраний контракт"></aside>
       </div>
       <div class="empty-state" id="empty-state" hidden role="status">
         <p class="empty-icon" aria-hidden="true">✧</p>
-        <p class="empty-title">Тут тільки статика.</p>
-        <p class="empty-sub">Мережа не знайшла збігів. Перефразуй запит — іноді це допомагає.</p>
+        <p class="empty-title">У мережі тихо.</p>
+        <p class="empty-sub">За цим запитом контрактів не знайдено. Спробуй інші ключові слова.</p>
       </div>
     </section>
   </main>
 
   <footer class="site-footer">
     <span class="footer-mark" aria-hidden="true">✦</span>
-    <p>Архів оновлює <strong>оператор</strong></p>
-    <span class="footer-note">ДОСТУП ДО ЗАПИСІВ МАЄ ВЛАСНИК РЕПОЗИТОРІЮ</span>
+    <p>Архів веде <strong>оператор</strong> · «Сигнал пам’ятає довше за місто»</p>
+    <span class="footer-note">ДОСТУП ДО ЗАПИСІВ — ЛИШЕ У ВЛАСНИКА РЕПОЗИТОРІЮ</span>
   </footer>
 
+  <script src="rain.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
