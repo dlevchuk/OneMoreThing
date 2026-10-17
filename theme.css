@@ -5,15 +5,35 @@
 .ambient--two { background: var(--neon-soft); opacity: .11; }
 body::after { position: fixed; z-index: 30; inset: 0; content: ''; pointer-events: none; background: repeating-linear-gradient(0deg, rgba(0,0,0,.2) 0 1px, transparent 1px 3px), radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,.5)); }
 
+/* Cross-document view transitions for modern browsers */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition {
+    navigation: auto;
+  }
+}
+
+#matrix-arriving-veil { display: none; }
+html.matrix-arriving #matrix-arriving-veil { display: block; }
+html.matrix-arriving body { background-color: #020503; }
+
 .matrix-rain-transition { position: fixed; z-index: 9999; inset: 0; overflow: hidden; pointer-events: none; }
-.matrix-transition-shade { position: absolute; inset: 0; background: #020503; opacity: 0; animation: matrix-shade-in .72s ease-in forwards; }
+.matrix-transition-shade { position: absolute; inset: 0; background: #020503; }
 .matrix-transition-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
-.matrix-leaving main { animation: matrix-depart .64s ease-in both; }
-.matrix-arriving main { animation: matrix-arrive .52s cubic-bezier(.2, .7, .25, 1) both; }
-.matrix-arriving .site-footer { animation: matrix-arrive .52s .08s cubic-bezier(.2, .7, .25, 1) both; }
-@keyframes matrix-shade-in { to { opacity: .88; } }
-@keyframes matrix-depart { to { opacity: .5; filter: blur(1px); } }
-@keyframes matrix-arrive { from { opacity: 0; transform: scale(1.025); filter: blur(4px); } to { opacity: 1; transform: none; filter: none; } }
+
+/* Leaving state */
+.matrix-leaving .matrix-transition-shade { animation: matrix-shade-in .42s cubic-bezier(.2, .7, .25, 1) forwards; }
+.matrix-leaving main,
+.matrix-leaving .site-footer { animation: matrix-depart .38s ease-in forwards; }
+
+/* Arriving state */
+html.matrix-arriving .matrix-rain-transition { animation: matrix-shade-out .48s cubic-bezier(.2, .7, .25, 1) forwards; }
+html.matrix-arriving main { animation: matrix-arrive .48s cubic-bezier(.2, .7, .25, 1) both; }
+html.matrix-arriving .site-footer { animation: matrix-arrive .48s .05s cubic-bezier(.2, .7, .25, 1) both; }
+
+@keyframes matrix-shade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes matrix-shade-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes matrix-depart { to { opacity: 0; transform: translateY(-8px); } }
+@keyframes matrix-arrive { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
 .empty-icon { color: var(--neon); text-shadow: 0 0 12px var(--neon); }
 .hero .eyebrow { color: var(--neon-soft); animation: neon-flicker 5s infinite; }

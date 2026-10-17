@@ -4,38 +4,14 @@
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const currentUrl = new URL(window.location.href);
 
-  if (currentUrl.searchParams.get('transition') === 'matrix') {
-    currentUrl.searchParams.delete('transition');
-    try { window.history.replaceState(null, '', currentUrl); } catch { /* Keep the URL if replacing it is unavailable. */ }
-    document.body.classList.add('matrix-arriving');
-    window.setTimeout(() => document.body.classList.remove('matrix-arriving'), 700);
-  }
-
-  const enterLink = document.querySelector('.hero-cta');
-  if (!enterLink) return;
-
-  enterLink.addEventListener('click', event => {
-    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || reducedMotion.matches) return;
-    event.preventDefault();
-    if (enterLink.dataset.transitioning) return;
-    enterLink.dataset.transitioning = 'true';
-
-    document.body.classList.add('matrix-leaving');
-    const overlay = document.createElement('div');
-    overlay.className = 'matrix-rain-transition';
-    overlay.setAttribute('aria-hidden', 'true');
-    const shade = document.createElement('div');
-    shade.className = 'matrix-transition-shade';
-    const canvas = document.createElement('canvas');
-    canvas.className = 'matrix-transition-canvas';
-    overlay.append(shade, canvas);
-    document.body.append(overlay);
-
+  function startMatrixRain(canvas) {
     const context = canvas.getContext('2d');
+    if (!context) return () => {};
     const cell = 18;
     const fontSize = 16;
     const glyphs = 'ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄ0123456789ﾊﾋﾌﾍﾎ';
     let drops = [];
+    let animationFrameId = null;
 
     const resize = () => {
       canvas.width = window.innerWidth;
@@ -65,15 +41,86 @@
         }
       });
       context.globalAlpha = 1;
-      window.requestAnimationFrame(draw);
+      animationFrameId = window.requestAnimationFrame(draw);
     };
 
     resize();
     window.addEventListener('resize', resize);
     draw();
 
-    const destination = new URL(enterLink.href);
-    destination.searchParams.set('transition', 'matrix');
-    window.setTimeout(() => window.location.assign(destination), 720);
+    return () => {
+      window.removeEventListener('resize', resize);
+      if (animationFrameId) window.cancelAnimationFrame(animationFrameId);
+    };
+  }
+
+  // Arrival handling
+  const isArriving = document.documentElement.classList.contains('matrix-arriving') ||
+    currentUrl.searchParams.get('transition') === 'matrix';
+
+  if (isArriving) {
+    document.documentElement.classList.add('matrix-arriving');
+    if (currentUrl.searchParams.has('transition')) {
+      currentUrl.searchParams.delete('transition');
+      try { window.history.replaceState(null, '', currentUrl); } catch { /* Ignore */ }
+    }
+
+    const veil = document.getElementById('matrix-arriving-veil');
+    if (!reducedMotion.matches && veil) {
+      const canvas = veil.querySelector('.matrix-transition-canvas');
+      const stopRain = canvas ? startMatrixRain(canvas) : () => {};
+      window.setTimeout(() => {
+        stopRain();
+        veil.remove();
+        document.documentElement.classList.remove('matrix-arriving');
+      }, 500);
+    } else {
+      if (veil) veil.remove();
+      document.documentElement.classList.remove('matrix-arriving');
+    }
+  }
+
+  // Departure handling (index.html hero CTA)
+  const enterLink = document.querySelector('.hero-cta');
+  if (enterLink) {
+    enterLink.addEventListener('click', event => {
+      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      if (enterLink.dataset.transitioning) return;
+      enterLink.dataset.transitioning = 'true';
+
+      const destination = new URL(enterLink.href, window.location.href);
+      if (reducedMotion.matches) {
+        window.location.assign(destination);
+        return;
+      }
+
+      event.preventDefault();
+      document.body.classList.add('matrix-leaving');
+      const overlay = document.createElement('div');
+      overlay.className = 'matrix-rain-transition';
+      overlay.setAttribute('aria-hidden', 'true');
+      const shade = document.createElement('div');
+      shade.className = 'matrix-transition-shade';
+      const canvas = document.createElement('canvas');
+      canvas.className = 'matrix-transition-canvas';
+      overlay.append(shade, canvas);
+      document.body.append(overlay);
+
+      const stopRain = startMatrixRain(canvas);
+
+      destination.searchParams.set('transition', 'matrix');
+      window.setTimeout(() => {
+        stopRain();
+        window.location.assign(destination);
+      }, 420);
+    });
+  }
+
+  // Reset state on bfcache restore
+  window.addEventListener('pageshow', () => {
+    if (enterLink) delete enterLink.dataset.transitioning;
+    document.body.classList.remove('matrix-leaving');
+    const staleOverlay = document.querySelector('.matrix-rain-transition:not(#matrix-arriving-veil)');
+    if (staleOverlay) staleOverlay.remove();
   });
 })();

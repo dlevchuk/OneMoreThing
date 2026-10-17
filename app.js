@@ -90,7 +90,14 @@ function renderGrid() {
   grid.querySelectorAll('.notice-select').forEach(button => button.addEventListener('click', () => {
     const article = button.closest('.notice');
     selectedWishId = article.dataset.id;
-    renderGrid();
+    grid.querySelectorAll('.notice-select').forEach(btn => {
+      const isSelected = btn.closest('.notice').dataset.id === selectedWishId;
+      btn.classList.toggle('is-selected', isSelected);
+      btn.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+    });
+    const currentList = filteredWishes();
+    const currentSelectedWish = currentList.find(wish => wish.id === selectedWishId);
+    renderDetails(currentSelectedWish);
   }));
 }
 
