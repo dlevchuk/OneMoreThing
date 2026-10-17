@@ -53,10 +53,30 @@
 
       <div class="quest-controls">
         <nav class="header-nav" role="navigation" aria-label="Фільтри контрактів">
-          <button class="filter-btn active" data-filter="all" id="filter-all">Усі контракти</button>
-          <button class="filter-btn" data-filter="want" id="filter-want">Червона пігулка</button>
-          <button class="filter-btn" data-filter="nice" id="filter-nice">Віртуальне світло</button>
-          <button class="filter-btn" data-filter="unsure" id="filter-unsure">Мертвий канал</button>
+          <button class="filter-btn filter-btn--want active" data-filter="want" id="filter-want">
+            <span class="ice-indicator" aria-hidden="true">
+              <span class="ice-led ice-led--want"></span>
+              <span class="ice-bars ice-bars--want">▮▮▮</span>
+            </span>
+            <span class="filter-label">Червона пігулка</span>
+            <span class="filter-count" data-count-for="want"></span>
+          </button>
+          <button class="filter-btn filter-btn--nice" data-filter="nice" id="filter-nice">
+            <span class="ice-indicator" aria-hidden="true">
+              <span class="ice-led ice-led--nice"></span>
+              <span class="ice-bars ice-bars--nice">▮▮▯</span>
+            </span>
+            <span class="filter-label">Чистий лід</span>
+            <span class="filter-count" data-count-for="nice"></span>
+          </button>
+          <button class="filter-btn filter-btn--unsure" data-filter="unsure" id="filter-unsure">
+            <span class="ice-indicator" aria-hidden="true">
+              <span class="ice-led ice-led--unsure"></span>
+              <span class="ice-bars ice-bars--unsure">▮▯▯</span>
+            </span>
+            <span class="filter-label">Мертвий канал</span>
+            <span class="filter-count" data-count-for="unsure"></span>
+          </button>
         </nav>
         <div class="search-wrap">
           <label for="search-input" class="sr-only">Пошук у мережі</label>

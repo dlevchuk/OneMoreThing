@@ -56,11 +56,60 @@ html.matrix-arriving .site-footer { animation: matrix-arrive .48s .05s cubic-bez
 .quest-section { outline-color: rgba(66,255,98,.4); border-color: rgba(165,255,85,.4); }
 .page-count { border-color: rgba(165,255,85,.55); background: rgba(165,255,85,.07); color: var(--neon-soft); text-shadow: 0 0 9px rgba(165,255,85,.4); }
 .section-heading .eyebrow, .detail-topline { color: var(--neon); text-shadow: 0 0 8px rgba(66,255,98,.4); }
-.filter-btn.active { border-color: var(--neon); background: rgba(66,255,98,.09); color: var(--neon); text-shadow: 0 0 9px rgba(66,255,98,.5); }
+/* Priority ICE Signal Indicators & Color Coding */
+:root {
+  --crimson-neon: #ff2a55;
+  --crimson-glow: rgba(255, 42, 85, .45);
+  --cyan-ice: #00f0ff;
+  --cyan-ice-glow: rgba(0, 240, 255, .38);
+  --dead-channel: #7c9085;
+  --dead-channel-glow: rgba(124, 144, 133, .25);
+}
 
-.notice-priority--want, .card-priority--want { color: var(--neon-soft); border-color: rgba(165,255,85,.6); }
-.notice-priority--nice, .card-priority--nice { color: #68ff9a; border-color: rgba(104,255,154,.6); }
-.notice-priority--unsure, .card-priority--unsure { color: #c9f477; border-color: rgba(201,244,119,.6); }
+.ice-indicator { display: inline-flex; align-items: center; gap: 5px; }
+.ice-led { width: 6px; height: 6px; border-radius: 50%; display: inline-block; flex: 0 0 auto; }
+.ice-led--want { background: var(--crimson-neon); box-shadow: 0 0 7px var(--crimson-neon), 0 0 13px var(--crimson-neon); animation: led-pulse 1.25s ease-in-out infinite alternate; }
+.ice-led--nice { background: var(--cyan-ice); box-shadow: 0 0 7px var(--cyan-ice); }
+.ice-led--unsure { background: var(--dead-channel); box-shadow: 0 0 4px var(--dead-channel); animation: static-flicker 2.6s steps(4, jump-none) infinite; }
+
+@keyframes led-pulse {
+  0% { opacity: .6; transform: scale(.85); box-shadow: 0 0 5px var(--crimson-neon); }
+  100% { opacity: 1; transform: scale(1.18); box-shadow: 0 0 10px var(--crimson-neon), 0 0 18px var(--crimson-neon); }
+}
+@keyframes static-flicker {
+  0%, 100% { opacity: .95; }
+  18% { opacity: .25; }
+  32% { opacity: 1; }
+  64% { opacity: .4; }
+  82% { opacity: .75; }
+}
+
+.ice-bars { font-family: var(--mono); font-size: .62rem; letter-spacing: .08em; line-height: 1; }
+.ice-bars--want { color: var(--crimson-neon); text-shadow: 0 0 7px var(--crimson-neon); }
+.ice-bars--nice { color: var(--cyan-ice); text-shadow: 0 0 7px var(--cyan-ice); }
+.ice-bars--unsure { color: var(--dead-channel); opacity: .8; animation: static-flicker 3s steps(3, jump-none) infinite; }
+
+/* Filter Buttons */
+.filter-btn { display: inline-flex; align-items: center; gap: 7px; }
+.filter-btn--want.active { border-color: var(--crimson-neon); background: rgba(255, 42, 85, .12); color: #ff5e7e; text-shadow: 0 0 9px var(--crimson-glow); box-shadow: 0 0 15px rgba(255, 42, 85, .2); }
+.filter-btn--nice.active { border-color: var(--cyan-ice); background: rgba(0, 240, 255, .1); color: var(--cyan-ice); text-shadow: 0 0 9px var(--cyan-ice-glow); box-shadow: 0 0 15px rgba(0, 240, 255, .16); }
+.filter-btn--unsure.active { border-color: var(--dead-channel); background: rgba(124, 144, 133, .12); color: #b6c8bd; text-shadow: 0 0 6px var(--dead-channel-glow); }
+.filter-count { display: inline-flex; align-items: center; justify-content: center; padding: 1px 5px; border-radius: 2px; font: 600 .54rem var(--mono); background: rgba(255, 255, 255, .06); color: inherit; opacity: .75; }
+.filter-btn.active .filter-count { background: rgba(255, 255, 255, .14); opacity: 1; }
+
+/* Card Priority Badges */
+.notice-priority { display: inline-flex; align-items: center; gap: 6px; padding-bottom: 2px; }
+.notice-priority--want { color: #ff5e7e; border-bottom: 1px solid rgba(255, 42, 85, .55); text-shadow: 0 0 8px rgba(255, 42, 85, .3); }
+.notice-priority--nice { color: var(--cyan-ice); border-bottom: 1px solid rgba(0, 240, 255, .55); text-shadow: 0 0 8px rgba(0, 240, 255, .3); }
+.notice-priority--unsure { color: #8fa296; border-bottom: 1px solid rgba(143, 162, 150, .4); }
+
+/* Details Priority Badge */
+.card-priority::before { display: none !important; }
+.card-priority { display: inline-flex; align-items: center; gap: 8px; }
+.card-priority--want { border-color: rgba(255, 42, 85, .65); background: rgba(255, 42, 85, .08); color: #ff6885; box-shadow: 0 0 14px rgba(255, 42, 85, .18); }
+.card-priority--nice { border-color: rgba(0, 240, 255, .6); background: rgba(0, 240, 255, .07); color: var(--cyan-ice); box-shadow: 0 0 14px rgba(0, 240, 255, .15); }
+.card-priority--unsure { border-color: rgba(143, 162, 150, .45); background: rgba(100, 120, 110, .08); color: #9bb0a2; }
+.card-priority-level { padding-left: 6px; border-left: 1px solid currentColor; opacity: .82; font-size: .52rem; letter-spacing: .08em; }
 .notice-select:hover, .notice-select.is-selected { box-shadow: 0 0 0 1px var(--neon), 0 0 20px rgba(66,255,98,.3), 3px 9px 18px #000a; }
 .notice-pin { background: radial-gradient(circle at 35% 25%, #d3ffd1, var(--neon) 45%, #174c27 78%); box-shadow: 0 0 11px var(--neon); }
 .card-link-btn { border-color: rgba(66,255,98,.55); color: var(--neon); }

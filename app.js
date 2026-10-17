@@ -1,7 +1,7 @@
 'use strict';
 
 let wishes = [];
-let activeFilter = 'all';
+let activeFilter = 'want';
 let searchQuery = '';
 
 const grid = document.getElementById('wishlist-grid');
@@ -9,7 +9,26 @@ const emptyState = document.getElementById('empty-state');
 const pageCount = document.getElementById('page-count');
 const searchInput = document.getElementById('search-input');
 const details = document.getElementById('quest-details');
-const PRIORITY_LABELS = { want: 'На радарі', nice: 'Було б файно', unsure: 'У сліпій зоні' };
+const PRIORITY_CONFIG = {
+  want: {
+    label: 'Червона пігулка',
+    sub: 'ICE-3 · КРИТИЧНИЙ',
+    bars: '▮▮▮',
+    ariaLabel: 'Найвищий пріоритет'
+  },
+  nice: {
+    label: 'Чистий лід',
+    sub: 'ICE-2 · СТАБІЛЬНИЙ',
+    bars: '▮▮▯',
+    ariaLabel: 'Середній пріоритет'
+  },
+  unsure: {
+    label: 'Мертвий канал',
+    sub: 'ICE-1 · БІЛИЙ ШУМ',
+    bars: '▮▯▯',
+    ariaLabel: 'Найнижчий пріоритет'
+  }
+};
 let selectedWishId = '';
 
 function escHtml(value = '') {
@@ -28,7 +47,7 @@ function safeUrl(value = '') {
 function filteredWishes() {
   const query = searchQuery.toLocaleLowerCase('uk');
   return wishes.filter(wish => {
-    const matchesFilter = activeFilter === 'all' || wish.priority === activeFilter;
+    const matchesFilter = wish.priority === activeFilter;
     const matchesQuery = !query || `${wish.title} ${wish.description || ''}`.toLocaleLowerCase('uk').includes(query);
     return matchesFilter && matchesQuery;
   });
@@ -36,12 +55,19 @@ function filteredWishes() {
 
 function buildCard(wish) {
   const image = safeUrl(wish.image);
-  const priority = PRIORITY_LABELS[wish.priority] || PRIORITY_LABELS.want;
+  const priorityKey = wish.priority in PRIORITY_CONFIG ? wish.priority : 'want';
+  const cfg = PRIORITY_CONFIG[priorityKey];
   return `
     <button class="notice-select${wish.id === selectedWishId ? ' is-selected' : ''}" type="button" aria-pressed="${wish.id === selectedWishId}" aria-label="Відкрити досьє: ${escHtml(wish.title)}">
       ${image ? `<span class="notice-thumb"><img src="${escHtml(image)}" alt="" loading="lazy" /></span>` : '<span class="notice-thumb notice-thumb--empty" aria-hidden="true">✧</span>'}
       <span class="notice-copy">
-      <span class="notice-priority notice-priority--${escHtml(wish.priority || 'want')}">${priority}</span>
+        <span class="notice-priority notice-priority--${escHtml(priorityKey)}" aria-label="${cfg.label} (${cfg.ariaLabel})">
+          <span class="ice-indicator" aria-hidden="true">
+            <span class="ice-led ice-led--${escHtml(priorityKey)}"></span>
+            <span class="ice-bars ice-bars--${escHtml(priorityKey)}">${cfg.bars}</span>
+          </span>
+          <span class="notice-priority-text">${cfg.label}</span>
+        </span>
         <span class="notice-title">${escHtml(wish.title)}</span>
       </span>
       <span class="notice-pin" aria-hidden="true">⬡</span>
@@ -57,12 +83,20 @@ function renderDetails(wish) {
   const image = safeUrl(wish.image);
   const originalUrl = safeUrl(wish.originalUrl);
   const localUrl = safeUrl(wish.localUrl);
-  const priority = PRIORITY_LABELS[wish.priority] || PRIORITY_LABELS.want;
+  const priorityKey = wish.priority in PRIORITY_CONFIG ? wish.priority : 'want';
+  const cfg = PRIORITY_CONFIG[priorityKey];
   details.innerHTML = `
     <div class="detail-topline"><span>⬡ CHIBA CITY / ДОСЬЄ</span><span>№ ${String(wishes.indexOf(wish) + 1).padStart(2, '0')}</span></div>
     ${image ? `<div class="detail-image"><img src="${escHtml(image)}" alt="${escHtml(wish.title)}" /></div>` : ''}
     <div class="detail-content">
-      <span class="card-priority card-priority--${escHtml(wish.priority || 'want')}">${priority}</span>
+      <span class="card-priority card-priority--${escHtml(priorityKey)}" aria-label="${cfg.label} (${cfg.ariaLabel})">
+        <span class="ice-indicator" aria-hidden="true">
+          <span class="ice-led ice-led--${escHtml(priorityKey)}"></span>
+          <span class="ice-bars ice-bars--${escHtml(priorityKey)}">${cfg.bars}</span>
+        </span>
+        <span class="card-priority-name">${cfg.label}</span>
+        <span class="card-priority-level">${cfg.sub}</span>
+      </span>
       <h3 class="detail-title">${escHtml(wish.title)}</h3>
       <p class="detail-description">${escHtml(wish.description || 'Опису немає. Дані теж іноді мовчать.')}</p>
       <div class="detail-divider" aria-hidden="true"></div>
@@ -108,6 +142,14 @@ document.querySelectorAll('.filter-btn').forEach(button => button.addEventListen
 }));
 searchInput.addEventListener('input', () => { searchQuery = searchInput.value.trim(); renderGrid(); });
 
+function updateCategoryCounts() {
+  ['want', 'nice', 'unsure'].forEach(category => {
+    const count = wishes.filter(w => w.priority === category).length;
+    const badge = document.querySelector(`[data-count-for="${category}"]`);
+    if (badge) badge.textContent = count;
+  });
+}
+
 async function init() {
   try {
     const response = await fetch('data/wishes.json', { cache: 'no-store' });
@@ -119,6 +161,7 @@ async function init() {
     emptyState.querySelector('.empty-title').textContent = 'Зв’язок обірвався';
     emptyState.querySelector('.empty-sub').textContent = 'Перезавантаж сторінку пізніше. Мережа іноді зникає.';
   }
+  updateCategoryCounts();
   renderGrid();
 }
 
