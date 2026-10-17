@@ -111,7 +111,6 @@ html.matrix-arriving .site-footer { animation: matrix-arrive .48s .05s cubic-bez
 .card-priority--unsure { border-color: rgba(143, 162, 150, .45); background: rgba(100, 120, 110, .08); color: #9bb0a2; }
 .card-priority-level { padding-left: 6px; border-left: 1px solid currentColor; opacity: .82; font-size: .52rem; letter-spacing: .08em; }
 .notice-select:hover, .notice-select.is-selected { box-shadow: 0 0 0 1px var(--neon), 0 0 20px rgba(66,255,98,.3), 3px 9px 18px #000a; }
-.notice-pin { background: radial-gradient(circle at 35% 25%, #d3ffd1, var(--neon) 45%, #174c27 78%); box-shadow: 0 0 11px var(--neon); }
 .card-link-btn { border-color: rgba(66,255,98,.55); color: var(--neon); }
 .card-link-btn--local { border-color: rgba(165,255,85,.55); color: var(--neon-soft); }
 .detail-divider { color: var(--neon); }

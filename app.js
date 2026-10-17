@@ -70,7 +70,6 @@ function buildCard(wish) {
         </span>
         <span class="notice-title">${escHtml(wish.title)}</span>
       </span>
-      <span class="notice-pin" aria-hidden="true">⬡</span>
     </button>`;
 }
 
