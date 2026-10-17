@@ -149,6 +149,17 @@ function updateCategoryCounts() {
   });
 }
 
+function renderTicker() {
+  const track = document.querySelector('.ticker-track');
+  if (!track || !wishes.length) return;
+  const titles = wishes
+    .map(w => (typeof w.title === 'string' ? w.title.trim() : ''))
+    .filter(Boolean);
+  if (!titles.length) return;
+  const content = titles.map(title => `${escHtml(title)} <b>◆</b>`).join(' ');
+  track.innerHTML = `<span>${content}</span><span>${content}</span>`;
+}
+
 async function init() {
   try {
     const response = await fetch('data/wishes.json', { cache: 'no-store' });
@@ -161,7 +172,9 @@ async function init() {
     emptyState.querySelector('.empty-sub').textContent = 'Перезавантаж сторінку пізніше. Мережа іноді зникає.';
   }
   updateCategoryCounts();
+  renderTicker();
   renderGrid();
 }
 
 init();
+
