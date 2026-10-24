@@ -26,6 +26,19 @@
         <p class="eyebrow"><span></span>ВХІДНІ КОНТРАКТИ</p>
         <h1 id="hero-title"><em data-text="Прокинься, ковбою.">Прокинься, ковбою.</em></h1>
         <p class="hero-subtitle">Небо над портом — як екран, налаштований на мертвий канал.</p>
+        <section class="birthday-countdown" id="birthday-countdown" aria-label="Зворотний відлік до 17 листопада">
+          <p class="birthday-countdown-label">НАСТУПНИЙ ОСОБИСТИЙ РЕЛІЗ ЧЕРЕЗ</p>
+          <div class="birthday-countdown-time" role="timer" aria-live="off">
+            <span class="birthday-countdown-unit"><strong data-countdown-days>—</strong><span>днів</span></span>
+            <span class="birthday-countdown-separator" aria-hidden="true">:</span>
+            <span class="birthday-countdown-unit"><strong data-countdown-hours>—</strong><span>годин</span></span>
+            <span class="birthday-countdown-separator" aria-hidden="true">:</span>
+            <span class="birthday-countdown-unit"><strong data-countdown-minutes>—</strong><span>хвилин</span></span>
+            <span class="birthday-countdown-separator" aria-hidden="true">:</span>
+            <span class="birthday-countdown-unit"><strong data-countdown-seconds>—</strong><span>секунд</span></span>
+          </div>
+          <p class="birthday-countdown-date" data-countdown-date></p>
+        </section>
         <a class="hero-cta" href="board.html" aria-label="Зайти в матрицю">
           <svg class="enter-key-outline" viewBox="0 0 204 60" preserveAspectRatio="none" aria-hidden="true">
             <path d="M1 1H203V59H158V42H1Z" />
@@ -45,6 +58,7 @@
 
   <script src="rain.js"></script>
   <script src="transition.js"></script>
+  <script src="birthday.js"></script>
 </body>
 
 </html>

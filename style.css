@@ -161,6 +161,14 @@ main, .site-footer { position: relative; z-index: 1; }
 .home-page .hero .eyebrow { justify-content: center; }
 .home-page .hero-subtitle { margin-inline: auto; }
 .home-page .hero-cta { align-self: center; }
+.birthday-countdown { width: min(100%, 410px); margin-top: 26px; padding: 15px 19px 13px; border: 1px solid rgba(66,255,98,.42); background: linear-gradient(135deg, rgba(9,23,13,.82), rgba(8,13,10,.62)); box-shadow: inset 0 0 22px rgba(66,255,98,.045), 0 0 20px rgba(66,255,98,.08); }
+.birthday-countdown-label { margin: 0 0 12px; color: var(--neon-soft); font: 600 .52rem var(--mono); letter-spacing: .16em; }
+.birthday-countdown-time { display: flex; align-items: center; justify-content: center; gap: clamp(5px, 2vw, 12px); color: var(--neon); }
+.birthday-countdown-unit { display: flex; min-width: 47px; flex-direction: column; align-items: center; gap: 2px; }
+.birthday-countdown-unit strong { font: 600 clamp(1.55rem, 5vw, 2.2rem)/1 var(--display); font-variant-numeric: tabular-nums; text-shadow: 0 0 13px rgba(66,255,98,.42); }
+.birthday-countdown-unit span { color: #a1b9a2; font: 500 .48rem var(--mono); letter-spacing: .08em; text-transform: uppercase; }
+.birthday-countdown-separator { margin-top: -11px; color: rgba(165,255,85,.55); font: 500 1.15rem var(--mono); }
+.birthday-countdown-date { margin: 11px 0 0; color: #78917b; font: 500 .48rem var(--mono); letter-spacing: .1em; text-transform: uppercase; }
 
 @media (max-width: 390px) {
   .wishlist-grid { grid-template-columns: 1fr; max-height: 350px; }
