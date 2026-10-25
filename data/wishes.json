@@ -82,5 +82,14 @@
     "image": "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/470118/item/goods_69_470118_3x4.jpg?width=600",
     "originalUrl": "https://www.uniqlo.com/us/en/products/E470118-000/00?colorDisplayCode=69&sizeDisplayCode=004",
     "priority": "nice"
+  },
+  {
+    "id": "satechi-dual-dock-stand-nvme",
+    "title": "Док-станція Satechi Dual Dock Stand — NVMe SSD Enclosure",
+    "description": "Док-підставка з прихованим NVMe. Усі порти й сховище в одному алюмінієвому шасі.",
+    "image": "https://images.prom.ua/7043515799_w640_h640_dok-stantsiya-satechi-dual.jpg",
+    "originalUrl": "https://satechi.com/products/dual-dock-stand-with-nvme-ssd-enclosure",
+    "localUrl": "https://prom.ua/ua/m845865960844161202-dok-stantsiya-satechi.html?p=2791157593",
+    "priority": "nice"
   }
 ]
