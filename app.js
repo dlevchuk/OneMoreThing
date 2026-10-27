@@ -135,7 +135,11 @@ function renderGrid() {
 }
 
 document.querySelectorAll('.filter-btn').forEach(button => button.addEventListener('click', () => {
-  document.querySelectorAll('.filter-btn').forEach(item => item.classList.toggle('active', item === button));
+  document.querySelectorAll('.filter-btn').forEach(item => {
+    const isActive = item === button;
+    item.classList.toggle('active', isActive);
+    item.setAttribute('aria-selected', isActive ? 'true' : 'false');
+  });
   activeFilter = button.dataset.filter;
   renderGrid();
 }));

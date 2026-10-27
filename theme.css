@@ -89,13 +89,26 @@ html.matrix-arriving .site-footer { animation: matrix-arrive .48s .05s cubic-bez
 .ice-bars--nice { color: var(--cyan-ice); text-shadow: 0 0 7px var(--cyan-ice); }
 .ice-bars--unsure { color: var(--dead-channel); opacity: .8; animation: static-flicker 3s steps(3, jump-none) infinite; }
 
-/* Filter Buttons */
-.filter-btn { display: inline-flex; align-items: center; gap: 7px; }
-.filter-btn--want.active { border-color: var(--crimson-neon); background: rgba(255, 42, 85, .12); color: #ff5e7e; text-shadow: 0 0 9px var(--crimson-glow); box-shadow: 0 0 15px rgba(255, 42, 85, .2); }
-.filter-btn--nice.active { border-color: var(--cyan-ice); background: rgba(0, 240, 255, .1); color: var(--cyan-ice); text-shadow: 0 0 9px var(--cyan-ice-glow); box-shadow: 0 0 15px rgba(0, 240, 255, .16); }
-.filter-btn--unsure.active { border-color: var(--dead-channel); background: rgba(124, 144, 133, .12); color: #b6c8bd; text-shadow: 0 0 6px var(--dead-channel-glow); }
-.filter-count { display: inline-flex; align-items: center; justify-content: center; padding: 1px 5px; border-radius: 2px; font: 600 .54rem var(--mono); background: rgba(255, 255, 255, .06); color: inherit; opacity: .75; }
-.filter-btn.active .filter-count { background: rgba(255, 255, 255, .14); opacity: 1; }
+/* Filter / Category Tabs */
+.tabs-label { color: var(--neon-soft); opacity: .8; text-shadow: 0 0 7px rgba(165,255,85,.3); }
+.header-nav { border-color: rgba(66,255,98,.3); background: rgba(4,12,7,.82); box-shadow: inset 0 0 15px rgba(0,0,0,.7), 0 0 12px rgba(66,255,98,.08); }
+
+.filter-btn { position: relative; border-radius: 3px; }
+.filter-btn--want { border-color: rgba(255, 42, 85, .32); background: rgba(255, 42, 85, .06); color: #e2aab3; }
+.filter-btn--want:hover { border-color: rgba(255, 42, 85, .7); background: rgba(255, 42, 85, .14); color: #ffa2b6; box-shadow: 0 0 12px rgba(255, 42, 85, .25); }
+.filter-btn--want.active { border-color: var(--crimson-neon); background: rgba(255, 42, 85, .22); color: #ffffff; text-shadow: 0 0 9px var(--crimson-glow); box-shadow: 0 0 16px rgba(255, 42, 85, .35), inset 0 0 10px rgba(255, 42, 85, .15); }
+
+.filter-btn--nice { border-color: rgba(0, 240, 255, .28); background: rgba(0, 240, 255, .06); color: #9fd4d8; }
+.filter-btn--nice:hover { border-color: rgba(0, 240, 255, .7); background: rgba(0, 240, 255, .14); color: #8ef7ff; box-shadow: 0 0 12px rgba(0, 240, 255, .25); }
+.filter-btn--nice.active { border-color: var(--cyan-ice); background: rgba(0, 240, 255, .18); color: #ffffff; text-shadow: 0 0 9px var(--cyan-ice-glow); box-shadow: 0 0 16px rgba(0, 240, 255, .3), inset 0 0 10px rgba(0, 240, 255, .12); }
+
+.filter-btn--unsure { border-color: rgba(124, 144, 133, .3); background: rgba(124, 144, 133, .07); color: #adc0b5; }
+.filter-btn--unsure:hover { border-color: rgba(124, 144, 133, .65); background: rgba(124, 144, 133, .16); color: #e6f2eb; box-shadow: 0 0 12px rgba(124, 144, 133, .22); }
+.filter-btn--unsure.active { border-color: var(--dead-channel); background: rgba(124, 144, 133, .24); color: #ffffff; text-shadow: 0 0 7px var(--dead-channel-glow); box-shadow: 0 0 14px rgba(124, 144, 133, .28), inset 0 0 8px rgba(124, 144, 133, .12); }
+
+.filter-count { display: inline-flex; align-items: center; justify-content: center; min-width: 19px; height: 18px; padding: 0 5px; border-radius: 2px; font: 700 .58rem var(--mono); background: rgba(0, 0, 0, .55); border: 1px solid rgba(255, 255, 255, .12); color: inherit; opacity: .88; }
+.filter-btn:hover .filter-count { opacity: 1; border-color: currentColor; }
+.filter-btn.active .filter-count { background: rgba(0, 0, 0, .7); border-color: currentColor; opacity: 1; color: #fff; box-shadow: 0 0 8px currentColor; }
 
 /* Card Priority Badges */
 .notice-priority { display: inline-flex; align-items: center; gap: 6px; padding-bottom: 2px; }

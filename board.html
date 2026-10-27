@@ -12,8 +12,8 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Oxanium:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&display=swap"
     rel="stylesheet" />
-  <link rel="stylesheet" href="style.css" />
-  <link rel="stylesheet" href="theme.css" />
+  <link rel="stylesheet" href="style.css?v=2" />
+  <link rel="stylesheet" href="theme.css?v=2" />
   <script>
     if (new URLSearchParams(window.location.search).get('transition') === 'matrix') {
       document.documentElement.classList.add('matrix-arriving');
@@ -48,32 +48,35 @@
       </div>
 
       <div class="quest-controls">
-        <nav class="header-nav" role="navigation" aria-label="Фільтри контрактів">
-          <button class="filter-btn filter-btn--want active" data-filter="want" id="filter-want">
-            <span class="ice-indicator" aria-hidden="true">
-              <span class="ice-led ice-led--want"></span>
-              <span class="ice-bars ice-bars--want">▮▮▮</span>
-            </span>
-            <span class="filter-label">Червона пігулка</span>
-            <span class="filter-count" data-count-for="want"></span>
-          </button>
-          <button class="filter-btn filter-btn--nice" data-filter="nice" id="filter-nice">
-            <span class="ice-indicator" aria-hidden="true">
-              <span class="ice-led ice-led--nice"></span>
-              <span class="ice-bars ice-bars--nice">▮▮▯</span>
-            </span>
-            <span class="filter-label">Чистий лід</span>
-            <span class="filter-count" data-count-for="nice"></span>
-          </button>
-          <button class="filter-btn filter-btn--unsure" data-filter="unsure" id="filter-unsure">
-            <span class="ice-indicator" aria-hidden="true">
-              <span class="ice-led ice-led--unsure"></span>
-              <span class="ice-bars ice-bars--unsure">▮▯▯</span>
-            </span>
-            <span class="filter-label">Мертвий канал</span>
-            <span class="filter-count" data-count-for="unsure"></span>
-          </button>
-        </nav>
+        <div class="tabs-group">
+          <span class="tabs-label" aria-hidden="true">Вкладки //</span>
+          <nav class="header-nav" role="tablist" aria-label="Вкладки категорій">
+            <button class="filter-btn filter-btn--want active" data-filter="want" id="filter-want" role="tab" aria-selected="true" aria-controls="wishlist-grid">
+              <span class="ice-indicator" aria-hidden="true">
+                <span class="ice-led ice-led--want"></span>
+                <span class="ice-bars ice-bars--want">▮▮▮</span>
+              </span>
+              <span class="filter-label">Червона пігулка</span>
+              <span class="filter-count" data-count-for="want"></span>
+            </button>
+            <button class="filter-btn filter-btn--nice" data-filter="nice" id="filter-nice" role="tab" aria-selected="false" aria-controls="wishlist-grid">
+              <span class="ice-indicator" aria-hidden="true">
+                <span class="ice-led ice-led--nice"></span>
+                <span class="ice-bars ice-bars--nice">▮▮▯</span>
+              </span>
+              <span class="filter-label">Чистий лід</span>
+              <span class="filter-count" data-count-for="nice"></span>
+            </button>
+            <button class="filter-btn filter-btn--unsure" data-filter="unsure" id="filter-unsure" role="tab" aria-selected="false" aria-controls="wishlist-grid">
+              <span class="ice-indicator" aria-hidden="true">
+                <span class="ice-led ice-led--unsure"></span>
+                <span class="ice-bars ice-bars--unsure">▮▯▯</span>
+              </span>
+              <span class="filter-label">Мертвий канал</span>
+              <span class="filter-count" data-count-for="unsure"></span>
+            </button>
+          </nav>
+        </div>
         <div class="search-wrap">
           <label for="search-input" class="sr-only">Пошук у мережі</label>
           <span class="search-icon" aria-hidden="true">⌕</span>
