@@ -11,7 +11,7 @@
     d = Array.from({ length: Math.ceil(c.width / s) }, () => Math.random() * c.height / s);
   };
   resize(); addEventListener('resize', resize);
-  setInterval(() => {
+  const tick = () => {
     x.globalCompositeOperation = 'destination-out';
     x.fillStyle = 'rgba(0,0,0,.1)'; x.fillRect(0, 0, c.width, c.height);
     x.globalCompositeOperation = 'source-over';
@@ -21,5 +21,10 @@
       x.fillText(g[Math.random() * g.length | 0], i * s, y * s);
       d[i] = y * s > c.height && Math.random() > .975 ? 0 : y + 1;
     });
-  }, 50);
+  };
+  let t = setInterval(tick, 50);
+  document.addEventListener('visibilitychange', () => {
+    clearInterval(t);
+    t = document.hidden ? 0 : setInterval(tick, 50);
+  });
 })();

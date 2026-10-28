@@ -32,9 +32,7 @@ const PRIORITY_CONFIG = {
 let selectedWishId = '';
 
 function escHtml(value = '') {
-  const element = document.createElement('span');
-  element.textContent = value;
-  return element.innerHTML;
+  return String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
 function safeUrl(value = '') {
@@ -85,7 +83,7 @@ function renderDetails(wish) {
   const priorityKey = wish.priority in PRIORITY_CONFIG ? wish.priority : 'want';
   const cfg = PRIORITY_CONFIG[priorityKey];
   details.innerHTML = `
-    <div class="detail-topline"><span>⬡ CHIBA CITY / ДОСЬЄ</span><span>№ ${String(wishes.indexOf(wish) + 1).padStart(2, '0')}</span></div>
+    <div class="detail-topline"><span>⬡ МАТРИЦЯ / ДОСЬЄ</span><span>№ ${String(wishes.indexOf(wish) + 1).padStart(2, '0')}</span></div>
     ${image ? `<div class="detail-image"><img src="${escHtml(image)}" alt="${escHtml(wish.title)}" /></div>` : ''}
     <div class="detail-content">
       <span class="card-priority card-priority--${escHtml(priorityKey)}" aria-label="${cfg.label} (${cfg.ariaLabel})">
@@ -108,13 +106,14 @@ function renderDetails(wish) {
   `;
 }
 
-function renderGrid() {
+function renderGrid(animate = true) {
   const list = filteredWishes();
   const count = list.length;
   const ending = count === 1 ? 'контракт' : count > 1 && count < 5 ? 'контракти' : 'контрактів';
   pageCount.textContent = `${count} ${ending}`;
   emptyState.hidden = count !== 0;
   grid.hidden = count === 0;
+  grid.classList.toggle('no-anim', !animate);
   if (count && !list.some(wish => wish.id === selectedWishId)) selectedWishId = list[0].id || '';
   grid.innerHTML = list.map((wish, index) => `<article class="notice" role="listitem" style="--card-index:${index}" data-id="${escHtml(wish.id || '')}">${buildCard(wish)}</article>`).join('');
   const selectedWish = list.find(wish => wish.id === selectedWishId) || list[0];
@@ -138,12 +137,12 @@ document.querySelectorAll('.filter-btn').forEach(button => button.addEventListen
   document.querySelectorAll('.filter-btn').forEach(item => {
     const isActive = item === button;
     item.classList.toggle('active', isActive);
-    item.setAttribute('aria-selected', isActive ? 'true' : 'false');
+    item.setAttribute('aria-pressed', isActive ? 'true' : 'false');
   });
   activeFilter = button.dataset.filter;
   renderGrid();
 }));
-searchInput.addEventListener('input', () => { searchQuery = searchInput.value.trim(); renderGrid(); });
+searchInput.addEventListener('input', () => { searchQuery = searchInput.value.trim(); renderGrid(false); });
 
 function updateCategoryCounts() {
   ['want', 'nice', 'unsure'].forEach(category => {
@@ -169,7 +168,15 @@ async function init() {
     const response = await fetch('data/wishes.json', { cache: 'no-store' });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const data = await response.json();
-    wishes = Array.isArray(data) ? data.filter(item => item && typeof item.title === 'string') : [];
+    const seen = new Set();
+    wishes = (Array.isArray(data) ? data : [])
+      .filter(item => item && typeof item.title === 'string')
+      .map((item, i) => {
+        let id = item.id || `wish-${i}`;
+        while (seen.has(id)) id += `-${i}`;
+        seen.add(id);
+        return { ...item, id, priority: item.priority in PRIORITY_CONFIG ? item.priority : 'unsure' };
+      });
   } catch (error) {
     console.error('Не вдалося завантажити список бажань:', error);
     emptyState.querySelector('.empty-title').textContent = 'Зв’язок обірвався';
@@ -181,4 +188,3 @@ async function init() {
 }
 
 init();
-
