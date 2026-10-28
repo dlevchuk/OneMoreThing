@@ -75,7 +75,10 @@ function buildCard(wish) {
         ${isReserved ? `
           <span class="notice-status-tag" aria-label="Контракт закріплено">
             <span class="status-dot" aria-hidden="true"></span> ВЗЯТО
-          </span>` : ''}
+          </span>` : `
+          <span class="notice-status-tag notice-status-tag--free" aria-label="Контракт вільний для взяття">
+            <span class="status-dot" aria-hidden="true"></span> ВІЛЬНИЙ
+          </span>`}
       </span>
     </button>`;
 }
@@ -149,6 +152,9 @@ function renderGrid(animate = true) {
     const currentList = filteredWishes();
     const currentSelectedWish = currentList.find(wish => wish.id === selectedWishId);
     renderDetails(currentSelectedWish);
+    if (window.innerWidth <= 768 && details) {
+      details.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }));
 }
 
