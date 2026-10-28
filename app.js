@@ -3,12 +3,14 @@
 let wishes = [];
 let activeFilter = 'want';
 let searchQuery = '';
+let onlyAvailable = false;
 
 const grid = document.getElementById('wishlist-grid');
 const emptyState = document.getElementById('empty-state');
 const pageCount = document.getElementById('page-count');
 const searchInput = document.getElementById('search-input');
 const details = document.getElementById('quest-details');
+const toggleAvailable = document.getElementById('toggle-available-only');
 const PRIORITY_CONFIG = {
   want: {
     label: 'Червона пігулка',
@@ -47,7 +49,9 @@ function filteredWishes() {
   return wishes.filter(wish => {
     const matchesFilter = wish.priority === activeFilter;
     const matchesQuery = !query || `${wish.title} ${wish.description || ''}`.toLocaleLowerCase('uk').includes(query);
-    return matchesFilter && matchesQuery;
+    const isReserved = window.BookingManager ? window.BookingManager.isReserved(wish.id) : false;
+    const matchesAvailability = !onlyAvailable || !isReserved;
+    return matchesFilter && matchesQuery && matchesAvailability;
   });
 }
 
@@ -55,6 +59,7 @@ function buildCard(wish) {
   const image = safeUrl(wish.image);
   const priorityKey = wish.priority in PRIORITY_CONFIG ? wish.priority : 'want';
   const cfg = PRIORITY_CONFIG[priorityKey];
+  const isReserved = window.BookingManager ? window.BookingManager.isReserved(wish.id) : false;
   return `
     <button class="notice-select${wish.id === selectedWishId ? ' is-selected' : ''}" type="button" aria-pressed="${wish.id === selectedWishId}" aria-label="Відкрити досьє: ${escHtml(wish.title)}">
       ${image ? `<span class="notice-thumb"><img src="${escHtml(image)}" alt="" loading="lazy" /></span>` : '<span class="notice-thumb notice-thumb--empty" aria-hidden="true">✧</span>'}
@@ -67,6 +72,10 @@ function buildCard(wish) {
           <span class="notice-priority-text">${cfg.label}</span>
         </span>
         <span class="notice-title">${escHtml(wish.title)}</span>
+        ${isReserved ? `
+          <span class="notice-status-tag" aria-label="Контракт закріплено">
+            <span class="status-dot" aria-hidden="true"></span> ВЗЯТО
+          </span>` : ''}
       </span>
     </button>`;
 }
@@ -82,6 +91,8 @@ function renderDetails(wish) {
   const localUrl = safeUrl(wish.localUrl);
   const priorityKey = wish.priority in PRIORITY_CONFIG ? wish.priority : 'want';
   const cfg = PRIORITY_CONFIG[priorityKey];
+  const bookingWidget = window.BookingManager ? window.BookingManager.renderDetailWidget(wish) : '';
+
   details.innerHTML = `
     <div class="detail-topline"><span>⬡ МАТРИЦЯ / ДОСЬЄ</span><span>№ ${String(wishes.indexOf(wish) + 1).padStart(2, '0')}</span></div>
     ${image ? `<div class="detail-image"><img src="${escHtml(image)}" alt="${escHtml(wish.title)}" /></div>` : ''}
@@ -102,8 +113,13 @@ function renderDetails(wish) {
         ${originalUrl ? `<a href="${escHtml(originalUrl)}" target="_blank" rel="noopener noreferrer" class="card-link-btn">Джерело</a>` : ''}
         ${localUrl ? `<a href="${escHtml(localUrl)}" target="_blank" rel="noopener noreferrer" class="card-link-btn card-link-btn--local">Місцевий ринок</a>` : ''}
       </div>
+      ${bookingWidget}
     </div>
   `;
+
+  if (window.BookingManager) {
+    window.BookingManager.attachDetailListeners(details, wish);
+  }
 }
 
 function renderGrid(animate = true) {
@@ -115,7 +131,10 @@ function renderGrid(animate = true) {
   grid.hidden = count === 0;
   grid.classList.toggle('no-anim', !animate);
   if (count && !list.some(wish => wish.id === selectedWishId)) selectedWishId = list[0].id || '';
-  grid.innerHTML = list.map((wish, index) => `<article class="notice" role="listitem" style="--card-index:${index}" data-id="${escHtml(wish.id || '')}">${buildCard(wish)}</article>`).join('');
+  grid.innerHTML = list.map((wish, index) => {
+    const isReserved = window.BookingManager ? window.BookingManager.isReserved(wish.id) : false;
+    return `<article class="notice${isReserved ? ' is-reserved' : ''}" role="listitem" style="--card-index:${index}" data-id="${escHtml(wish.id || '')}">${buildCard(wish)}</article>`;
+  }).join('');
   const selectedWish = list.find(wish => wish.id === selectedWishId) || list[0];
   if (selectedWish) selectedWishId = selectedWish.id || '';
   renderDetails(selectedWish);
@@ -182,6 +201,21 @@ async function init() {
     emptyState.querySelector('.empty-title').textContent = 'Зв’язок обірвався';
     emptyState.querySelector('.empty-sub').textContent = 'Перезавантаж сторінку пізніше. Мережа іноді зникає.';
   }
+  if (toggleAvailable) {
+    toggleAvailable.addEventListener('change', () => {
+      onlyAvailable = toggleAvailable.checked;
+      renderGrid();
+    });
+  }
+
+  if (window.BookingManager) {
+    await window.BookingManager.init();
+    window.BookingManager.onUpdate(() => {
+      renderGrid(false);
+      updateCategoryCounts();
+    });
+  }
+
   updateCategoryCounts();
   renderTicker();
   renderGrid();

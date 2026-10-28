@@ -1,0 +1,11 @@
+# Файл конфігурації з ключами (генерується автоматично на GitHub Actions)
+supabase-config.js
+
+# Змінні середовища
+.env
+.env*.local
+
+# Системні файли macOS та Windows
+.DS_Store
+Thumbs.db
+

@@ -1,0 +1,480 @@
+/* ==========================================================================
+   Cyberpunk Booking System Styles (Supabase Integration)
+   ========================================================================== */
+
+/* --- Card Badge for Reserved Items --- */
+.notice.is-reserved {
+  opacity: .78;
+  border-color: rgba(255, 170, 0, .35);
+}
+
+.notice.is-reserved:hover {
+  opacity: .95;
+}
+
+.notice-status-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font: 600 .62rem var(--mono);
+  letter-spacing: .08em;
+  padding: 2px 7px;
+  border-radius: 2px;
+  background: rgba(255, 170, 0, .14);
+  border: 1px solid rgba(255, 170, 0, .45);
+  color: #ffc44d;
+  text-transform: uppercase;
+  margin-top: 4px;
+  width: fit-content;
+}
+
+.notice-status-tag .status-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #ffaa00;
+  box-shadow: 0 0 6px #ffaa00;
+}
+
+/* --- Filter Availability Toggle & Controls Actions --- */
+.controls-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 680px) {
+  .controls-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .controls-actions .search-wrap {
+    flex: 1;
+    min-width: 180px;
+  }
+}
+
+.availability-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  font: 500 .8rem var(--mono);
+  color: var(--muted);
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  padding: 6px 12px;
+  border: 1px solid rgba(53, 255, 81, .25);
+  background: rgba(16, 26, 19, .6);
+  transition: border-color .2s, color .2s, background .2s;
+}
+
+.availability-toggle:hover {
+  border-color: var(--matrix);
+  color: var(--text);
+  background: rgba(53, 255, 81, .06);
+}
+
+.availability-checkbox {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.availability-custom-box {
+  width: 14px;
+  height: 14px;
+  border: 1px solid rgba(53, 255, 81, .5);
+  background: rgba(8, 13, 10, .8);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .2s, border-color .2s;
+}
+
+.availability-checkbox:focus-visible + .availability-custom-box {
+  outline: 2px solid var(--matrix);
+  outline-offset: 2px;
+}
+
+.availability-checkbox:checked + .availability-custom-box {
+  background: var(--matrix);
+  border-color: var(--lime);
+}
+
+.availability-checkbox:checked + .availability-custom-box::after {
+  content: '✓';
+  color: #080d0a;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+/* --- Detail Widget --- */
+.booking-widget {
+  margin-top: 20px;
+  padding: 16px;
+  border: 1px solid rgba(53, 255, 81, .3);
+  background: rgba(16, 26, 19, .75);
+  position: relative;
+}
+
+.booking-widget::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 0;
+  width: 32px;
+  height: 2px;
+  background: var(--matrix);
+  box-shadow: 0 0 8px var(--matrix);
+}
+
+.booking-widget--reserved {
+  border-color: rgba(255, 170, 0, .4);
+  background: rgba(25, 20, 10, .6);
+}
+
+.booking-widget--reserved::before {
+  background: #ffaa00;
+  box-shadow: 0 0 8px #ffaa00;
+}
+
+.booking-widget-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  font: 600 .66rem var(--mono);
+  letter-spacing: .08em;
+}
+
+.booking-status-tag {
+  color: var(--matrix);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.booking-status-tag--locked {
+  color: #ffaa00;
+}
+
+.booking-code {
+  color: var(--dim);
+}
+
+.booking-hint {
+  margin: 10px 0 0;
+  font-size: .82rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.booking-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 18px;
+  font: 600 .82rem var(--mono);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border: 1px solid var(--matrix);
+  background: rgba(53, 255, 81, .12);
+  color: var(--matrix);
+  transition: all .2s var(--ease);
+}
+
+.booking-action-btn:hover {
+  background: var(--matrix);
+  color: #080d0a;
+  box-shadow: 0 0 20px rgba(53, 255, 81, .35);
+}
+
+.booking-action-btn:active {
+  transform: translateY(1px);
+}
+
+.booking-action-btn--cancel {
+  border-color: rgba(255, 100, 100, .45);
+  background: rgba(255, 80, 80, .08);
+  color: #ff8c8c;
+  font-size: .75rem;
+  padding: 9px 14px;
+}
+
+.booking-action-btn--cancel:hover {
+  background: rgba(255, 80, 80, .22);
+  border-color: #ff6464;
+  color: #fff;
+  box-shadow: 0 0 15px rgba(255, 100, 100, .25);
+}
+
+.booking-reserved-info {
+  padding: 10px 12px;
+  background: rgba(8, 13, 10, .6);
+  border: 1px dashed rgba(255, 170, 0, .3);
+  margin-bottom: 12px;
+  font-size: .9rem;
+}
+
+.reserved-by-line {
+  margin: 0 0 4px;
+  color: var(--text);
+}
+
+.reserved-label {
+  color: var(--muted);
+  font-size: .8rem;
+  margin-right: 6px;
+  font-family: var(--mono);
+}
+
+.reserved-name {
+  color: #ffc44d;
+  font-weight: 600;
+}
+
+.reserved-note-line {
+  margin: 4px 0 0;
+  font-size: .84rem;
+  color: #d8c39e;
+}
+
+.reserved-badge-mine {
+  display: inline-block;
+  font-size: .65rem;
+  font-family: var(--mono);
+  background: rgba(53, 255, 81, .15);
+  color: var(--matrix);
+  border: 1px solid var(--matrix);
+  padding: 2px 6px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+/* --- Native Dialog Styling (Cyberpunk Modal) --- */
+dialog.cyber-dialog {
+  border: 1px solid var(--matrix);
+  background: #0d1610;
+  color: var(--text);
+  box-shadow: 0 0 40px rgba(53, 255, 81, .25), inset 0 0 20px rgba(53, 255, 81, .04);
+  padding: 0;
+  max-width: 480px;
+  width: calc(100% - 32px);
+  margin: auto;
+  border-radius: 0;
+}
+
+/* Modal containment per modern-web-guidance */
+dialog.cyber-dialog:modal {
+  overscroll-behavior: contain;
+}
+
+dialog.cyber-dialog::backdrop {
+  background: rgba(8, 13, 10, .85);
+  backdrop-filter: blur(8px);
+  overflow: hidden;
+  overscroll-behavior: contain;
+}
+
+.dialog-box {
+  padding: 24px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.dialog-box::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--matrix), var(--lime), transparent);
+}
+
+.dialog-header {
+  border-bottom: 1px solid rgba(53, 255, 81, .2);
+  padding-bottom: 12px;
+}
+
+.dialog-eyebrow {
+  display: block;
+  font: 600 .65rem var(--mono);
+  color: var(--lime);
+  letter-spacing: .12em;
+  margin-bottom: 6px;
+}
+
+.dialog-title {
+  font: 700 1.35rem var(--display);
+  margin: 0 0 6px;
+  color: #fff;
+  letter-spacing: .02em;
+}
+
+.dialog-subtitle {
+  margin: 0;
+  font-size: .9rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.dialog-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-label {
+  font: 600 .75rem var(--mono);
+  letter-spacing: .06em;
+  color: var(--text);
+  text-transform: uppercase;
+}
+
+.form-label .required {
+  color: var(--matrix);
+}
+
+.form-label .optional {
+  color: var(--dim);
+  font-weight: 400;
+  text-transform: none;
+}
+
+.form-input {
+  width: 100%;
+  padding: 10px 12px;
+  background: rgba(16, 26, 19, .9);
+  border: 1px solid rgba(53, 255, 81, .35);
+  color: var(--text);
+  font-family: var(--body);
+  font-size: .95rem;
+  transition: border-color .2s, box-shadow .2s;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--matrix);
+  box-shadow: 0 0 12px rgba(53, 255, 81, .25);
+  background: rgba(23, 35, 25, 1);
+}
+
+.form-input--pin {
+  font-family: var(--mono);
+  letter-spacing: .25em;
+  font-size: 1.1rem;
+  max-width: 140px;
+}
+
+/* Modern pseudo-classes: validation feedback only after interaction */
+.form-input:user-invalid {
+  border-color: #ff5555;
+  box-shadow: 0 0 8px rgba(255, 85, 85, .3);
+}
+
+.form-hint {
+  font-size: .74rem;
+  color: var(--dim);
+  line-height: 1.3;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 6px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(53, 255, 81, .15);
+}
+
+.dialog-btn {
+  padding: 10px 18px;
+  font: 600 .78rem var(--mono);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all .2s var(--ease);
+}
+
+.dialog-btn--cancel {
+  background: transparent;
+  border: 1px solid rgba(160, 176, 159, .3);
+  color: var(--muted);
+}
+
+.dialog-btn--cancel:hover {
+  border-color: var(--muted);
+  color: var(--text);
+}
+
+.dialog-btn--submit {
+  background: var(--matrix);
+  border: 1px solid var(--matrix);
+  color: #080d0a;
+}
+
+.dialog-btn--submit:hover:not(:disabled) {
+  background: var(--lime);
+  border-color: var(--lime);
+  box-shadow: 0 0 16px rgba(173, 255, 38, .4);
+}
+
+.dialog-btn--danger {
+  background: #ff4d4d;
+  border: 1px solid #ff4d4d;
+  color: #fff;
+}
+
+.dialog-btn--danger:hover:not(:disabled) {
+  background: #ff3333;
+  box-shadow: 0 0 16px rgba(255, 77, 77, .4);
+}
+
+.dialog-btn:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+.dialog-error-msg {
+  padding: 8px 12px;
+  background: rgba(255, 80, 80, .12);
+  border: 1px solid rgba(255, 80, 80, .35);
+  color: #ff9999;
+  font-size: .82rem;
+  margin-bottom: 8px;
+}
+
+/* System notice chip (shows if running in local demo mode) */
+.system-demo-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: 500 .62rem var(--mono);
+  padding: 3px 8px;
+  border-radius: 2px;
+  background: rgba(255, 170, 0, .12);
+  border: 1px solid rgba(255, 170, 0, .3);
+  color: #ffaa00;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  margin-left: 10px;
+}
