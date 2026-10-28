@@ -403,24 +403,24 @@ window.SUPABASE_CONFIG = window.SUPABASE_CONFIG || { url: '', anonKey: '' };
 
       if (reserved && res) {
         return `
-        <div class="booking-widget booking-widget--reserved" role="region" aria-label="Статус бронювання контракту">
+        <div class="booking-widget booking-widget--reserved" role="region" aria-label="Статус бронювання подарунка">
           <div class="booking-widget-header">
             <span class="booking-status-tag booking-status-tag--locked">
-              <span aria-hidden="true">🔒</span> СТАТУС: КОНТРАКТ ЗАКРІПЛЕНО
+              <span aria-hidden="true">🔒</span> ПОДАРУНОК ЗАБРОНЬОВАНО
             </span>
-            <span class="booking-code">// ICE-LOCKED</span>
+            <span class="booking-code">// КОНТРАКТ ЗАКРІПЛЕНО</span>
           </div>
           <div class="booking-reserved-info">
             <p class="reserved-by-line">
-              <span class="reserved-label">Виконавець:</span>
+              <span class="reserved-label">Хто дарує:</span>
               <strong class="reserved-name">${esc(res.reserved_by)}</strong>
-              ${isMine ? '<span class="reserved-badge-mine">ТВІЙ КОНТРАКТ</span>' : ''}
+              ${isMine ? '<span class="reserved-badge-mine">Це ваша бронь</span>' : ''}
             </p>
             ${res.note ? `<p class="reserved-note-line"><em>«${esc(res.note)}»</em></p>` : ''}
           </div>
           <div class="booking-reserved-actions">
-            <button type="button" class="booking-action-btn booking-action-btn--cancel" id="btn-cancel-action" data-wish-id="${esc(wish.id)}">
-              <span>Зняти бронювання</span>
+            <button type="button" class="booking-btn-cancel" id="btn-cancel-action" data-wish-id="${esc(wish.id)}">
+              <span aria-hidden="true">✕</span> Зняти бронювання
             </button>
           </div>
         </div>
@@ -428,17 +428,25 @@ window.SUPABASE_CONFIG = window.SUPABASE_CONFIG || { url: '', anonKey: '' };
       }
 
       return `
-      <div class="booking-widget booking-widget--available" role="region" aria-label="Статус бронювання контракту">
+      <div class="booking-widget booking-widget--available" role="region" aria-label="Бронювання подарунка">
         <div class="booking-widget-header">
-          <span class="booking-status-tag">
-            <span aria-hidden="true">⚡</span> СТАТУС: ВІЛЬНИЙ КОНТРАКТ
+          <span class="booking-status-tag booking-status-tag--free">
+            <span class="status-dot status-dot--green" aria-hidden="true"></span> ВІЛЬНИЙ ПОДАРУНОК
           </span>
-          <span class="booking-code">// РЕЄСТРАЦІЯ ВІДКРИТА</span>
+          <span class="booking-code">// ДОСТУПНО</span>
         </div>
-        <button type="button" class="booking-action-btn" id="btn-reserve-action" data-wish-id="${esc(wish.id)}">
-          <span>ВЗЯТИ КОНТРАКТ // ЗАБРОНЮВАТИ</span> ↵
+        
+        <p class="booking-cta-title">Хочеш подарувати цю річ?</p>
+        <p class="booking-hint">Забронюй її, щоб інші гості бачили, що подарунок уже зайнятий і не подарували те саме.</p>
+
+        <button type="button" class="booking-cta-btn" id="btn-reserve-action" data-wish-id="${esc(wish.id)}" aria-label="Забронювати подарунок: ${esc(wish.title)}">
+          <span class="booking-cta-icon" aria-hidden="true">🎁</span>
+          <span class="booking-cta-content">
+            <span class="booking-cta-main">ЗАБРОНЮВАТИ ПОДАРУНОК</span>
+            <span class="booking-cta-sub">Закріпити цей контракт за собою</span>
+          </span>
+          <span class="booking-cta-arrow" aria-hidden="true">➔</span>
         </button>
-        <p class="booking-hint">Забронюй, щоб інші відвідувачі бачили, що цей подарунок уже готується.</p>
       </div>
     `;
     }

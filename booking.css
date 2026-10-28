@@ -180,53 +180,133 @@
   color: var(--dim);
 }
 
-.booking-hint {
-  margin: 10px 0 0;
-  font-size: .82rem;
-  color: var(--muted);
-  line-height: 1.4;
+.booking-cta-title {
+  font: 700 1.1rem var(--display);
+  color: #fff;
+  margin: 0 0 6px;
+  letter-spacing: .02em;
 }
 
-.booking-action-btn {
+.booking-hint {
+  margin: 0 0 14px;
+  font-size: .85rem;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+/* Big prominent CTA button */
+.booking-cta-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 14px 18px;
+  background: linear-gradient(135deg, #35ff51 0%, #adff26 100%);
+  color: #080d0a !important;
+  border: 1px solid #cbff45;
+  border-radius: 4px;
+  cursor: pointer;
+  box-shadow: 0 4px 18px rgba(53, 255, 81, .35), inset 0 1px 0 rgba(255, 255, 255, .5);
+  transition: transform .18s var(--ease), box-shadow .18s var(--ease), filter .18s var(--ease);
+  position: relative;
+  overflow: hidden;
+  text-decoration: none;
+}
+
+.booking-cta-btn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .35), transparent);
+  transform: skewX(-25deg);
+  transition: left .6s ease;
+}
+
+.booking-cta-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 26px rgba(53, 255, 81, .55), 0 0 30px rgba(173, 255, 38, .35);
+  filter: brightness(1.05);
+}
+
+.booking-cta-btn:hover::after {
+  left: 140%;
+}
+
+.booking-cta-btn:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 10px rgba(53, 255, 81, .3);
+}
+
+.booking-cta-icon {
+  font-size: 1.6rem;
+  line-height: 1;
+  margin-right: 12px;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .25));
+}
+
+.booking-cta-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex: 1;
+}
+
+.booking-cta-main {
+  font: 700 1rem var(--display);
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: #080d0a;
+  line-height: 1.2;
+}
+
+.booking-cta-sub {
+  font: 600 .66rem var(--mono);
+  letter-spacing: .08em;
+  color: #17381f;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+.booking-cta-arrow {
+  font-size: 1.3rem;
+  font-weight: 900;
+  color: #080d0a;
+  transition: transform .2s var(--ease);
+  margin-left: 10px;
+}
+
+.booking-cta-btn:hover .booking-cta-arrow {
+  transform: translateX(4px);
+}
+
+/* Prominent Cancel Button */
+.booking-btn-cancel {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 8px;
   width: 100%;
-  padding: 12px 18px;
-  font: 600 .82rem var(--mono);
-  letter-spacing: .08em;
+  padding: 11px 16px;
+  font: 600 .8rem var(--mono);
+  letter-spacing: .06em;
   text-transform: uppercase;
   cursor: pointer;
-  border: 1px solid var(--matrix);
-  background: rgba(53, 255, 81, .12);
-  color: var(--matrix);
+  border: 1px solid rgba(255, 90, 90, .5);
+  background: rgba(255, 70, 70, .12);
+  color: #ff9999;
+  border-radius: 3px;
   transition: all .2s var(--ease);
 }
 
-.booking-action-btn:hover {
-  background: var(--matrix);
-  color: #080d0a;
-  box-shadow: 0 0 20px rgba(53, 255, 81, .35);
-}
-
-.booking-action-btn:active {
-  transform: translateY(1px);
-}
-
-.booking-action-btn--cancel {
-  border-color: rgba(255, 100, 100, .45);
-  background: rgba(255, 80, 80, .08);
-  color: #ff8c8c;
-  font-size: .75rem;
-  padding: 9px 14px;
-}
-
-.booking-action-btn--cancel:hover {
-  background: rgba(255, 80, 80, .22);
-  border-color: #ff6464;
-  color: #fff;
-  box-shadow: 0 0 15px rgba(255, 100, 100, .25);
+.booking-btn-cancel:hover {
+  background: rgba(255, 70, 70, .25);
+  border-color: #ff5555;
+  color: #ffffff;
+  box-shadow: 0 0 16px rgba(255, 85, 85, .35);
+  transform: translateY(-1px);
 }
 
 .booking-reserved-info {
