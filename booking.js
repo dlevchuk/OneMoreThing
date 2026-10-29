@@ -118,7 +118,7 @@ window.BookingManager = (() => {
   // Повертає код скасування (показати користувачу один раз)
   async function reserve(wishId, { name }) {
     const cleanName = (name || '').trim();
-    if (!cleanName) throw new Error('Вкажи свій позивний або імʼя.');
+    if (!cleanName) throw new Error('Вкажи свій нікнейм або імʼя.');
     const token = generateToken();
 
     if (isConfigured && supabaseClient) {
