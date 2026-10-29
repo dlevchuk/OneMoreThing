@@ -1,0 +1,10 @@
+{
+    "name": "wishlist-board",
+    "version": "1.0.0",
+    "private": true,
+    "description": "Дошка контрактів — статичний вішліст на GitHub Pages + Supabase",
+    "scripts": {
+        "setup": "[ -f js/supabase-config.js ] || cp supabase/config.example.js js/supabase-config.js",
+        "dev": "npm run setup && python3 -m http.server 3000"
+    }
+}

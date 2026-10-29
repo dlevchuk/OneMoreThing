@@ -41,10 +41,7 @@ jobs:
 
           # Лише те, що реально потрібно сайту
           cp index.html board.html dist/
-          cp style.css theme.css booking.css dist/
-          cp rain.js transition.js birthday.js app.js booking.js dist/
-          cp favicon.svg apple-touch-icon.png og.png dist/
-          cp -r data dist/data
+          cp -r css js assets data dist/
           if [ -d img ]; then cp -r img dist/img; fi
 
           # Кеш-бастінг: ?v=<будь-що> -> ?v=<sha коміту>
@@ -58,7 +55,7 @@ jobs:
             echo "/* Згенеровано GitHub Actions */"
             printf 'window.SUPABASE_CONFIG = %s;\n' \
               "$(jq -nc --arg url "${SUPABASE_URL:-}" --arg anonKey "${SUPABASE_ANON_KEY:-}" '{url:$url, anonKey:$anonKey}')"
-          } > dist/supabase-config.js
+          } > dist/js/supabase-config.js
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

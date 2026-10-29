@@ -2,6 +2,20 @@
 
 Публічний список бажань на GitHub Pages. Головна сторінка — вступний екран; кнопка «Зайти в матрицю» відкриває `board.html`, де відвідувачі можуть шукати й фільтрувати записи, переглядати досьє та переходити за посиланнями на товари. Сайт статичний: окремої адмінки й кнопки редагування на сторінці немає.
 
+## Структура репозиторію
+
+```
+/
+├─ index.html, board.html     сторінки (лишаються в корені, щоб URL не змінились)
+├─ assets/                    favicon.svg, apple-touch-icon.png, og.png
+├─ css/                       style.css, theme.css, booking.css
+├─ js/                        rain.js, transition.js, birthday.js, app.js, booking.js
+│                             (+ supabase-config.js — генерується в CI, у git не комітиться)
+├─ data/wishes.json           список бажань
+├─ supabase/                  schema.sql, config.example.js
+└─ .github/workflows/         deploy.yml
+```
+
 ## Як оновити список
 
 Власник репозиторію відкриває `data/wishes.json` у GitHub, додає або редагує запис і комітить зміну до гілки, з якої публікується GitHub Pages. Нові картки з’являться після завершення публікації.
@@ -26,7 +40,7 @@
 
 ## Публікація
 
-У GitHub відкрий **Settings → Pages** і налаштуй публікацію з потрібної гілки та каталогу. Для цього репозиторію файли сайту (`index.html`, `board.html`, стилі й скрипти) лежать у корені, а дані — в `data/wishes.json`.
+У GitHub відкрий **Settings → Pages** і вибери **Source → GitHub Actions**. Workflow `.github/workflows/deploy.yml` збирає `dist/` з `index.html`, `board.html`, `css/`, `js/`, `assets/` та `data/` і деплоїть його.
 
 ## Анімації та доступність
 
@@ -39,10 +53,10 @@
 ### Як налаштувати Supabase без збереження ключів у репозиторії:
 
 1. Зареєструйся на [supabase.com](https://supabase.com) і створи новий безкоштовний проект.
-2. У меню зліва відкрий **SQL Editor**, створи новий запит («New query»), скопіюй вміст файлу `supabase-schema.sql` і натисни **Run**. Це створить:
+2. У меню зліва відкрий **SQL Editor**, створи новий запит («New query»), скопіюй вміст файлу `supabase/schema.sql` і натисни **Run**. Це створить:
    - таблицю `reservations`;
    - правила безпеки Row Level Security (RLS);
-   - безпечну функцію скасування за 4-значним PIN-кодом;
+   - безпечну функцію скасування за кодом скасування;
    - Realtime-підписку для синхронізації в реальному часі без перезавантаження сторінки.
 3. Перейди в **Project Settings → API** (або Data API) і скопіюй:
    - **Project URL**
@@ -55,7 +69,7 @@
 5. Увімкни деплой через Actions:
    - У GitHub відкрий **Settings → Pages**.
    - У полі **Build and deployment → Source** вибери **GitHub Actions**.
-6. При кожному пуші до гілки `main` GitHub Action (`.github/workflows/deploy.yml`) автоматично підставить секрети у файл `supabase-config.js` під час збірки. У відкритому репозиторії ключів не буде!
+6. При кожному пуші до гілки `main` GitHub Action (`.github/workflows/deploy.yml`) автоматично підставить секрети у файл `js/supabase-config.js` під час збірки. У відкритому репозиторії ключів не буде!
 
 #### Локальна розробка:
-Для локального тестування скопіюй `supabase-config.example.js` у `supabase-config.js` (цей файл у `.gitignore` і не потрапить у git) і вкажи ключі там, або нічого не вказуй — тоді сайт автоматично працюватиме в локальному демо-режимі через `localStorage`.
+Для локального тестування скопіюй `supabase/config.example.js` у `js/supabase-config.js` (цей файл у `.gitignore` і не потрапить у git) і вкажи ключі там, або нічого не вказуй — тоді сайт автоматично працюватиме в локальному демо-режимі через `localStorage`.
