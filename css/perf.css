@@ -1,0 +1,24 @@
+/* Легший фон: градієнти замість filter: blur(110px). */
+.ambient {
+    filter: none;
+    opacity: 1;
+}
+
+.ambient--one {
+    background: radial-gradient(closest-side, rgba(66, 255, 98, .2), transparent);
+}
+
+.ambient--two {
+    background: radial-gradient(closest-side, rgba(165, 255, 85, .14), transparent);
+}
+
+/* На мобільних не анімуємо фон: економимо GPU і батарею */
+@media (max-width: 640px) {
+    .ambient {
+        animation: none;
+    }
+
+    #rain {
+        opacity: .2;
+    }
+}

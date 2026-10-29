@@ -3,6 +3,8 @@
 
 <head>
   <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' https: data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#080d0a" />
   <title>Прокинься, ковбою</title>
@@ -23,10 +25,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
-    href="https://fonts.googleapis.com/css2?family=Oxanium:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Oxanium:wght@500;600;700&family=Rajdhani:wght@400;600&display=swap"
     rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css?v=0" />
   <link rel="stylesheet" href="css/theme.css?v=0" />
+  <link rel="stylesheet" href="css/perf.css?v=0" />
 </head>
 
 <body class="home-page">
@@ -68,9 +71,9 @@
     <span class="footer-note">ДОСТУП ДО ЗАПИСІВ — ЛИШЕ У ВЛАСНИКА РЕПОЗИТОРІЮ</span>
   </footer>
 
-  <script src="js/rain.js?v=0"></script>
-  <script src="js/transition.js?v=0"></script>
-  <script src="js/birthday.js?v=0"></script>
+  <script src="js/rain.js?v=0" defer></script>
+  <script src="js/transition.js?v=0" defer></script>
+  <script src="js/birthday.js?v=0" defer></script>
 </body>
 
 </html>

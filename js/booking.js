@@ -16,7 +16,8 @@ window.BookingManager = (() => {
   const MOCK_STORAGE_KEY = 'omg_mock_reservations';
 
   const ERRORS = {
-    rate_limited: 'Забагато броней за останню годину. Спробуй пізніше.',
+    rate_limited: 'Забагато спроб за останню годину. Спробуй пізніше.',
+    too_many: 'Забагато активних броней. Напиши власнику.',
     invalid_name: 'Імʼя має бути від 1 до 60 символів.',
     invalid_wish: 'Некоректний контракт.',
     invalid_token: 'Некоректний код скасування.'
@@ -151,7 +152,10 @@ window.BookingManager = (() => {
       const { data, error } = await supabaseClient.rpc('cancel_reservation', {
         p_wish_id: wishId, p_token: clean
       });
-      if (error) throw new Error(error.message || 'Помилка скасування контракту.');
+      if (error) {
+        const msg = error.message || '';
+        throw new Error(ERRORS[msg] || msg || 'Помилка скасування контракту.');
+      }
       if (!data) throw new Error('Невірний код або контракт не знайдено.');
     } else {
       let mockList = getMockReservations();
