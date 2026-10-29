@@ -7,14 +7,27 @@
   <meta name="theme-color" content="#080d0a" />
   <title>Дошка контрактів</title>
   <meta name="description" content="Досьє, бажані речі й маршрути до продавців." />
+
+  <link rel="icon" href="favicon.svg?v=0" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=0" />
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="uk_UA" />
+  <meta property="og:title" content="Дошка контрактів" />
+  <meta property="og:description" content="Досьє, бажані речі й маршрути до продавців." />
+  <meta property="og:url" content="__SITE_URL__/board.html" />
+  <meta property="og:image" content="__SITE_URL__/og.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
     href="https://fonts.googleapis.com/css2?family=Oxanium:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&display=swap"
     rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=3" />
-  <link rel="stylesheet" href="theme.css?v=3" />
-  <link rel="stylesheet" href="booking.css?v=5" />
+  <link rel="stylesheet" href="style.css?v=0" />
+  <link rel="stylesheet" href="theme.css?v=0" />
+  <link rel="stylesheet" href="booking.css?v=0" />
   <script>
     if (new URLSearchParams(window.location.search).get('transition') === 'matrix') {
       document.documentElement.classList.add('matrix-arriving');
@@ -124,22 +137,8 @@
           <label for="booking-name" class="form-label">Позивний або імʼя <span class="required">*</span></label>
           <input type="text" id="booking-name" name="name" required maxlength="60"
             placeholder="Наприклад: Нео, Трініті, Олексій" class="form-input" autocomplete="name" />
-          <span class="form-hint">Це імʼя відображатиметься в досьє подарунка</span>
-        </div>
-
-        <div class="form-group">
-          <label for="booking-note" class="form-label">Коментар або контакт <span
-              class="optional">(необовʼязково)</span></label>
-          <input type="text" id="booking-note" name="note" maxlength="120"
-            placeholder="Telegram @нік або коротке вітання" class="form-input" />
-        </div>
-
-        <div class="form-group">
-          <label for="booking-pin" class="form-label">PIN для скасування <span class="optional">(4 цифри,
-              опціонально)</span></label>
-          <input type="text" id="booking-pin" name="pin" pattern="[0-9]{4}" inputmode="numeric" maxlength="4"
-            placeholder="1234" class="form-input form-input--pin" />
-          <span class="form-hint">Знадобиться, якщо захочеш зняти бронь з іншого браузера</span>
+          <span class="form-hint">Імʼя бачать усі відвідувачі. Після підтвердження отримаєш код для скасування
+            броні.</span>
         </div>
 
         <div class="dialog-actions">
@@ -167,9 +166,9 @@
 
       <form id="cancel-form" class="dialog-form" novalidate>
         <div class="form-group" id="cancel-pin-group">
-          <label for="cancel-pin" class="form-label">PIN-код скасування</label>
-          <input type="text" id="cancel-pin" name="pin" pattern="[0-9]{4}" inputmode="numeric" maxlength="4"
-            placeholder="1234" class="form-input form-input--pin" />
+          <label for="cancel-pin" class="form-label">Код скасування</label>
+          <input type="text" id="cancel-pin" name="pin" maxlength="19" autocomplete="off" autocapitalize="characters"
+            spellcheck="false" placeholder="XXXX-XXXX-XXXX" class="form-input form-input--token" />
         </div>
 
         <div class="dialog-actions">
@@ -182,15 +181,35 @@
     </div>
   </dialog>
 
+  <!-- Modal: Cancel token -->
+  <dialog id="token-modal" class="cyber-dialog" closedby="any" aria-labelledby="token-modal-title">
+    <div class="dialog-box">
+      <div class="dialog-header">
+        <span class="dialog-eyebrow">⬡ КОНТРАКТ ЗАКРІПЛЕНО // КЛЮЧ</span>
+        <h2 id="token-modal-title" class="dialog-title">Код скасування</h2>
+        <p class="dialog-subtitle" id="token-modal-subtitle"></p>
+      </div>
+      <p class="dialog-subtitle">Збережи цей код. З іншого браузера зняти бронь можна лише з ним. У цьому браузері він
+        збережений автоматично.</p>
+      <div class="token-code" id="token-code" aria-live="polite"></div>
+      <div class="dialog-actions">
+        <button type="button" class="dialog-btn dialog-btn--cancel" id="token-copy">Копіювати</button>
+        <button type="button" class="dialog-btn dialog-btn--submit" data-close-dialog>Готово</button>
+      </div>
+    </div>
+  </dialog>
+
   <footer class="site-footer">
     <span class="footer-note">ДОСТУП ДО ЗАПИСІВ — ЛИШЕ У ВЛАСНИКА РЕПОЗИТОРІЮ</span>
   </footer>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="supabase-config.js"></script>
-  <script src="booking.js?v=5"></script>
-  <script src="rain.js"></script>
-  <script src="app.js?v=5"></script>
-  <script src="transition.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js"
+    integrity="sha384-BWcjm9OdFth9TbhCxZPdm+gAOUMAzQy9nmTs12ioXdCcbVnJaPMn+fMUoQCLt60R"
+    crossorigin="anonymous"></script>
+  <script src="supabase-config.js?v=0"></script>
+  <script src="booking.js?v=0"></script>
+  <script src="rain.js?v=0"></script>
+  <script src="app.js?v=0"></script>
+  <script src="transition.js?v=0"></script>
 </body>
 
 </html>

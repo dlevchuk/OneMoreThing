@@ -12,6 +12,8 @@
   };
   resize(); addEventListener('resize', resize);
   const tick = () => {
+    // пауза, поки відкрите модальне вікно
+    if (document.querySelector('dialog[open]')) return;
     x.globalCompositeOperation = 'destination-out';
     x.fillStyle = 'rgba(0,0,0,.1)'; x.fillRect(0, 0, c.width, c.height);
     x.globalCompositeOperation = 'source-over';

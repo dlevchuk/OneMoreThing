@@ -37,11 +37,17 @@ function escHtml(value = '') {
   return String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
+// Відносні шляхи (img/...) резолвляться від поточної сторінки
 function safeUrl(value = '') {
+  if (!value) return '';
   try {
-    const url = new URL(value);
+    const url = new URL(value, document.baseURI);
     return ['http:', 'https:'].includes(url.protocol) ? url.href : '';
   } catch { return ''; }
+}
+
+function isWishReserved(id) {
+  return window.BookingManager ? window.BookingManager.isReserved(id) : false;
 }
 
 function filteredWishes() {
@@ -49,8 +55,7 @@ function filteredWishes() {
   return wishes.filter(wish => {
     const matchesFilter = wish.priority === activeFilter;
     const matchesQuery = !query || `${wish.title} ${wish.description || ''}`.toLocaleLowerCase('uk').includes(query);
-    const isReserved = window.BookingManager ? window.BookingManager.isReserved(wish.id) : false;
-    const matchesAvailability = !onlyAvailable || !isReserved;
+    const matchesAvailability = !onlyAvailable || !isWishReserved(wish.id);
     return matchesFilter && matchesQuery && matchesAvailability;
   });
 }
@@ -59,7 +64,7 @@ function buildCard(wish) {
   const image = safeUrl(wish.image);
   const priorityKey = wish.priority in PRIORITY_CONFIG ? wish.priority : 'want';
   const cfg = PRIORITY_CONFIG[priorityKey];
-  const isReserved = window.BookingManager ? window.BookingManager.isReserved(wish.id) : false;
+  const isReserved = isWishReserved(wish.id);
   return `
     <button class="notice-select${wish.id === selectedWishId ? ' is-selected' : ''}" type="button" aria-pressed="${wish.id === selectedWishId}" aria-label="Відкрити досьє: ${escHtml(wish.title)}">
       ${image ? `<span class="notice-thumb"><img src="${escHtml(image)}" alt="" loading="lazy" /></span>` : '<span class="notice-thumb notice-thumb--empty" aria-hidden="true">✧</span>'}
@@ -125,6 +130,14 @@ function renderDetails(wish) {
   }
 }
 
+function updateCategoryCounts() {
+  ['want', 'nice', 'unsure'].forEach(category => {
+    const count = wishes.filter(w => w.priority === category && (!onlyAvailable || !isWishReserved(w.id))).length;
+    const badge = document.querySelector(`[data-count-for="${category}"]`);
+    if (badge) badge.textContent = count;
+  });
+}
+
 function renderGrid(animate = true) {
   const list = filteredWishes();
   const count = list.length;
@@ -135,28 +148,30 @@ function renderGrid(animate = true) {
   grid.classList.toggle('no-anim', !animate);
   if (count && !list.some(wish => wish.id === selectedWishId)) selectedWishId = list[0].id || '';
   grid.innerHTML = list.map((wish, index) => {
-    const isReserved = window.BookingManager ? window.BookingManager.isReserved(wish.id) : false;
+    const isReserved = isWishReserved(wish.id);
     return `<article class="notice${isReserved ? ' is-reserved' : ''}" role="listitem" style="--card-index:${index}" data-id="${escHtml(wish.id || '')}">${buildCard(wish)}</article>`;
   }).join('');
   const selectedWish = list.find(wish => wish.id === selectedWishId) || list[0];
   if (selectedWish) selectedWishId = selectedWish.id || '';
   renderDetails(selectedWish);
-  grid.querySelectorAll('.notice-select').forEach(button => button.addEventListener('click', () => {
-    const article = button.closest('.notice');
-    selectedWishId = article.dataset.id;
-    grid.querySelectorAll('.notice-select').forEach(btn => {
-      const isSelected = btn.closest('.notice').dataset.id === selectedWishId;
-      btn.classList.toggle('is-selected', isSelected);
-      btn.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
-    });
-    const currentList = filteredWishes();
-    const currentSelectedWish = currentList.find(wish => wish.id === selectedWishId);
-    renderDetails(currentSelectedWish);
-    if (window.innerWidth <= 768 && details) {
-      details.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  }));
+  updateCategoryCounts();
 }
+
+// Один listener на grid замість перевішування при кожному рендері
+grid.addEventListener('click', event => {
+  const button = event.target.closest('.notice-select');
+  if (!button) return;
+  selectedWishId = button.closest('.notice').dataset.id;
+  grid.querySelectorAll('.notice-select').forEach(btn => {
+    const isSelected = btn.closest('.notice').dataset.id === selectedWishId;
+    btn.classList.toggle('is-selected', isSelected);
+    btn.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+  });
+  renderDetails(filteredWishes().find(wish => wish.id === selectedWishId));
+  if (window.innerWidth <= 768 && details) {
+    details.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+});
 
 document.querySelectorAll('.filter-btn').forEach(button => button.addEventListener('click', () => {
   document.querySelectorAll('.filter-btn').forEach(item => {
@@ -168,14 +183,6 @@ document.querySelectorAll('.filter-btn').forEach(button => button.addEventListen
   renderGrid();
 }));
 searchInput.addEventListener('input', () => { searchQuery = searchInput.value.trim(); renderGrid(false); });
-
-function updateCategoryCounts() {
-  ['want', 'nice', 'unsure'].forEach(category => {
-    const count = wishes.filter(w => w.priority === category).length;
-    const badge = document.querySelector(`[data-count-for="${category}"]`);
-    if (badge) badge.textContent = count;
-  });
-}
 
 function renderTicker() {
   const track = document.querySelector('.ticker-track');
@@ -216,13 +223,9 @@ async function init() {
 
   if (window.BookingManager) {
     await window.BookingManager.init();
-    window.BookingManager.onUpdate(() => {
-      renderGrid(false);
-      updateCategoryCounts();
-    });
+    window.BookingManager.onUpdate(() => renderGrid(false));
   }
 
-  updateCategoryCounts();
   renderTicker();
   renderGrid();
 }

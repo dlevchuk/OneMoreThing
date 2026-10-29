@@ -6,13 +6,11 @@ on:
       - main
   workflow_dispatch:
 
-# Права доступу для публікації на GitHub Pages
 permissions:
   contents: read
   pages: write
   id-token: write
 
-# Дозволити лише одне активне розгортання одночасно
 concurrency:
   group: 'pages'
   cancel-in-progress: true
@@ -27,30 +25,46 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Generate Supabase Config from Secrets
+      - name: Setup Pages
+        id: pages
+        uses: actions/configure-pages@v5
+
+      - name: Build site into dist/
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          BASE_URL: ${{ steps.pages.outputs.base_url }}
         run: |
-          cat <<EOF > supabase-config.js
-          /**
-           * Автоматично згенеровано через GitHub Actions під час деплою.
-           */
-          window.SUPABASE_CONFIG = {
-            url: "${SUPABASE_URL:-}",
-            anonKey: "${SUPABASE_ANON_KEY:-}"
-          };
-          EOF
+          set -euo pipefail
+          mkdir dist
+          touch dist/.nojekyll
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
+          # Лише те, що реально потрібно сайту
+          cp index.html board.html dist/
+          cp style.css theme.css booking.css dist/
+          cp rain.js transition.js birthday.js app.js booking.js dist/
+          cp favicon.svg apple-touch-icon.png og.png dist/
+          cp -r data dist/data
+          if [ -d img ]; then cp -r img dist/img; fi
+
+          # Кеш-бастінг: ?v=<будь-що> -> ?v=<sha коміту>
+          sed -i -E "s/\?v=[A-Za-z0-9]+/?v=${GITHUB_SHA::8}/g" dist/*.html
+
+          # Абсолютні URL для og:image / og:url
+          sed -i "s|__SITE_URL__|${BASE_URL%/}|g" dist/*.html
+
+          # Конфіг Supabase (jq екранує спецсимволи в значеннях)
+          {
+            echo "/* Згенеровано GitHub Actions */"
+            printf 'window.SUPABASE_CONFIG = %s;\n' \
+              "$(jq -nc --arg url "${SUPABASE_URL:-}" --arg anonKey "${SUPABASE_ANON_KEY:-}" '{url:$url, anonKey:$anonKey}')"
+          } > dist/supabase-config.js
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: '.'
+          path: dist
 
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-

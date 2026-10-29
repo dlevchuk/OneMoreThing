@@ -60,6 +60,7 @@
     width: 100%;
     justify-content: space-between;
   }
+
   .controls-actions .search-wrap {
     flex: 1;
     min-width: 180px;
@@ -107,17 +108,17 @@
   transition: background .2s, border-color .2s;
 }
 
-.availability-checkbox:focus-visible + .availability-custom-box {
+.availability-checkbox:focus-visible+.availability-custom-box {
   outline: 2px solid var(--matrix);
   outline-offset: 2px;
 }
 
-.availability-checkbox:checked + .availability-custom-box {
+.availability-checkbox:checked+.availability-custom-box {
   background: var(--matrix);
   border-color: var(--lime);
 }
 
-.availability-checkbox:checked + .availability-custom-box::after {
+.availability-checkbox:checked+.availability-custom-box::after {
   content: '✓';
   color: #080d0a;
   font-size: 11px;
@@ -568,4 +569,24 @@ dialog.cyber-dialog::backdrop {
   letter-spacing: .06em;
   text-transform: uppercase;
   margin-left: 10px;
+}
+
+/* --- Cancel token --- */
+.token-code {
+  padding: 14px 12px;
+  border: 1px dashed rgba(53, 255, 81, .5);
+  background: rgba(8, 13, 10, .7);
+  color: var(--matrix);
+  font: 700 1.5rem var(--mono);
+  letter-spacing: .12em;
+  text-align: center;
+  text-shadow: 0 0 10px rgba(53, 255, 81, .4);
+  user-select: all;
+  overflow-wrap: anywhere;
+}
+
+.form-input--token {
+  font-family: var(--mono);
+  letter-spacing: .12em;
+  text-transform: uppercase;
 }
