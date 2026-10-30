@@ -222,38 +222,6 @@ html.matrix-arriving .site-footer {
   opacity: .65;
 }
 
-.ticker {
-  overflow: hidden;
-  margin: 0;
-  padding: 11px 0;
-  border-bottom: 1px solid rgba(66, 255, 98, .35);
-  background: rgba(66, 255, 98, .04);
-}
-
-.ticker-track {
-  display: flex;
-  width: max-content;
-  gap: 34px;
-  color: var(--neon-soft);
-  font: 600 .62rem var(--mono);
-  letter-spacing: .2em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  text-shadow: 0 0 8px rgba(165, 255, 85, .45);
-  animation: ticker 55s linear infinite;
-}
-
-.ticker-track b {
-  color: var(--neon);
-  font-weight: 400;
-}
-
-@keyframes ticker {
-  to {
-    transform: translateX(-50%);
-  }
-}
-
 .page-count {
   border-color: rgba(165, 255, 85, .55);
   background: rgba(165, 255, 85, .07);
@@ -569,10 +537,4 @@ html.matrix-arriving .site-footer {
 .footer-note {
   color: var(--neon-soft);
   opacity: .6;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .ticker-track {
-    animation: none;
-  }
 }

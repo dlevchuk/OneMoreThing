@@ -32,11 +32,6 @@ const PRIORITY_CONFIG = {
   }
 };
 let selectedWishId = '';
-let lastDetailsKey = '';
-let searchTimer = 0;
-
-// Object.hasOwn, а не `in`: ключі з прототипу (toString тощо) не проходять
-const hasPriority = value => Object.hasOwn(PRIORITY_CONFIG, value);
 
 function escHtml(value = '') {
   return String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -67,12 +62,12 @@ function filteredWishes() {
 
 function buildCard(wish) {
   const image = safeUrl(wish.image);
-  const priorityKey = hasPriority(wish.priority) ? wish.priority : 'want';
+  const priorityKey = wish.priority in PRIORITY_CONFIG ? wish.priority : 'want';
   const cfg = PRIORITY_CONFIG[priorityKey];
   const isReserved = isWishReserved(wish.id);
   return `
     <button class="notice-select${wish.id === selectedWishId ? ' is-selected' : ''}" type="button" aria-pressed="${wish.id === selectedWishId}" aria-label="Відкрити досьє: ${escHtml(wish.title)}">
-      ${image ? `<span class="notice-thumb"><img src="${escHtml(image)}" alt="" width="112" height="83" loading="lazy" decoding="async" referrerpolicy="no-referrer" /></span>` : '<span class="notice-thumb notice-thumb--empty" aria-hidden="true">✧</span>'}
+      ${image ? `<span class="notice-thumb"><img src="${escHtml(image)}" alt="" loading="lazy" /></span>` : '<span class="notice-thumb notice-thumb--empty" aria-hidden="true">✧</span>'}
       <span class="notice-copy">
         <span class="notice-priority notice-priority--${escHtml(priorityKey)}" aria-label="${cfg.label} (${cfg.ariaLabel})">
           <span class="ice-indicator" aria-hidden="true">
@@ -93,20 +88,7 @@ function buildCard(wish) {
     </button>`;
 }
 
-// Ключ стану досьє: якщо не змінився, DOM не чіпаємо (без блимання картинки на realtime/пошуку)
-function detailsKey(wish) {
-  if (!wish) return 'none';
-  const bm = window.BookingManager;
-  const res = bm ? bm.getReservation(wish.id) : null;
-  const mine = bm ? bm.isMyBooking(wish.id) : false;
-  return `${wish.id}|${res ? res.reserved_by : ''}|${mine}`;
-}
-
 function renderDetails(wish) {
-  const key = detailsKey(wish);
-  if (key === lastDetailsKey && details.childElementCount) return;
-  lastDetailsKey = key;
-
   if (!wish) {
     details.innerHTML = '<div class="details-empty"><span aria-hidden="true">✧</span><p>Лінія мовчить. Обери запис.</p></div>';
     return;
@@ -115,13 +97,13 @@ function renderDetails(wish) {
   const image = safeUrl(wish.image);
   const originalUrl = safeUrl(wish.originalUrl);
   const localUrl = safeUrl(wish.localUrl);
-  const priorityKey = hasPriority(wish.priority) ? wish.priority : 'want';
+  const priorityKey = wish.priority in PRIORITY_CONFIG ? wish.priority : 'want';
   const cfg = PRIORITY_CONFIG[priorityKey];
   const bookingWidget = window.BookingManager ? window.BookingManager.renderDetailWidget(wish) : '';
 
   details.innerHTML = `
     <div class="detail-topline"><span>⬡ МАТРИЦЯ / ДОСЬЄ</span><span>№ ${String(wishes.indexOf(wish) + 1).padStart(2, '0')}</span></div>
-    ${image ? `<div class="detail-image"><img src="${escHtml(image)}" alt="${escHtml(wish.title)}" decoding="async" referrerpolicy="no-referrer" /></div>` : ''}
+    ${image ? `<div class="detail-image"><img src="${escHtml(image)}" alt="${escHtml(wish.title)}" /></div>` : ''}
     <div class="detail-content">
       <span class="card-priority card-priority--${escHtml(priorityKey)}" aria-label="${cfg.label} (${cfg.ariaLabel})">
         <span class="ice-indicator" aria-hidden="true">
@@ -200,31 +182,11 @@ document.querySelectorAll('.filter-btn').forEach(button => button.addEventListen
   activeFilter = button.dataset.filter;
   renderGrid();
 }));
-
-// Дебаунс: не перемальовуємо сітку на кожен символ
-searchInput.addEventListener('input', () => {
-  clearTimeout(searchTimer);
-  searchTimer = setTimeout(() => {
-    searchQuery = searchInput.value.trim();
-    renderGrid(false);
-  }, 120);
-});
-
-function renderTicker() {
-  const track = document.querySelector('.ticker-track');
-  if (!track || !wishes.length) return;
-  const titles = wishes
-    .map(w => (typeof w.title === 'string' ? w.title.trim() : ''))
-    .filter(Boolean);
-  if (!titles.length) return;
-  const content = titles.map(title => `${escHtml(title)} <b>◆</b>`).join(' ');
-  track.innerHTML = `<span>${content}</span><span>${content}</span>`;
-}
+searchInput.addEventListener('input', () => { searchQuery = searchInput.value.trim(); renderGrid(false); });
 
 async function init() {
   try {
-    // no-cache: ревалідація (304) замість повного завантаження щоразу
-    const response = await fetch('data/wishes.json', { cache: 'no-cache' });
+    const response = await fetch('data/wishes.json', { cache: 'no-store' });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const data = await response.json();
     const seen = new Set();
@@ -234,7 +196,7 @@ async function init() {
         let id = item.id || `wish-${i}`;
         while (seen.has(id)) id += `-${i}`;
         seen.add(id);
-        return { ...item, id, priority: hasPriority(item.priority) ? item.priority : 'unsure' };
+        return { ...item, id, priority: item.priority in PRIORITY_CONFIG ? item.priority : 'unsure' };
       });
   } catch (error) {
     console.error('Не вдалося завантажити список бажань:', error);
@@ -253,7 +215,6 @@ async function init() {
     window.BookingManager.onUpdate(() => renderGrid(false));
   }
 
-  renderTicker();
   renderGrid();
 }
 
