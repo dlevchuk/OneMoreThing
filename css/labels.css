@@ -1,0 +1,36 @@
+/* Підписи під назвами вкладок пріоритетів */
+.filter-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+    line-height: 1.1;
+    text-align: left;
+}
+
+.filter-sub {
+    font: 500 .5rem var(--mono);
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    opacity: .72;
+}
+
+@media (max-width: 640px) {
+    .filter-btn {
+        gap: 5px;
+    }
+
+    /* економимо місце, щоб підписи влізли в 3 колонки */
+    .filter-btn .ice-indicator {
+        display: none;
+    }
+
+    .filter-text {
+        align-items: center;
+        text-align: center;
+    }
+
+    .filter-sub {
+        font-size: .44rem;
+    }
+}
