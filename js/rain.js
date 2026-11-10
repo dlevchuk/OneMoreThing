@@ -23,9 +23,8 @@
   };
 
   let lastWidth = innerWidth;
-  setup();
   addEventListener('resize', () => {
-    // на мобілках resize стріляє при хов&#1072;нні адресного рядка; скидаємо краплі лише при зміні ширини
+    // на мобілках resize стріляє, коли ховається адресний рядок; скидаємо краплі лише при зміні ширини
     if (innerWidth === lastWidth) {
       c.height = innerHeight;
       return;
@@ -33,6 +32,7 @@
     lastWidth = innerWidth;
     setup();
   });
+
 
   const tick = t => {
     requestAnimationFrame(tick); // rAF сам стає на паузу у прихованій вкладці
