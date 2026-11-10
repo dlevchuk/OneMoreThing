@@ -6,6 +6,7 @@
   c.setAttribute('aria-hidden', 'true');
   document.body.prepend(c);
 
+  const root = document.documentElement;
   const x = c.getContext('2d');
   const g = 'ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄ0123456789ﾊﾋﾌﾍﾎ';
   const FRAME_MS = 50; // ~20 fps, як і було
@@ -24,7 +25,7 @@
   let lastWidth = innerWidth;
   setup();
   addEventListener('resize', () => {
-    // на мобілках resize стріляє при ховanні адресного рядка; скидаємо краплі лише при зміні ширини
+    // на мобілках resize стріляє при хов&#1072;нні адресного рядка; скидаємо краплі лише при зміні ширини
     if (innerWidth === lastWidth) {
       c.height = innerHeight;
       return;
@@ -37,8 +38,12 @@
     requestAnimationFrame(tick); // rAF сам стає на паузу у прихованій вкладці
     if (t - last < FRAME_MS) return;
     last = t;
-    // пауза, поки відкрите модальне вікно
-    if (document.querySelector('dialog[open]')) return;
+    // пауза під час матричного переходу та поки відкрите модальне вікно
+    if (
+      root.classList.contains('matrix-arriving') ||
+      document.body.classList.contains('matrix-leaving') ||
+      document.querySelector('dialog[open]')
+    ) return;
 
     x.globalCompositeOperation = 'destination-out';
     x.fillStyle = 'rgba(0,0,0,.1)';
