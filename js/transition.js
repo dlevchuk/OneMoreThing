@@ -2,81 +2,115 @@
 
 (() => {
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const root = document.documentElement;
   const currentUrl = new URL(window.location.href);
 
+  // Таймінги (REVEAL_MS має збігатися з .32s у css/perf.css)
+  const LEAVE_MS = 360;   // скільки падає дощ перед переходом
+  const HOLD_MS = 160;    // скільки дощ видно на новій сторінці
+  const REVEAL_MS = 320;  // розчинення завіси
+
+  const GLYPHS = 'ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄ0123456789ﾊﾋﾌﾍﾎ';
+  const CELL = 20;        // ширина колонки
+  const FONT = 18;
+  const ROW = 20;         // крок по вертикалі
+
+  // Гліфи малюємо один раз в атлас, далі лише drawImage (набагато дешевше за fillText)
+  let atlasCache = null;
+  function getAtlas() {
+    if (atlasCache) return atlasCache;
+    const rowH = FONT + 4;
+    const atlas = document.createElement('canvas');
+    atlas.width = CELL * GLYPHS.length;
+    atlas.height = rowH * 2;
+    const a = atlas.getContext('2d');
+    a.font = `${FONT}px monospace`;
+    a.textBaseline = 'top';
+    ['#35ff51', '#d9ffe0'].forEach((color, row) => {
+      a.fillStyle = color;
+      for (let i = 0; i < GLYPHS.length; i++) {
+        a.fillText(GLYPHS[i], i * CELL, row * rowH + 1);
+      }
+    });
+    atlasCache = { atlas, rowH };
+    return atlasCache;
+  }
+
   function startMatrixRain(canvas) {
-    const context = canvas.getContext('2d');
-    if (!context) return () => {};
-    const cell = 18;
-    const fontSize = 16;
-    const glyphs = 'ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄ0123456789ﾊﾋﾌﾍﾎ';
-    let drops = [];
-    let animationFrameId = null;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return () => {};
+    const { atlas, rowH } = getAtlas();
 
-    const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      const columns = Math.ceil(canvas.width / cell);
-      drops = Array.from({ length: columns }, () => ({
-        row: Math.random() * (canvas.height / fontSize),
-        speed: 1.7 + Math.random() * 2.5
-      }));
-    };
+    const w = canvas.width = window.innerWidth;
+    const h = canvas.height = window.innerHeight;
+    const rows = Math.ceil(h / ROW);
+    const drops = Array.from({ length: Math.ceil(w / CELL) }, () => ({
+      row: Math.random() * rows,
+      speed: 1.4 + Math.random() * 1.8
+    }));
 
-    const draw = () => {
-      context.clearRect(0, 0, canvas.width, canvas.height);
-      context.font = `${fontSize}px monospace`;
-      drops.forEach((drop, column) => {
-        const head = Math.floor(drop.row);
-        for (let tail = 0; tail < 9; tail++) {
-          const row = head - tail;
-          if (row < 0) continue;
-          context.globalAlpha = tail === 0 ? .98 : .72 - tail * .075;
-          context.fillStyle = tail === 0 && Math.random() > .72 ? '#d9ffe0' : '#35ff51';
-          context.fillText(glyphs[Math.random() * glyphs.length | 0], column * cell, row * fontSize);
+    let rafId = 0;
+    let last = 0;
+
+    const frame = now => {
+      rafId = window.requestAnimationFrame(frame);
+      const dt = Math.min((now - (last || now)) / 16.667, 3) || 1;
+      last = now;
+
+      // шлейф = плавне згасання попередніх кадрів
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.fillStyle = 'rgba(0,0,0,.4)';
+      ctx.fillRect(0, 0, w, h);
+      ctx.globalCompositeOperation = 'source-over';
+
+      for (let c = 0; c < drops.length; c++) {
+        const drop = drops[c];
+        const from = Math.floor(drop.row);
+        drop.row += drop.speed * dt;
+        const to = Math.floor(drop.row);
+        for (let r = from + 1; r <= to; r++) {
+          if (r < 0 || r > rows) continue;
+          const glyph = (Math.random() * GLYPHS.length) | 0;
+          const head = r === to ? 1 : 0;
+          ctx.drawImage(atlas, glyph * CELL, head * rowH, CELL, rowH, c * CELL, r * ROW, CELL, rowH);
         }
-        drop.row += drop.speed;
-        if (head * fontSize > canvas.height + 10 * fontSize && Math.random() > .96) {
-          drop.row = -Math.random() * 8;
-        }
-      });
-      context.globalAlpha = 1;
-      animationFrameId = window.requestAnimationFrame(draw);
+        if (drop.row > rows + 2) drop.row = -Math.random() * rows * .5;
+      }
     };
 
-    resize();
-    window.addEventListener('resize', resize);
-    draw();
-
-    return () => {
-      window.removeEventListener('resize', resize);
-      if (animationFrameId) window.cancelAnimationFrame(animationFrameId);
-    };
+    rafId = window.requestAnimationFrame(frame);
+    return () => window.cancelAnimationFrame(rafId);
   }
 
   // Arrival handling
-  const isArriving = document.documentElement.classList.contains('matrix-arriving') ||
+  const isArriving = root.classList.contains('matrix-arriving') ||
     currentUrl.searchParams.get('transition') === 'matrix';
 
   if (isArriving) {
-    document.documentElement.classList.add('matrix-arriving');
+    root.classList.add('matrix-arriving');
     if (currentUrl.searchParams.has('transition')) {
       currentUrl.searchParams.delete('transition');
       try { window.history.replaceState(null, '', currentUrl); } catch { /* Ignore */ }
     }
 
     const veil = document.getElementById('matrix-arriving-veil');
-    if (!reducedMotion.matches && veil) {
+    const done = () => {
+      if (veil) veil.remove();
+      root.classList.remove('matrix-arriving', 'matrix-revealing');
+    };
+
+    if (reducedMotion.matches || !veil) {
+      done();
+    } else {
       const canvas = veil.querySelector('.matrix-transition-canvas');
       const stopRain = canvas ? startMatrixRain(canvas) : () => {};
       window.setTimeout(() => {
-        stopRain();
-        veil.remove();
-        document.documentElement.classList.remove('matrix-arriving');
-      }, 500);
-    } else {
-      if (veil) veil.remove();
-      document.documentElement.classList.remove('matrix-arriving');
+        root.classList.add('matrix-revealing');
+        window.setTimeout(() => {
+          stopRain();
+          done();
+        }, REVEAL_MS + 40);
+      }, HOLD_MS);
     }
   }
 
@@ -112,7 +146,7 @@
       window.setTimeout(() => {
         stopRain();
         window.location.assign(destination);
-      }, 420);
+      }, LEAVE_MS);
     });
   }
 
