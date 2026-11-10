@@ -22,3 +22,65 @@
         opacity: .2;
     }
 }
+
+/* ==========================================================================
+   Матричний перехід: легші шари й синхронізація з js/transition.js
+   (.32s тут = REVEAL_MS у transition.js)
+   ========================================================================== */
+.matrix-rain-transition {
+    will-change: opacity;
+}
+
+/* Вихід: трохи швидше + зупиняємо все, що зайве перемальовується */
+.matrix-leaving .matrix-transition-shade {
+    animation-duration: .36s;
+}
+
+.matrix-leaving main,
+.matrix-leaving .site-footer {
+    animation-duration: .34s;
+}
+
+.matrix-leaving .hero .eyebrow,
+.matrix-leaving .hero h1 em::before,
+.matrix-leaving .hero h1 em::after {
+    animation: none;
+}
+
+.matrix-leaving .ambient {
+    animation-play-state: paused;
+}
+
+/* Вхід: завіса тримається, поки JS не додасть .matrix-revealing.
+   Якщо JS не відпрацював, failsafe сам прибере завісу через 2.5с. */
+html.matrix-arriving main,
+html.matrix-arriving .site-footer {
+    animation: none;
+}
+
+html.matrix-arriving .matrix-rain-transition {
+    animation: matrix-veil-failsafe .3s 2.5s forwards;
+}
+
+html.matrix-revealing .matrix-rain-transition {
+    animation: matrix-shade-out .32s cubic-bezier(.2, .7, .25, 1) forwards;
+}
+
+html.matrix-revealing main {
+    animation: matrix-arrive .32s cubic-bezier(.2, .7, .25, 1) both;
+}
+
+html.matrix-revealing .site-footer {
+    animation: matrix-arrive .32s .03s cubic-bezier(.2, .7, .25, 1) both;
+}
+
+@keyframes matrix-veil-failsafe {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+        visibility: hidden;
+    }
+}
