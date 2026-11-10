@@ -33,10 +33,7 @@
     setup();
   });
 
-<<<<<<< Updated upstream
-=======
   setup(); // початкова ініціалізація: розмір canvas і краплі
->>>>>>> Stashed changes
 
   const tick = t => {
     requestAnimationFrame(tick); // rAF сам стає на паузу у прихованій вкладці
