@@ -24,12 +24,18 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <!-- URL шрифтів збігається з board.html, щоб CSS шрифтів був у кеші при переході -->
   <link
-    href="https://fonts.googleapis.com/css2?family=Oxanium:wght@500;600;700&family=Rajdhani:wght@400;600&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Oxanium:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&display=swap"
     rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css?v=0" />
   <link rel="stylesheet" href="css/theme.css?v=0" />
   <link rel="stylesheet" href="css/perf.css?v=0" />
+
+  <!-- Прогріваємо кеш ресурсами board.html -->
+  <link rel="prefetch" href="css/booking.css?v=0" as="style" />
+  <link rel="prefetch" href="js/booking.js?v=0" as="script" />
+  <link rel="prefetch" href="js/app.js?v=0" as="script" />
 </head>
 
 <body class="home-page">
