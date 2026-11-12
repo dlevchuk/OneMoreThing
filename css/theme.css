@@ -280,13 +280,11 @@ html.matrix-arriving .site-footer {
   0% {
     opacity: .6;
     transform: scale(.85);
-    box-shadow: 0 0 5px var(--crimson-neon);
   }
 
   100% {
     opacity: 1;
     transform: scale(1.18);
-    box-shadow: 0 0 10px var(--crimson-neon), 0 0 18px var(--crimson-neon);
   }
 }
 

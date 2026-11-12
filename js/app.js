@@ -32,6 +32,7 @@ const PRIORITY_CONFIG = {
   }
 };
 let selectedWishId = '';
+let lastDetailsMarkup = '';
 
 function escHtml(value = '') {
   return String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -62,7 +63,7 @@ function filteredWishes() {
 
 function buildCard(wish) {
   const image = safeUrl(wish.image);
-  const priorityKey = wish.priority in PRIORITY_CONFIG ? wish.priority : 'want';
+  const priorityKey = Object.hasOwn(PRIORITY_CONFIG, wish.priority) ? wish.priority : 'want';
   const cfg = PRIORITY_CONFIG[priorityKey];
   const isReserved = isWishReserved(wish.id);
   return `
@@ -90,18 +91,21 @@ function buildCard(wish) {
 
 function renderDetails(wish) {
   if (!wish) {
-    details.innerHTML = '<div class="details-empty"><span aria-hidden="true">✧</span><p>Лінія мовчить. Обери запис.</p></div>';
+    if (lastDetailsMarkup !== 'empty') {
+      details.innerHTML = '<div class="details-empty"><span aria-hidden="true">✧</span><p>Лінія мовчить. Обери запис.</p></div>';
+      lastDetailsMarkup = 'empty';
+    }
     return;
   }
 
   const image = safeUrl(wish.image);
   const originalUrl = safeUrl(wish.originalUrl);
   const localUrl = safeUrl(wish.localUrl);
-  const priorityKey = wish.priority in PRIORITY_CONFIG ? wish.priority : 'want';
+  const priorityKey = Object.hasOwn(PRIORITY_CONFIG, wish.priority) ? wish.priority : 'want';
   const cfg = PRIORITY_CONFIG[priorityKey];
   const bookingWidget = window.BookingManager ? window.BookingManager.renderDetailWidget(wish) : '';
 
-  details.innerHTML = `
+  const markup = `
     <div class="detail-topline"><span>⬡ МАТРИЦЯ / ДОСЬЄ</span><span>№ ${String(wishes.indexOf(wish) + 1).padStart(2, '0')}</span></div>
     ${image ? `<div class="detail-image"><img src="${escHtml(image)}" alt="${escHtml(wish.title)}" /></div>` : ''}
     <div class="detail-content">
@@ -125,6 +129,9 @@ function renderDetails(wish) {
     </div>
   `;
 
+  if (markup === lastDetailsMarkup) return;
+  lastDetailsMarkup = markup;
+  details.innerHTML = markup;
   if (window.BookingManager) {
     window.BookingManager.attachDetailListeners(details, wish);
   }
@@ -147,10 +154,35 @@ function renderGrid(animate = true) {
   grid.hidden = count === 0;
   grid.classList.toggle('no-anim', !animate);
   if (count && !list.some(wish => wish.id === selectedWishId)) selectedWishId = list[0].id || '';
-  grid.innerHTML = list.map((wish, index) => {
+  const existing = new Map([...grid.children].map(card => [card.dataset.id, card]));
+  const visible = new Set(list.map(wish => wish.id));
+  existing.forEach((card, id) => { if (!visible.has(id)) card.remove(); });
+  let cursor = grid.firstElementChild;
+  list.forEach((wish, index) => {
     const isReserved = isWishReserved(wish.id);
-    return `<article class="notice${isReserved ? ' is-reserved' : ''}" role="listitem" style="--card-index:${index}" data-id="${escHtml(wish.id || '')}">${buildCard(wish)}</article>`;
-  }).join('');
+    let card = existing.get(wish.id);
+    if (!card) {
+      card = document.createElement('article');
+      card.className = 'notice';
+      card.setAttribute('role', 'listitem');
+      card.dataset.id = wish.id;
+      card.innerHTML = buildCard(wish);
+    }
+    card.classList.toggle('is-reserved', isReserved);
+    card.style.setProperty('--card-index', Math.min(index, 5));
+    const button = card.querySelector('.notice-select');
+    const selected = wish.id === selectedWishId;
+    button.classList.toggle('is-selected', selected);
+    button.setAttribute('aria-pressed', String(selected));
+    const status = card.querySelector('.notice-status-tag');
+    if (status.classList.contains('notice-status-tag--free') === isReserved) {
+      status.classList.toggle('notice-status-tag--free', !isReserved);
+      status.setAttribute('aria-label', isReserved ? 'Контракт закріплено' : 'Контракт вільний для взяття');
+      status.innerHTML = `<span class="status-dot" aria-hidden="true"></span> ${isReserved ? 'ВЗЯТО' : 'ВІЛЬНИЙ'}`;
+    }
+    if (card !== cursor) grid.insertBefore(card, cursor);
+    cursor = card.nextElementSibling;
+  });
   const selectedWish = list.find(wish => wish.id === selectedWishId) || list[0];
   if (selectedWish) selectedWishId = selectedWish.id || '';
   renderDetails(selectedWish);
@@ -169,7 +201,7 @@ grid.addEventListener('click', event => {
   });
   renderDetails(filteredWishes().find(wish => wish.id === selectedWishId));
   if (window.innerWidth <= 768 && details) {
-    details.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    details.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block: 'start' });
   }
 });
 
@@ -186,7 +218,7 @@ searchInput.addEventListener('input', () => { searchQuery = searchInput.value.tr
 
 async function init() {
   try {
-    const response = await fetch('data/wishes.json', { cache: 'no-store' });
+    const response = await fetch('data/wishes.json');
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const data = await response.json();
     const seen = new Set();
@@ -196,7 +228,7 @@ async function init() {
         let id = item.id || `wish-${i}`;
         while (seen.has(id)) id += `-${i}`;
         seen.add(id);
-        return { ...item, id, priority: item.priority in PRIORITY_CONFIG ? item.priority : 'unsure' };
+        return { ...item, id: String(id), priority: Object.hasOwn(PRIORITY_CONFIG, item.priority) ? item.priority : 'unsure' };
       });
   } catch (error) {
     console.error('Не вдалося завантажити список бажань:', error);
@@ -211,6 +243,7 @@ async function init() {
   }
 
   if (window.BookingManager) {
+    renderGrid();
     await window.BookingManager.init();
     window.BookingManager.onUpdate(() => renderGrid(false));
   }

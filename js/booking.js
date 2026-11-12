@@ -12,6 +12,10 @@ window.BookingManager = (() => {
   let isConfigured = false;
   let reservations = new Map();
   const listeners = [];
+  let refreshPromise = null;
+  let refreshPending = false;
+  let actionPending = false;
+  let ownershipSnapshot = '[]';
   const LOCAL_STORAGE_KEY = 'omg_my_bookings'; // { [wishId]: cancelToken }
   const MOCK_STORAGE_KEY = 'omg_mock_reservations';
 
@@ -39,14 +43,20 @@ window.BookingManager = (() => {
   function writeJson(key, value) {
     try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* private mode */ }
   }
-  const getMyBookings = () => readJson(LOCAL_STORAGE_KEY, '{}');
+  const getMyBookings = () => {
+    const value = readJson(LOCAL_STORAGE_KEY, '{}');
+    return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+  };
   function saveMyBooking(wishId, token) {
     const b = getMyBookings(); b[wishId] = token; writeJson(LOCAL_STORAGE_KEY, b);
   }
   function removeMyBooking(wishId) {
     const b = getMyBookings(); delete b[wishId]; writeJson(LOCAL_STORAGE_KEY, b);
   }
-  const getMockReservations = () => readJson(MOCK_STORAGE_KEY, '[]');
+  const getMockReservations = () => {
+    const value = readJson(MOCK_STORAGE_KEY, '[]');
+    return Array.isArray(value) ? value.filter(item => item && typeof item.wish_id === 'string') : [];
+  };
   const saveMockReservations = list => writeJson(MOCK_STORAGE_KEY, list);
 
   // ---- Supabase ----
@@ -84,7 +94,20 @@ window.BookingManager = (() => {
 
   // Збираємо новий Map і підміняємо після завантаження: без блимання "вільних" карток.
   // При помилці лишається попередній стан.
-  async function fetchReservations() {
+  function fetchReservations() {
+    refreshPending = true;
+    if (!refreshPromise) {
+      refreshPromise = (async () => {
+        do {
+          refreshPending = false;
+          await loadReservations();
+        } while (refreshPending);
+      })().finally(() => { refreshPromise = null; });
+    }
+    return refreshPromise;
+  }
+
+  async function loadReservations() {
     const next = new Map();
 
     if (isConfigured && supabaseClient) {
@@ -102,8 +125,14 @@ window.BookingManager = (() => {
       getMockReservations().forEach(item => next.set(item.wish_id, item));
     }
 
+    const ownership = JSON.stringify(Object.keys(getMyBookings()).sort());
+    const changed = ownership !== ownershipSnapshot || next.size !== reservations.size || [...next].some(([id, value]) => {
+      const previous = reservations.get(id);
+      return !previous || previous.id !== value.id || previous.reserved_by !== value.reserved_by || previous.created_at !== value.created_at;
+    });
     reservations = next;
-    notifyListeners();
+    ownershipSnapshot = ownership;
+    if (changed) notifyListeners();
   }
 
   function notifyListeners() {
@@ -227,20 +256,23 @@ window.BookingManager = (() => {
         const errorEl = document.getElementById('booking-error');
         errorEl.hidden = true;
         errorEl.textContent = '';
-        if (!activeWishForAction) return;
+        if (!activeWishForAction || actionPending) return;
+        const wish = activeWishForAction;
+        actionPending = true;
 
         try {
           submitBtn.disabled = true;
           submitBtn.textContent = 'Збереження в мережі…';
-          const token = await reserve(activeWishForAction.id, {
+          const token = await reserve(wish.id, {
             name: document.getElementById('booking-name').value
           });
           bookingDialog.close();
-          openTokenModal(activeWishForAction, token);
+          openTokenModal(wish, token);
         } catch (err) {
           errorEl.textContent = err.message || 'Не вдалося закріпити контракт.';
           errorEl.hidden = false;
         } finally {
+          actionPending = false;
           submitBtn.disabled = false;
           submitBtn.innerHTML = '<span>Підтвердити контракт</span> ↵';
         }
@@ -254,17 +286,20 @@ window.BookingManager = (() => {
         const errorEl = document.getElementById('cancel-error');
         errorEl.hidden = true;
         errorEl.textContent = '';
-        if (!activeWishForAction) return;
+        if (!activeWishForAction || actionPending) return;
+        const wish = activeWishForAction;
+        actionPending = true;
 
         try {
           submitBtn.disabled = true;
           submitBtn.textContent = 'Скасування…';
-          await cancel(activeWishForAction.id, document.getElementById('cancel-pin').value);
+          await cancel(wish.id, document.getElementById('cancel-pin').value);
           cancelDialog.close();
         } catch (err) {
           errorEl.textContent = err.message || 'Не вдалося скасувати контракт.';
           errorEl.hidden = false;
         } finally {
+          actionPending = false;
           submitBtn.disabled = false;
           submitBtn.innerHTML = '<span>Зняти контракт</span>';
         }
@@ -273,7 +308,7 @@ window.BookingManager = (() => {
   }
 
   function openBookingModal(wish) {
-    if (!bookingDialog || !wish) return;
+    if (!bookingDialog || !wish || actionPending) return;
     activeWishForAction = wish;
     document.getElementById('booking-modal-subtitle').textContent = wish.title || '';
     document.getElementById('booking-name').value = '';
@@ -292,7 +327,7 @@ window.BookingManager = (() => {
   }
 
   function openCancelModal(wish) {
-    if (!cancelDialog || !wish) return;
+    if (!cancelDialog || !wish || actionPending) return;
     activeWishForAction = wish;
 
     const storedToken = getMyToken(wish.id);

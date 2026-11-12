@@ -29,6 +29,9 @@ jobs:
         id: pages
         uses: actions/configure-pages@v5
 
+      - name: Check gift catalog
+        run: node scripts/sync-catalog.mjs --check
+
       - name: Build site into dist/
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}

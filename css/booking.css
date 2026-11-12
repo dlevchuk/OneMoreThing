@@ -218,12 +218,12 @@
   content: '';
   position: absolute;
   top: 0;
-  left: -100%;
+  left: 0;
   width: 60%;
   height: 100%;
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .35), transparent);
-  transform: skewX(-25deg);
-  transition: left .6s ease;
+  transform: translateX(-170%) skewX(-25deg);
+  transition: transform .6s ease;
 }
 
 .booking-cta-btn:hover {
@@ -233,7 +233,7 @@
 }
 
 .booking-cta-btn:hover::after {
-  left: 140%;
+  transform: translateX(235%) skewX(-25deg);
 }
 
 .booking-cta-btn:active {

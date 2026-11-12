@@ -4,7 +4,37 @@
 -- Supabase Dashboard -> SQL Editor -> New query -> Run
 -- ====================================================================
 
+begin;
+
 create extension if not exists pgcrypto with schema extensions;
+
+-- Каталог змінює лише власник БД. Генерується з data/wishes.json.
+create table if not exists public.gift_catalog (
+  wish_id text primary key,
+  active boolean not null default true
+);
+alter table public.gift_catalog enable row level security;
+revoke all on public.gift_catalog from public, anon, authenticated;
+
+-- BEGIN GENERATED GIFT CATALOG
+update public.gift_catalog set active = false;
+insert into public.gift_catalog (wish_id, active) values
+  ('baseus-air-car-jump-starter-super-energy-10000mah', true),
+  ('xiaomi-portable-electric-air-compressor-2-pro', true),
+  ('orpro-dynamic-recovery-8t-9m', true),
+  ('hidratespark-pro-2-32oz', true),
+  ('oura-ring-5', true),
+  ('arzopa-a1s-14-portable-monitor', true),
+  ('radiomaster-tx15-max-elrs-m2', true),
+  ('bambu-lab-a1-mini', true),
+  ('jelly-bar-berry-gin', true),
+  ('steam-deck-oled', true),
+  ('ubiquiti-dream-router-5g-max', true),
+  ('whisky-stones-gift-set-rozetka', true),
+  ('herman-miller-aeron-office-chair', true),
+  ('uniqlo-pufftech-parka-navy', true)
+on conflict (wish_id) do update set active = excluded.active;
+-- END GENERATED GIFT CATALOG
 
 -- 1. Публічна таблиця: лише те, що можна показувати всім
 create table if not exists public.reservations (
@@ -37,6 +67,7 @@ create index if not exists reservation_attempts_bucket_idx
   on public.reservation_attempts (bucket, created_at);
 
 alter table public.reservation_attempts enable row level security;
+alter table public.reservation_attempts alter column created_at set default clock_timestamp();
 revoke all on public.reservation_attempts from anon, authenticated;
 
 -- 3. Міграція зі старої схеми: pin_code -> хеш, прибрати pin_code і note.
@@ -71,6 +102,7 @@ create policy "Дозволити публічне читання бронюва
 
 drop policy if exists "Дозволити створення нового бронювання" on public.reservations;
 revoke insert, update, delete on public.reservations from anon, authenticated;
+grant select on public.reservations to anon, authenticated;
 
 -- 5. Хелпери (недоступні через API: тільки для інших security definer функцій)
 
@@ -104,13 +136,13 @@ $$;
 create or replace function public._attempts_since(p_bucket text, p_window interval)
 returns integer
 language sql
-stable
+volatile
 security definer
 set search_path = public
 as $$
   select count(*)::int
   from public.reservation_attempts
-  where bucket = p_bucket and created_at > now() - p_window;
+  where bucket = p_bucket and created_at > clock_timestamp() - p_window;
 $$;
 
 revoke all on function public._request_ip_hash() from public, anon, authenticated;
@@ -135,8 +167,15 @@ begin
   if coalesce(p_wish_id, '') !~ '^[A-Za-z0-9_-]{1,100}$' then
     raise exception 'invalid_wish';
   end if;
-  if v_token !~ '^[A-Z0-9]{4,32}$' then
+  if v_token !~ '^[A-Z0-9]{12,32}$' then
     raise exception 'invalid_token';
+  end if;
+
+  -- Обидва RPC беруть один lock до читання лімітів і тримають до commit.
+  -- VOLATILE _attempts_since читає свіжий snapshot після очікування lock.
+  perform pg_advisory_xact_lock(1869440817, 1);
+  if not exists (select 1 from public.gift_catalog where wish_id = p_wish_id and active) then
+    raise exception 'invalid_wish';
   end if;
 
   -- прибирання старого журналу
@@ -149,7 +188,8 @@ begin
      and public._attempts_since('reserve:ip:' || v_ip_hash, interval '1 hour') >= 5 then
     raise exception 'rate_limited';
   end if;
-  if (select count(*) from public.reservations) >= 200 then
+  if (select count(*) from public.reservations r
+      join public.gift_catalog g on g.wish_id = r.wish_id where g.active) >= 200 then
     raise exception 'too_many';
   end if;
 
@@ -181,12 +221,22 @@ set search_path = public, extensions
 as $$
 declare
   v_token   text := upper(regexp_replace(coalesce(p_token, ''), '[^A-Za-z0-9]', '', 'g'));
-  v_wish    text := left(coalesce(p_wish_id, ''), 100);
+  v_wish    text := coalesce(p_wish_id, '');
   v_ip_hash text := public._request_ip_hash();
   v_count   integer;
 begin
-  if v_token = '' or v_wish = '' then
+  if v_token !~ '^[A-Z0-9]{4,32}$' or v_wish !~ '^[A-Za-z0-9_-]{1,100}$' then
     return false;
+  end if;
+
+  perform pg_advisory_xact_lock(1869440817, 1);
+  delete from public.reservation_attempts where created_at < clock_timestamp() - interval '1 day';
+  -- Вигадані ID не створюють нові buckets у журналі.
+  if not exists (select 1 from public.reservations where wish_id = v_wish) then
+    return false;
+  end if;
+  if public._attempts_since('cancel:global', interval '1 hour') >= 200 then
+    raise exception 'rate_limited';
   end if;
 
   if public._attempts_since('cancel:wish:' || v_wish, interval '1 hour') >= 10 then
@@ -209,6 +259,7 @@ begin
   end if;
 
   insert into public.reservation_attempts (bucket) values ('cancel:wish:' || v_wish);
+  insert into public.reservation_attempts (bucket) values ('cancel:global');
   if v_ip_hash is not null then
     insert into public.reservation_attempts (bucket) values ('cancel:ip:' || v_ip_hash);
   end if;
@@ -230,3 +281,5 @@ begin
   end if;
 end;
 $$;
+
+commit;

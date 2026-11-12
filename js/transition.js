@@ -53,6 +53,7 @@
     let last = 0;
 
     const frame = now => {
+      if (reducedMotion.matches) return;
       rafId = window.requestAnimationFrame(frame);
       const dt = Math.min((now - (last || now)) / 16.667, 3) || 1;
       last = now;
@@ -119,11 +120,12 @@
   if (enterLink) {
     enterLink.addEventListener('click', event => {
       if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-      if (enterLink.dataset.transitioning) return;
+      if (enterLink.dataset.transitioning) { event.preventDefault(); return; }
       enterLink.dataset.transitioning = 'true';
 
       const destination = new URL(enterLink.href, window.location.href);
       if (reducedMotion.matches) {
+        event.preventDefault();
         window.location.assign(destination);
         return;
       }
