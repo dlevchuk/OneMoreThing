@@ -9,11 +9,11 @@ function harness(elements = {}) {
   let realtime;
   const storage = new Map();
   const client = {
-    from: () => ({ select: () => new Promise(resolve => requests.push(resolve)) }),
-    channel: () => ({ on: (_type, _filter, callback) => {
+    from: table => table === 'gift_catalog' ? { select: () => ({ eq: async () => ({ data: [], error: null }) }) } : { select: () => new Promise(resolve => requests.push(resolve)) },
+    channel: () => { const channel = { on: (_type, _filter, callback) => {
       realtime = callback;
-      return { subscribe() {} };
-    } }),
+      return channel;
+    }, subscribe() {} }; return channel; },
     rpc: async () => ({ error: null })
   };
   const context = vm.createContext({
@@ -127,4 +127,19 @@ test('Ownership refreshes when Realtime beats the reservation RPC response', asy
   h.requests.shift()({ data: [row()], error: null });
   await pending;
   assert.deepEqual(ownership, [false, true]);
+});
+
+test('Completed gifts render escaped public notes and cannot be reserved', async () => {
+  const h = harness();
+  const from = h.client.from;
+  h.client.from = table => table === 'gift_catalog' ? { select: () => ({ eq: async () => ({ data: [{ wish_id: 'gift', completed_at: '2026-11-12T00:00:00Z', completion_note: '<script>bad()</script>' }], error: null }) }) } : from(table);
+  const init = h.manager.init();
+  h.requests.shift()({ data: [], error: null });
+  await init;
+  assert.equal(h.manager.isCompleted('gift'), true);
+  const widget = h.manager.renderDetailWidget({ id: 'gift' });
+  assert.ok(widget.includes('КОНТРАКТ ВИКОНАНО'));
+  assert.ok(widget.includes('&lt;script&gt;'));
+  assert.ok(!widget.includes('btn-reserve-action'));
+  await assert.rejects(h.manager.reserve('gift', { name: 'guest' }), /уже отримано/);
 });

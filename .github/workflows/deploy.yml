@@ -43,7 +43,7 @@ jobs:
           touch dist/.nojekyll
 
           # Лише те, що реально потрібно сайту
-          cp index.html board.html dist/
+          cp index.html board.html owner.html dist/
           cp -r css js assets data dist/
           if [ -d img ]; then cp -r img dist/img; fi
 

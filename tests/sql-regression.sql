@@ -39,8 +39,8 @@ set local role anon;
 do $$
 begin
   begin
-    perform 1 from public.gift_catalog;
-    raise exception 'Catalog exposed';
+    update public.gift_catalog set completed_at = now();
+    raise exception 'Catalog writable';
   exception when insufficient_privilege then null;
   end;
   begin

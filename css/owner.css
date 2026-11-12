@@ -1,0 +1,18 @@
+.owner-shell { width: min(100% - 32px, 540px); margin: 60px auto; }
+.owner-panel { margin-top: 24px; padding: clamp(20px, 5vw, 36px); border: 1px solid var(--line); background: var(--surface); }
+.owner-panel h1 { font: 600 clamp(1.8rem, 5vw, 2.5rem)/1.1 var(--display); }
+.owner-panel p { line-height: 1.5; }
+.owner-panel form + form { margin-top: 22px; }
+.owner-message { min-height: 1.5em; color: var(--matrix); }
+.owner-message.is-error { color: #ff9999; }
+#owner-signed-in { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.owner-actions { display: grid; gap: 12px; margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--line); }
+.owner-actions > span { color: var(--muted); font: 500 .7rem var(--mono); }
+.owner-actions button { white-space: normal; }
+.booking-widget--completed, .notice-status-tag--completed { border-color: #9bc7ae; color: #bce7cc; background: rgba(110, 160, 130, .1); }
+.notice.is-completed { opacity: .8; }
+.notice.is-completed .ice-led, .notice.is-completed .ice-bars,
+.quest-details.is-completed .ice-led, .quest-details.is-completed .ice-bars { animation: none; }
+#owner-note { resize: vertical; max-width: 100%; }
+.header-nav { flex-wrap: wrap; }
+@media (max-width:640px) { .filter-btn { flex-basis: calc(50% - 4px); } }

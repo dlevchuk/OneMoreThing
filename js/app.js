@@ -51,12 +51,17 @@ function isWishReserved(id) {
   return window.BookingManager ? window.BookingManager.isReserved(id) : false;
 }
 
+function isWishCompleted(id) {
+  return window.BookingManager?.isCompleted(id) || false;
+}
+
 function filteredWishes() {
   const query = searchQuery.toLocaleLowerCase('uk');
   return wishes.filter(wish => {
-    const matchesFilter = wish.priority === activeFilter;
+    const completed = isWishCompleted(wish.id);
+    const matchesFilter = activeFilter === 'completed' ? completed : wish.priority === activeFilter && !completed;
     const matchesQuery = !query || `${wish.title} ${wish.description || ''}`.toLocaleLowerCase('uk').includes(query);
-    const matchesAvailability = !onlyAvailable || !isWishReserved(wish.id);
+    const matchesAvailability = activeFilter === 'completed' || !onlyAvailable || !isWishReserved(wish.id);
     return matchesFilter && matchesQuery && matchesAvailability;
   });
 }
@@ -90,6 +95,7 @@ function buildCard(wish) {
 }
 
 function renderDetails(wish) {
+  details.classList.toggle('is-completed', Boolean(wish && isWishCompleted(wish.id)));
   if (!wish) {
     if (lastDetailsMarkup !== 'empty') {
       details.innerHTML = '<div class="details-empty"><span aria-hidden="true">✧</span><p>Лінія мовчить. Обери запис.</p></div>';
@@ -104,6 +110,7 @@ function renderDetails(wish) {
   const priorityKey = Object.hasOwn(PRIORITY_CONFIG, wish.priority) ? wish.priority : 'want';
   const cfg = PRIORITY_CONFIG[priorityKey];
   const bookingWidget = window.BookingManager ? window.BookingManager.renderDetailWidget(wish) : '';
+  const ownerControls = window.OwnerManager?.isOwner ? `<div class="owner-actions"><span>Керування власника</span><button type="button" class="dialog-btn dialog-btn--submit" data-owner-status="${isWishCompleted(wish.id) ? 'reopen' : 'complete'}">${isWishCompleted(wish.id) ? 'Повернути у вільні' : 'Позначити виконаним'}</button></div>` : '';
 
   const markup = `
     <div class="detail-topline"><span>⬡ МАТРИЦЯ / ДОСЬЄ</span><span>№ ${String(wishes.indexOf(wish) + 1).padStart(2, '0')}</span></div>
@@ -126,6 +133,7 @@ function renderDetails(wish) {
         ${localUrl ? `<a href="${escHtml(localUrl)}" target="_blank" rel="noopener noreferrer" class="card-link-btn card-link-btn--local">Місцевий ринок</a>` : ''}
       </div>
       ${bookingWidget}
+      ${ownerControls}
     </div>
   `;
 
@@ -138,8 +146,8 @@ function renderDetails(wish) {
 }
 
 function updateCategoryCounts() {
-  ['want', 'nice', 'unsure'].forEach(category => {
-    const count = wishes.filter(w => w.priority === category && (!onlyAvailable || !isWishReserved(w.id))).length;
+  ['want', 'nice', 'unsure', 'completed'].forEach(category => {
+    const count = wishes.filter(w => category === 'completed' ? isWishCompleted(w.id) : w.priority === category && !isWishCompleted(w.id) && (!onlyAvailable || !isWishReserved(w.id))).length;
     const badge = document.querySelector(`[data-count-for="${category}"]`);
     if (badge) badge.textContent = count;
   });
@@ -160,6 +168,7 @@ function renderGrid(animate = true) {
   let cursor = grid.firstElementChild;
   list.forEach((wish, index) => {
     const isReserved = isWishReserved(wish.id);
+    const completed = isWishCompleted(wish.id);
     let card = existing.get(wish.id);
     if (!card) {
       card = document.createElement('article');
@@ -169,16 +178,20 @@ function renderGrid(animate = true) {
       card.innerHTML = buildCard(wish);
     }
     card.classList.toggle('is-reserved', isReserved);
+    card.classList.toggle('is-completed', completed);
     card.style.setProperty('--card-index', Math.min(index, 5));
     const button = card.querySelector('.notice-select');
     const selected = wish.id === selectedWishId;
     button.classList.toggle('is-selected', selected);
     button.setAttribute('aria-pressed', String(selected));
     const status = card.querySelector('.notice-status-tag');
-    if (status.classList.contains('notice-status-tag--free') === isReserved) {
-      status.classList.toggle('notice-status-tag--free', !isReserved);
-      status.setAttribute('aria-label', isReserved ? 'Контракт закріплено' : 'Контракт вільний для взяття');
-      status.innerHTML = `<span class="status-dot" aria-hidden="true"></span> ${isReserved ? 'ВЗЯТО' : 'ВІЛЬНИЙ'}`;
+    const state = completed ? 'completed' : isReserved ? 'reserved' : 'free';
+    if (status.dataset.state !== state) {
+      status.dataset.state = state;
+      status.classList.toggle('notice-status-tag--free', state === 'free');
+      status.classList.toggle('notice-status-tag--completed', completed);
+      status.setAttribute('aria-label', completed ? 'Контракт виконано' : isReserved ? 'Контракт закріплено' : 'Контракт вільний для взяття');
+      status.innerHTML = completed ? '✓ ВИКОНАНО' : `<span class="status-dot" aria-hidden="true"></span> ${isReserved ? 'ВЗЯТО' : 'ВІЛЬНИЙ'}`;
     }
     if (card !== cursor) grid.insertBefore(card, cursor);
     cursor = card.nextElementSibling;
@@ -216,6 +229,39 @@ document.querySelectorAll('.filter-btn').forEach(button => button.addEventListen
 }));
 searchInput.addEventListener('input', () => { searchQuery = searchInput.value.trim(); renderGrid(false); });
 
+const ownerDialog = document.getElementById('owner-status-modal');
+const ownerForm = document.getElementById('owner-status-form');
+let ownerAction = null;
+let savingStatus = false;
+details.addEventListener('click', event => {
+  const button = event.target.closest('[data-owner-status]');
+  if (!button || !window.OwnerManager?.isOwner || savingStatus) return;
+  const wish = wishes.find(item => item.id === selectedWishId);
+  if (!wish) return;
+  ownerAction = { id: wish.id, completed: button.dataset.ownerStatus === 'complete' };
+  document.getElementById('owner-status-title').textContent = ownerAction.completed ? 'Подарунок уже отримано?' : 'Повернути контракт у вільні?';
+  document.getElementById('owner-status-wish').textContent = wish.title;
+  document.getElementById('owner-note-group').hidden = !ownerAction.completed;
+  document.getElementById('owner-note').value = '';
+  document.getElementById('owner-status-error').hidden = true;
+  ownerDialog.showModal();
+});
+ownerForm?.addEventListener('submit', async event => {
+  event.preventDefault();
+  if (!ownerAction || savingStatus) return;
+  const action = ownerAction;
+  const button = ownerForm.querySelector('[type="submit"]');
+  const error = document.getElementById('owner-status-error');
+  savingStatus = true;
+  button.disabled = true;
+  error.hidden = true;
+  try {
+    await window.OwnerManager.setCompleted(action.id, action.completed, document.getElementById('owner-note').value.trim());
+    ownerDialog.close();
+  } catch (err) { error.textContent = err.message; error.hidden = false; }
+  finally { savingStatus = false; button.disabled = false; }
+});
+
 async function init() {
   try {
     const response = await fetch('data/wishes.json');
@@ -246,6 +292,11 @@ async function init() {
     renderGrid();
     await window.BookingManager.init();
     window.BookingManager.onUpdate(() => renderGrid(false));
+  }
+
+  if (window.OwnerManager) {
+    window.OwnerManager.onUpdate(() => renderGrid(false));
+    window.OwnerManager.init().catch(error => console.warn('Не вдалося перевірити доступ власника:', error));
   }
 
   renderGrid();

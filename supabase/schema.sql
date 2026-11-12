@@ -15,6 +15,47 @@ create table if not exists public.gift_catalog (
 );
 alter table public.gift_catalog enable row level security;
 revoke all on public.gift_catalog from public, anon, authenticated;
+alter table public.gift_catalog add column if not exists completed_at timestamptz;
+alter table public.gift_catalog add column if not exists completion_note text not null default '';
+grant select (wish_id, active, completed_at, completion_note) on public.gift_catalog to anon, authenticated;
+drop policy if exists "Public gift status" on public.gift_catalog;
+create policy "Public gift status" on public.gift_catalog for select to anon, authenticated using (active);
+
+-- UUID власника додається адміністратором після створення Auth-користувача.
+create schema if not exists private;
+revoke all on schema private from public, anon, authenticated;
+create table if not exists private.site_owners (
+  user_id uuid primary key references auth.users(id) on delete cascade
+);
+alter table private.site_owners enable row level security;
+revoke all on private.site_owners from public, anon, authenticated;
+
+create or replace function public.is_site_owner()
+returns boolean language sql stable security definer set search_path = ''
+as $$ select exists (select 1 from private.site_owners where user_id = auth.uid()); $$;
+revoke all on function public.is_site_owner() from public;
+grant execute on function public.is_site_owner() to anon, authenticated;
+
+create or replace function public.set_gift_completed(p_wish_id text, p_completed boolean, p_note text default '')
+returns void language plpgsql security definer set search_path = ''
+as $$
+begin
+  if not public.is_site_owner() then raise exception 'forbidden' using errcode = '42501'; end if;
+  if p_completed is null or char_length(coalesce(p_note, '')) > 500 then raise exception 'invalid_status'; end if;
+  perform pg_catalog.pg_advisory_xact_lock(1869440817, 1);
+  if not exists (select 1 from public.gift_catalog where wish_id = p_wish_id and active) then
+    raise exception 'invalid_wish';
+  end if;
+  update public.gift_catalog
+  set completed_at = case when p_completed then coalesce(completed_at, pg_catalog.clock_timestamp()) else null end,
+      completion_note = case when p_completed then btrim(coalesce(p_note, '')) else '' end
+  where wish_id = p_wish_id;
+  -- Секрет бронювання видаляється каскадно. Повернення у вільні його не відновить.
+  delete from public.reservations where wish_id = p_wish_id and p_completed;
+end;
+$$;
+revoke all on function public.set_gift_completed(text, boolean, text) from public, anon;
+grant execute on function public.set_gift_completed(text, boolean, text) to authenticated;
 
 -- BEGIN GENERATED GIFT CATALOG
 update public.gift_catalog set active = false;
@@ -178,6 +219,10 @@ begin
     raise exception 'invalid_wish';
   end if;
 
+  if exists (select 1 from public.gift_catalog where wish_id = p_wish_id and completed_at is not null) then
+    raise exception 'gift_completed';
+  end if;
+
   -- прибирання старого журналу
   delete from public.reservation_attempts where created_at < now() - interval '1 day';
 
@@ -278,6 +323,12 @@ begin
     where pubname = 'supabase_realtime' and tablename = 'reservations'
   ) then
     alter publication supabase_realtime add table public.reservations;
+  end if;
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'gift_catalog'
+  ) then
+    alter publication supabase_realtime add table public.gift_catalog;
   end if;
 end;
 $$;

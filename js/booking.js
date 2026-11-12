@@ -11,6 +11,7 @@ window.BookingManager = (() => {
   let supabaseClient = null;
   let isConfigured = false;
   let reservations = new Map();
+  let giftStatuses = new Map();
   const listeners = [];
   let refreshPromise = null;
   let refreshPending = false;
@@ -24,7 +25,8 @@ window.BookingManager = (() => {
     too_many: 'Забагато активних броней. Напиши власнику.',
     invalid_name: 'Імʼя має бути від 1 до 60 символів.',
     invalid_wish: 'Некоректний контракт.',
-    invalid_token: 'Некоректний код скасування.'
+    invalid_token: 'Некоректний код скасування.',
+    gift_completed: 'Цей подарунок уже отримано.'
   };
 
   // ---- Токен скасування ----
@@ -69,7 +71,7 @@ window.BookingManager = (() => {
       !config.url.includes('YOUR_SUPABASE')
     ) {
       try {
-        supabaseClient = window.supabase.createClient(config.url.trim(), config.anonKey.trim());
+        supabaseClient = window.SiteClient ? window.SiteClient.getClient() : window.supabase.createClient(config.url.trim(), config.anonKey.trim());
         isConfigured = true;
       } catch (err) {
         console.warn('[BookingManager] Помилка ініціалізації Supabase:', err);
@@ -86,6 +88,7 @@ window.BookingManager = (() => {
       supabaseClient
         .channel('public:reservations')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'reservations' }, () => fetchReservations())
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'gift_catalog' }, () => fetchReservations())
         .subscribe();
     } catch (err) {
       console.warn('[BookingManager] Не вдалося увімкнути Realtime:', err);
@@ -109,14 +112,17 @@ window.BookingManager = (() => {
 
   async function loadReservations() {
     const next = new Map();
+    let nextGifts = giftStatuses;
 
     if (isConfigured && supabaseClient) {
       try {
-        const { data, error } = await supabaseClient
-          .from('reservations')
-          .select('id, wish_id, reserved_by, created_at');
-        if (error) throw error;
-        (data || []).forEach(item => next.set(item.wish_id, item));
+        const [bookings, gifts] = await Promise.all([
+          supabaseClient.from('reservations').select('id, wish_id, reserved_by, created_at'),
+          supabaseClient.from('gift_catalog').select('wish_id, completed_at, completion_note').eq('active', true)
+        ]);
+        if (bookings.error || gifts.error) throw bookings.error || gifts.error;
+        (bookings.data || []).forEach(item => next.set(item.wish_id, item));
+        nextGifts = new Map((gifts.data || []).map(item => [item.wish_id, item]));
       } catch (err) {
         console.error('[BookingManager] Помилка завантаження бронювань з Supabase:', err);
         return;
@@ -126,11 +132,16 @@ window.BookingManager = (() => {
     }
 
     const ownership = JSON.stringify(Object.keys(getMyBookings()).sort());
-    const changed = ownership !== ownershipSnapshot || next.size !== reservations.size || [...next].some(([id, value]) => {
+    const giftsChanged = nextGifts.size !== giftStatuses.size || [...nextGifts].some(([id, value]) => {
+      const previous = giftStatuses.get(id);
+      return !previous || previous.completed_at !== value.completed_at || previous.completion_note !== value.completion_note;
+    });
+    const changed = giftsChanged || ownership !== ownershipSnapshot || next.size !== reservations.size || [...next].some(([id, value]) => {
       const previous = reservations.get(id);
       return !previous || previous.id !== value.id || previous.reserved_by !== value.reserved_by || previous.created_at !== value.created_at;
     });
     reservations = next;
+    giftStatuses = nextGifts;
     ownershipSnapshot = ownership;
     if (changed) notifyListeners();
   }
@@ -147,6 +158,7 @@ window.BookingManager = (() => {
 
   // Повертає код скасування (показати користувачу один раз)
   async function reserve(wishId, { name }) {
+    if (isCompleted(wishId)) throw new Error(ERRORS.gift_completed);
     const cleanName = (name || '').trim();
     if (!cleanName) throw new Error('Вкажи свій нікнейм або імʼя.');
     const token = generateToken();
@@ -201,6 +213,8 @@ window.BookingManager = (() => {
   }
 
   const isReserved = wishId => reservations.has(wishId);
+  const isCompleted = wishId => Boolean(giftStatuses.get(wishId)?.completed_at);
+  const getGiftStatus = wishId => giftStatuses.get(wishId) || null;
   const getReservation = wishId => reservations.get(wishId) || null;
   const getMyToken = wishId => getMyBookings()[wishId] || '';
   const isMyBooking = wishId => Boolean(getMyToken(wishId));
@@ -360,6 +374,11 @@ window.BookingManager = (() => {
 
   function renderDetailWidget(wish) {
     if (!wish) return '';
+    if (isCompleted(wish.id)) {
+      const gift = getGiftStatus(wish.id);
+      const date = new Intl.DateTimeFormat('uk-UA', { dateStyle: 'long' }).format(new Date(gift.completed_at));
+      return `<div class="booking-widget booking-widget--completed"><strong>✓ КОНТРАКТ ВИКОНАНО</strong><p>Подарунок отримано ${esc(date)}</p>${gift.completion_note ? `<p>${esc(gift.completion_note)}</p>` : ''}</div>`;
+    }
     const res = getReservation(wish.id);
     const isMine = isMyBooking(wish.id);
 
@@ -430,6 +449,7 @@ window.BookingManager = (() => {
 
   return {
     init, isReserved, getReservation, isMyBooking, reserve, cancel, onUpdate,
+    isCompleted, getGiftStatus, refresh: fetchReservations,
     openBookingModal, openCancelModal, renderDetailWidget, attachDetailListeners,
     get isConfigured() { return isConfigured; }
   };
