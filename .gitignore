@@ -8,3 +8,6 @@ js/supabase-config.js
 # Системні файли macOS та Windows
 .DS_Store
 Thumbs.db
+# Private monitor state and Python cache
+.monitoring-state/
+__pycache__/

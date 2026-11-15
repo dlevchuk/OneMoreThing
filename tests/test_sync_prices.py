@@ -1,6 +1,8 @@
 import importlib.util
 from pathlib import Path
 import unittest
+import sys
+sys.path.insert(0, str(Path(__file__).parents[1] / 'scripts'))
 
 spec = importlib.util.spec_from_file_location('sync_prices', Path(__file__).parents[1] / 'scripts/sync-prices.py')
 m = importlib.util.module_from_spec(spec)
@@ -44,6 +46,52 @@ class ExportTest(unittest.TestCase):
         result, failed = m.export({'gift': {**RULE, 'url': 'https://other.example'}}, [{'id': 'gift'}], {}, api)
         self.assertTrue(failed)
         self.assertEqual(result, {})
+
+
+class PipelineTest(unittest.TestCase):
+    def test_full_sync_creates_once_exports_structured_price_and_keeps_private_state(self):
+        import io
+        import json
+        import os
+        import tempfile
+        from unittest.mock import patch
+        watches = {}
+        creates = []
+        product_html = '<script type="application/ld+json">' + json.dumps({
+            '@type': 'Product', 'name': 'Gift', 'offers': {'price': '100.50', 'priceCurrency': 'UAH',
+            'availability': 'https://schema.org/InStock'}}) + '</script>'
+        def request(req, timeout):
+            path = req.full_url.split('/api/v1/', 1)[1]
+            if req.get_method() == 'POST':
+                payload = json.loads(req.data)
+                creates.append(payload)
+                watches['created'] = {**payload, 'last_checked': 1700000000}
+                value = {'uuid': 'created'}
+            elif path == 'watch':
+                value = watches
+            elif path == 'watch/created':
+                value = watches['created']
+            elif path == 'watch/created/history/latest?html=1':
+                return io.BytesIO(product_html.encode())
+            else:
+                raise AssertionError(path)
+            return io.BytesIO(json.dumps(value).encode())
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            (root / 'data').mkdir()
+            (root / 'config').mkdir()
+            (root / 'data/wishes.json').write_text(json.dumps([{'id': 'gift', 'title': 'Gift', 'localUrl': 'https://shop.example/item'}]))
+            for name in ['shop-profiles', 'price-watches']:
+                (root / f'config/{name}.json').write_text('{}')
+            with patch.object(sys, 'argv', ['sync-prices.py', '--root', str(root), '--state', str(root / 'private/state.json')]), patch.dict(os.environ, {'CHANGEDETECTION_API_KEY': 'test-key'}), patch.object(m, 'urlopen', request):
+                self.assertEqual(m.main(), 0)
+                self.assertEqual(m.main(), 0)
+            self.assertEqual(len(creates), 1)
+            self.assertEqual(json.loads((root / 'data/prices.json').read_text())['gift']['price'], 100.5)
+            self.assertEqual(json.loads((root / 'data/monitoring-status.json').read_text()), {'gift': 'ok'})
+            self.assertEqual((root / 'private/state.json').stat().st_mode & 0o777, 0o600)
+            self.assertNotIn('created', (root / 'data/prices.json').read_text())
+
 
 if __name__ == '__main__':
     unittest.main()

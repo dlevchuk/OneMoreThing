@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Export explicitly mapped changedetection snapshots. Python standard library only."""
+"""Reconcile catalog watches and export verified price observations."""
 import argparse
 from datetime import datetime, timezone
 from decimal import Decimal, InvalidOperation
@@ -10,6 +10,7 @@ import re
 import sys
 from urllib.parse import quote, urlparse
 from urllib.request import Request, urlopen
+from monitoring import Page, desired_rules, reconcile
 
 
 def parse_snapshot(text, rule):
@@ -53,7 +54,8 @@ def export(config, wishes, previous, api):
             checked = float(info.get('last_checked', 0))
             if checked <= 0 or checked > datetime.now(timezone.utc).timestamp() + 300:
                 raise ValueError('Invalid check timestamp')
-            price, stock = parse_snapshot(api(watch + '/history/latest', text=True), rule)
+            price, stock = (parse_snapshot(api(watch + '/history/latest', text=True), rule)
+                            if rule.get('priceRegex') else Page(api(watch + '/history/latest?html=1', text=True)).observation())
             result[wish_id] = {
                 'price': price, 'currency': 'UAH', 'availability': stock,
                 'checkedAt': datetime.fromtimestamp(checked, timezone.utc).isoformat(),
@@ -72,26 +74,61 @@ def export(config, wishes, previous, api):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--plan', action='store_true', help='Show desired watches without API calls or writes')
+    parser.add_argument('--state', type=Path, help='Private watch mapping, outside the published repository')
     parser.add_argument('--root', type=Path, default=Path(__file__).resolve().parents[1])
     args = parser.parse_args()
     root = args.root
-    config = json.loads((root / 'config/price-watches.json').read_text())
+    overrides = json.loads((root / 'config/price-watches.json').read_text())
+    profiles = json.loads((root / 'config/shop-profiles.json').read_text())
     wishes = json.loads((root / 'data/wishes.json').read_text())
+    config = desired_rules(wishes, overrides, profiles)
+    if args.plan:
+        print(json.dumps(config, ensure_ascii=False, indent=2))
+        return 0
     target = root / 'data/prices.json'
     previous = json.loads(target.read_text()) if target.exists() else {}
     base = os.environ.get('CHANGEDETECTION_URL', 'http://127.0.0.1:5000').rstrip('/')
     key = os.environ.get('CHANGEDETECTION_API_KEY', '')
-    if config and not key:
+    if not key:
         parser.error('CHANGEDETECTION_API_KEY is required')
-    def api(path, text=False):
-        request = Request(base + '/api/v1/' + path, headers={'x-api-key': key})
+    def api(path, text=False, method='GET', payload=None):
+        body = json.dumps(payload).encode() if payload is not None else None
+        request = Request(base + '/api/v1/' + path, data=body, method=method,
+                          headers={'x-api-key': key, 'Content-Type': 'application/json'})
         with urlopen(request, timeout=30) as response:
             body = response.read(2_000_001)
         if len(body) > 2_000_000:
             raise ValueError('Response too large')
         content = body.decode('utf-8')
-        return content if text else json.loads(content)
+        if text or not content:
+            return content if text else None
+        try:
+            return json.loads(content)
+        except ValueError:
+            if method == 'PUT':
+                return content
+            raise
+    state_path = args.state or root / '.monitoring-state/watch-state.json'
+    def checkpoint(state):
+        state_path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+        temporary = state_path.with_suffix('.tmp')
+        temporary.write_text(json.dumps(state, ensure_ascii=False, indent=2) + '\n')
+        temporary.chmod(0o600)
+        temporary.replace(state_path)
+    config, errors = reconcile(config, api, checkpoint)
     result, failed = export(config, wishes, previous, api)
+    for wish_id in errors:
+        if wish_id in previous:
+            result[wish_id] = {**previous[wish_id], 'checkFailed': True}
+    failed = failed or bool(errors)
+    report = {wish['id']: ('disabled' if wish['id'] not in config and wish['id'] not in errors
+                          else errors.get(wish['id']) or ('needs_review' if wish['id'] not in result or result[wish['id']].get('checkFailed') else 'ok'))
+              for wish in wishes}
+    report_path = root / 'data/monitoring-status.json'
+    report_temp = report_path.with_suffix('.tmp')
+    report_temp.write_text(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True) + '\n')
+    report_temp.replace(report_path)
     content = json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True) + '\n'
     if not target.exists() or target.read_text() != content:
         temp = target.with_suffix('.tmp')

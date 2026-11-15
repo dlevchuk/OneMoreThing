@@ -35,7 +35,7 @@ jobs:
       - name: Test price monitoring
         run: |
           node --test tests/prices.test.mjs
-          python3 -B -m unittest discover -s tests -p 'test_sync_prices.py'
+          python3 -B -m unittest discover -s tests -p 'test_*.py'
 
       - name: Build site into dist/
         env:
