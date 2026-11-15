@@ -536,3 +536,9 @@ html.matrix-arriving .site-footer {
   color: var(--neon-soft);
   opacity: .6;
 }
+
+/* Last verified shop observation. */
+.notice-price { display: block; margin-top: .35rem; color: var(--text-primary, #b7e9c1); font-size: .8rem; }
+.detail-price { margin: 1rem 0; padding: .8rem; border: 1px solid currentColor; font-size: .85rem; }
+.detail-price p { margin: .4rem 0; }
+.detail-price a { color: inherit; text-decoration: underline; }

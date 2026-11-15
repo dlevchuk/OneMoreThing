@@ -32,6 +32,11 @@ jobs:
       - name: Check gift catalog
         run: node scripts/sync-catalog.mjs --check
 
+      - name: Test price monitoring
+        run: |
+          node --test tests/prices.test.mjs
+          python3 -B -m unittest discover -s tests -p 'test_sync_prices.py'
+
       - name: Build site into dist/
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}

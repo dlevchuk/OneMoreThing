@@ -66,6 +66,14 @@ function filteredWishes() {
   });
 }
 
+function priceMarkup(id, compact = false) {
+  const item = window.PriceMonitor?.describe(id);
+  if (!item) return '';
+  if (compact) return `<span class="notice-price">${escHtml(item.price)}${item.stale ? ' · потребує перевірки' : ''}</span>`;
+  const url = safeUrl(item.url);
+  return `<div class="detail-price"><strong>Остання відома ціна: ${escHtml(item.price)}</strong><p>${escHtml(item.stock)}</p><p>Перевірено: ${escHtml(item.checked)}${item.stale ? ' · дані потребують оновлення' : ''}</p>${url ? `<a href="${escHtml(url)}" target="_blank" rel="noopener noreferrer">${escHtml(item.store || 'Магазин')}</a>` : ''}</div>`;
+}
+
 function buildCard(wish) {
   const image = safeUrl(wish.image);
   const priorityKey = Object.hasOwn(PRIORITY_CONFIG, wish.priority) ? wish.priority : 'want';
@@ -83,6 +91,7 @@ function buildCard(wish) {
           <span class="notice-priority-text">${cfg.label}</span>
         </span>
         <span class="notice-title">${escHtml(wish.title)}</span>
+        ${priceMarkup(wish.id, true)}
         ${isReserved ? `
           <span class="notice-status-tag" aria-label="Контракт закріплено">
             <span class="status-dot" aria-hidden="true"></span> ВЗЯТО
@@ -126,6 +135,7 @@ function renderDetails(wish) {
       </span>
       <h3 class="detail-title">${escHtml(wish.title)}</h3>
       <p class="detail-description">${escHtml(wish.description || 'Опису немає. Дані теж іноді мовчать.')}</p>
+      ${priceMarkup(wish.id)}
       <div class="detail-divider" aria-hidden="true"></div>
       <p class="detail-note">Перевір ціну й наявність перед переходом. У цьому місті цінники міняються швидше за прогнози.</p>
       <div class="card-links detail-links">
@@ -263,6 +273,7 @@ ownerForm?.addEventListener('submit', async event => {
 });
 
 async function init() {
+  await window.PriceMonitor?.init();
   try {
     const response = await fetch('data/wishes.json');
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
