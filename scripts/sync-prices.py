@@ -34,8 +34,27 @@ def parse_snapshot(text, rule):
     return float(value), stock
 
 
-def export(config, wishes, previous, api):
+SOURCE_REASONS = {
+    'Watch has not been checked yet': 'pending',
+    'Watch is paused': 'paused',
+    'Watch fetch failed': 'fetch_error',
+    'Watch filter failed': 'filter_error',
+    'Expected exactly one structured Product': 'no_unique_product',
+    'No structured offers': 'no_offer',
+    'Unknown or non-UAH offer': 'unsupported_currency',
+    'Aggregate price range': 'price_range',
+    'No exact structured price': 'no_exact_price',
+    'Invalid structured price': 'invalid_price',
+    'Ambiguous variants or sellers': 'ambiguous_price',
+    'Price must match exactly once': 'price_rule_mismatch',
+    'Invalid price': 'invalid_price',
+    'Invalid price range or precision': 'invalid_price',
+}
+
+
+def export(config, wishes, previous, api, diagnostics=None):
     result = {}
+    diagnostics = diagnostics if diagnostics is not None else {}
     failed = False
     active = {w['id'] for w in wishes}
     for wish_id, rule in config.items():
@@ -49,10 +68,16 @@ def export(config, wishes, previous, api):
             info = api(watch)
             if info.get('url') != url:
                 raise ValueError('Watch URL does not match configured shop')
-            if info.get('last_error') or info.get('paused') or info.get('consecutive_filter_failures'):
-                raise ValueError('Watch is paused or failed')
+            if info.get('paused'):
+                raise ValueError('Watch is paused')
+            if info.get('last_error'):
+                raise ValueError('Watch fetch failed')
+            if info.get('consecutive_filter_failures'):
+                raise ValueError('Watch filter failed')
             checked = float(info.get('last_checked', 0))
-            if checked <= 0 or checked > datetime.now(timezone.utc).timestamp() + 300:
+            if checked == 0:
+                raise ValueError('Watch has not been checked yet')
+            if checked < 0 or checked > datetime.now(timezone.utc).timestamp() + 300:
                 raise ValueError('Invalid check timestamp')
             price, stock = (parse_snapshot(api(watch + '/history/latest', text=True), rule)
                             if rule.get('priceRegex') else Page(api(watch + '/history/latest?html=1', text=True)).observation())
@@ -63,12 +88,17 @@ def export(config, wishes, previous, api):
             }
         except (ValueError, KeyError, IndexError, TypeError, OSError, re.error) as exc:
             # Do not log API responses or credentials.
-            print(f'{wish_id}: export failed ({type(exc).__name__}); retaining previous observation', file=sys.stderr)
+            reason = SOURCE_REASONS.get(str(exc)) if isinstance(exc, ValueError) else None
+            diagnostics[wish_id] = reason or 'export_error'
+            print(f'{wish_id}: {diagnostics[wish_id]}; retaining previous observation', file=sys.stderr)
             if wish_id in previous:
                 old = dict(previous[wish_id])
                 old['checkFailed'] = True
                 result[wish_id] = old
-            failed = True
+            # A completed sync can contain unavailable/unsupported shop data.
+            # Unexpected API/configuration failures still fail the service.
+            if reason is None:
+                failed = True
     return result, failed
 
 
@@ -117,13 +147,14 @@ def main():
         temporary.chmod(0o600)
         temporary.replace(state_path)
     config, errors = reconcile(config, api, checkpoint)
-    result, failed = export(config, wishes, previous, api)
+    diagnostics = {}
+    result, failed = export(config, wishes, previous, api, diagnostics)
     for wish_id in errors:
         if wish_id in previous:
             result[wish_id] = {**previous[wish_id], 'checkFailed': True}
     failed = failed or bool(errors)
     report = {wish['id']: ('disabled' if wish['id'] not in config and wish['id'] not in errors
-                          else errors.get(wish['id']) or ('needs_review' if wish['id'] not in result or result[wish['id']].get('checkFailed') else 'ok'))
+                          else errors.get(wish['id']) or diagnostics.get(wish['id']) or ('needs_review' if wish['id'] not in result or result[wish['id']].get('checkFailed') else 'ok'))
               for wish in wishes}
     report_path = root / 'data/monitoring-status.json'
     report_temp = report_path.with_suffix('.tmp')

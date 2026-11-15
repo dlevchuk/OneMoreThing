@@ -198,7 +198,14 @@ multiline та пошук без урахування регістру. `decimal
 24 години або позначені помилкою потребують перевірки; наявність не обіцяємо.
 Без спостереження дошка працює як раніше. Новий watch спочатку має отримати
 перший успішний snapshot; ціна може з'явитися під час наступної синхронізації.
-Стани звіту: `ok`, `disabled`, `needs_review`, `watch_sync_failed`, `duplicate_watches`.
+Звіт розрізняє `ok`, `disabled`, `pending`, `fetch_error`, `filter_error`,
+`paused`, `price_range`, `no_exact_price`, `no_unique_product`, `no_offer`,
+`unsupported_currency`, `ambiguous_price`, `invalid_price`, `price_rule_mismatch`
+та технічні `export_error`, `watch_sync_failed`, `duplicate_watches`.
+Очікування першого snapshot, блокування магазину або відсутність точної ціни
+не роблять завершену синхронізацію невдалою: вони залишаються у звіті, попередня
+ціна позначається як така, що потребує перевірки. Неочікувана помилка API або
+конфігурації, як і раніше, повертає ненульовий код і позначає systemd service failed.
 
 Telegram успадковується зі спільних налаштувань changedetection.io. За
 замовчуванням watch відстежує зміни тексту й JSON-LD цін, тому для галасливих

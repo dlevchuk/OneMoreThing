@@ -27,10 +27,32 @@ class ExportTest(unittest.TestCase):
     def test_failed_check_keeps_original_timestamp(self):
         old = {'gift': {'price': 100, 'checkedAt': '2026-11-01T00:00:00+00:00'}}
         result, failed = m.export({'gift': RULE}, [{'id': 'gift'}], old, lambda path: {'url': RULE['url'], 'last_error': 'blocked'})
-        self.assertTrue(failed)
+        self.assertFalse(failed)
         self.assertEqual(result['gift']['checkedAt'], old['gift']['checkedAt'])
         self.assertTrue(result['gift']['checkFailed'])
         self.assertNotIn('checkFailed', old['gift'])
+
+    def test_source_conditions_do_not_fail_completed_sync(self):
+        for info, snapshot, expected in [
+            ({'last_checked': 0}, '', 'pending'),
+            ({'last_error': 'blocked'}, '', 'fetch_error'),
+            ({'last_checked': 1700000000}, '<html>No product</html>', 'no_unique_product'),
+        ]:
+            with self.subTest(expected=expected):
+                diagnostics = {}
+                def api(path, text=False):
+                    return snapshot if text else {'url': RULE['url'], **info}
+                _, failed = m.export({'gift': {key: value for key, value in RULE.items() if key != 'priceRegex'}}, [{'id': 'gift'}], {}, api, diagnostics)
+                self.assertFalse(failed)
+                self.assertEqual(diagnostics['gift'], expected)
+
+    def test_api_failure_still_fails_service(self):
+        def api(path):
+            raise OSError('API unavailable')
+        diagnostics = {}
+        _, failed = m.export({'gift': RULE}, [{'id': 'gift'}], {}, api, diagnostics)
+        self.assertTrue(failed)
+        self.assertEqual(diagnostics['gift'], 'export_error')
 
     def test_inactive_mapping_is_removed(self):
         result, failed = m.export({'gift': RULE}, [], {'gift': {}}, lambda _: self.fail('Unexpected request'))

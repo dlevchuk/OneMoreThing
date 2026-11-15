@@ -104,6 +104,8 @@ class Page(HTMLParser):
             if not isinstance(offer, dict) or offer.get('priceCurrency') != 'UAH':
                 raise ValueError('Unknown or non-UAH offer')
             # AggregateOffer lowPrice is a range, not a specific shop price.
+            if offer.get('@type') == 'AggregateOffer' or 'lowPrice' in offer or 'highPrice' in offer:
+                raise ValueError('Aggregate price range')
             try:
                 value = Decimal(str(offer['price']))
             except (KeyError, InvalidOperation):
