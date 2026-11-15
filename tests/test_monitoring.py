@@ -17,17 +17,17 @@ def html(product):
 
 PRODUCT = {'@type': 'Product', 'name': 'Test product', 'image': '/photo.jpg', 'offers': {
     '@type': 'Offer', 'price': '1234.50', 'priceCurrency': 'UAH', 'availability': 'https://schema.org/InStock'}}
-WISH = {'id': 'one', 'title': 'Test product', 'localUrl': 'https://shop.example/item'}
+WISH = {'id': 'one', 'title': 'Test product', 'originalUrl': 'https://shop.example/item'}
 
 
 class StructuredDataTest(unittest.TestCase):
     def test_metadata_and_price(self):
         page = Page(html({'@graph': [PRODUCT]}))
         self.assertEqual(page.observation(), (1234.5, 'in_stock'))
-        self.assertEqual(page.metadata(WISH['localUrl'])['image'], 'https://shop.example/photo.jpg')
+        self.assertEqual(page.metadata(WISH['originalUrl'])['image'], 'https://shop.example/photo.jpg')
 
     def test_rejects_foreign_currency_variants_and_aggregates(self):
-        products = [{**PRODUCT, 'offers': {**PRODUCT['offers'], 'priceCurrency': 'USD'}},
+        products = [{**PRODUCT, 'offers': {**PRODUCT['offers'], 'priceCurrency': ''}},
                     {**PRODUCT, 'offers': [PRODUCT['offers'], {**PRODUCT['offers'], 'price': 2000}]},
                     {**PRODUCT, 'offers': {'@type': 'AggregateOffer', 'lowPrice': 100, 'priceCurrency': 'UAH'}}]
         for product in products:
@@ -36,12 +36,17 @@ class StructuredDataTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             Page(html([PRODUCT, PRODUCT])).observation()
 
+    def test_original_currency_is_preserved(self):
+        page = Page(html({**PRODUCT, 'offers': {**PRODUCT['offers'], 'priceCurrency': 'USD'}}))
+        self.assertEqual(page.observation(), (1234.5, 'in_stock'))
+        self.assertEqual(page.currency(), 'USD')
+
     def test_import_card_from_url_and_relative_image(self):
-        card = importer.make_card(WISH['localUrl'], html(PRODUCT), 'want')
+        card = importer.make_card(WISH['originalUrl'], html(PRODUCT), 'want')
         self.assertEqual(card['title'], PRODUCT['name'])
-        self.assertEqual(card['localUrl'], WISH['localUrl'])
+        self.assertEqual(card['originalUrl'], WISH['originalUrl'])
         self.assertEqual(card['priority'], 'want')
-        self.assertEqual(card['id'], importer.make_card(WISH['localUrl'], html(PRODUCT))['id'])
+        self.assertEqual(card['id'], importer.make_card(WISH['originalUrl'], html(PRODUCT))['id'])
 
 
 class FakeAPI:
@@ -79,7 +84,7 @@ class ReconcileTest(unittest.TestCase):
 
     def test_existing_manual_url_is_reused_without_modification(self):
         api = FakeAPI()
-        api.watches['manual']['url'] = WISH['localUrl']
+        api.watches['manual']['url'] = WISH['originalUrl']
         rules, errors = reconcile(desired_rules([WISH], {}, {}), api, lambda state: None)
         self.assertFalse(errors)
         self.assertEqual(rules['one']['watchId'], 'manual')
@@ -89,17 +94,28 @@ class ReconcileTest(unittest.TestCase):
         api = FakeAPI()
         first, _ = reconcile(desired_rules([WISH], {}, {}), api, lambda state: None)
         old = first['one']['watchId']
-        updated = {**WISH, 'monitoring': {'url': 'https://shop.example/new'}}
+        updated = {**WISH, 'originalUrl': 'https://shop.example/new'}
         second, _ = reconcile(desired_rules([updated], {}, {}), api, lambda state: None)
         self.assertNotEqual(old, second['one']['watchId'])
         self.assertTrue(api.watches[old]['paused'])
 
     def test_recovers_watch_when_create_response_was_lost(self):
         api = FakeAPI()
-        api.watches['recovered'] = {'url': WISH['localUrl'], 'title': marker('one', WISH['localUrl']) + ' | Test product', 'paused': False}
+        api.watches['recovered'] = {'url': WISH['originalUrl'], 'title': marker('one', WISH['originalUrl']) + ' | Test product', 'paused': False}
         rules, _ = reconcile(desired_rules([WISH], {}, {}), api, lambda state: None)
         self.assertEqual(rules['one']['watchId'], 'recovered')
         self.assertFalse(any(call[1] == 'POST' for call in api.calls))
+
+    def test_only_original_source_is_used(self):
+        wish = {**WISH, 'localUrl': 'https://local.example/item',
+                'monitoring': {'url': 'https://ignored.example'}}
+        overrides = {'one': {'url': wish['localUrl'], 'watchId': 'old-local', 'priceRegex': 'old'}}
+        rule = desired_rules([wish], overrides, {})['one']
+        self.assertEqual(rule['url'], WISH['originalUrl'])
+        self.assertNotIn('watchId', rule)
+        self.assertNotIn('priceRegex', rule)
+        del wish['originalUrl']
+        self.assertEqual(desired_rules([wish], overrides, {}), {})
 
     def test_profiles_overrides_disable_and_invalid_local_urls(self):
         profiles = {'shop.example': {'store': 'Store', 'priceRegex': 'Price: (.*)'}}
@@ -109,13 +125,13 @@ class ReconcileTest(unittest.TestCase):
         self.assertEqual(desired_rules([{**WISH, 'monitoring': False}], {}, profiles), {})
         for url in ['http://127.0.0.1', 'file:///etc/passwd', 'http://pi5.tail72e9f.ts.net']:
             with self.assertRaises(ValueError):
-                desired_rules([{**WISH, 'localUrl': url}], {}, {})
+                desired_rules([{**WISH, 'originalUrl': url}], {}, {})
 
     def test_duplicate_marker_requires_review(self):
         api = FakeAPI()
-        name = marker('one', WISH['localUrl'])
+        name = marker('one', WISH['originalUrl'])
         for key in ['a', 'b']:
-            api.watches[key] = {'title': name, 'url': WISH['localUrl'], 'paused': False}
+            api.watches[key] = {'title': name, 'url': WISH['originalUrl'], 'paused': False}
         rules, errors = reconcile(desired_rules([WISH], {}, {}), api, lambda state: None)
         self.assertEqual(errors['one'], 'duplicate_watches')
         self.assertEqual(rules, {})

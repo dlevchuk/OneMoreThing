@@ -4,12 +4,12 @@ window.PriceMonitor = (() => {
   let observations = {};
   function describe(id, now = Date.now()) {
     const item = observations[id];
-    if (!item || typeof item.price !== 'number' || !Number.isFinite(item.price) || item.price <= 0 || item.currency !== 'UAH') return null;
+    if (!item || typeof item.price !== 'number' || !Number.isFinite(item.price) || item.price <= 0 || typeof item.currency !== 'string' || !/^[A-Z]{3}$/.test(item.currency)) return null;
     const checked = Date.parse(item.checkedAt);
     if (!Number.isFinite(checked) || checked > now + 300000) return null;
     const stale = Boolean(item.checkFailed) || now - checked > 24 * 60 * 60 * 1000;
     return {
-      price: new Intl.NumberFormat('uk-UA', { style: 'currency', currency: 'UAH' }).format(item.price),
+      price: new Intl.NumberFormat('uk-UA', { style: 'currency', currency: item.currency }).format(item.price),
       stock: stale ? 'Наявність потребує перевірки' : ({ in_stock: 'Є в наявності', out_of_stock: 'Немає в наявності' }[item.availability] || 'Наявність невідома'),
       checked: new Date(checked).toLocaleString('uk-UA'),
       stale, store: typeof item.store === 'string' ? item.store : '',

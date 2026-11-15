@@ -39,7 +39,7 @@ def make_card(url, html, priority='unsure', title=None):
     slug = re.sub('[^a-z0-9]+', '-', data['title'].lower()).strip('-')[:60] or 'product'
     identifier = slug + '-' + hashlib.sha256(url.encode()).hexdigest()[:8]
     return {'id': identifier, **data, 'image': data['image'] or 'assets/favicon.svg',
-            'localUrl': url, 'priority': priority}
+            'originalUrl': url, 'priority': priority}
 
 
 def main():

@@ -21,7 +21,12 @@ test('fresh price and stock; old or failed checks require verification', async (
 });
 test('missing endpoint and malformed observations do not affect wishlist', async () => {
   assert.equal((await monitor({}, false)).describe('gift', now), null);
-  for (const bad of [{ ...observation, price: -1 }, { ...observation, currency: 'USD' }, { ...observation, checkedAt: 'invalid' }, { ...observation, checkedAt: '2030-01-01' }]) {
+  for (const bad of [{ ...observation, price: -1 }, { ...observation, currency: 'invalid' }, { ...observation, checkedAt: 'invalid' }, { ...observation, checkedAt: '2030-01-01' }]) {
     assert.equal((await monitor({ gift: bad })).describe('gift', now), null);
   }
+});
+
+test('source currency is displayed without conversion', async () => {
+  const m = await monitor({ usd: { ...observation, currency: 'USD' } });
+  assert.match(m.describe('usd', now).price, /USD|\$/);
 });

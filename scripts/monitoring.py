@@ -90,6 +90,22 @@ class Page(HTMLParser):
         return dict(title=unescape(title).strip()[:300], image=urljoin(url, image) if isinstance(image, str) and image else '',
                     description=description[:1000])
 
+    def currency(self):
+        products = self.products()
+        if len(products) != 1:
+            raise ValueError('Expected exactly one structured Product')
+        offers = products[0].get('offers', [])
+        offers = [offers] if isinstance(offers, dict) else offers
+        if not isinstance(offers, list) or not offers:
+            raise ValueError('No structured offers')
+        currencies = {offer.get('priceCurrency') if isinstance(offer, dict) else None for offer in offers}
+        if len(currencies) != 1:
+            raise ValueError('Unknown or mixed offer currency')
+        currency = currencies.pop()
+        if not isinstance(currency, str) or not re.fullmatch('[A-Z]{3}', currency):
+            raise ValueError('Unknown or mixed offer currency')
+        return currency
+
     def observation(self):
         products = self.products()
         if len(products) != 1:
@@ -99,10 +115,11 @@ class Page(HTMLParser):
             offers = [offers]
         if not isinstance(offers, list) or not offers:
             raise ValueError('No structured offers')
+        currency = self.currency()
         candidates = set()
         for offer in offers:
-            if not isinstance(offer, dict) or offer.get('priceCurrency') != 'UAH':
-                raise ValueError('Unknown or non-UAH offer')
+            if not isinstance(offer, dict) or offer.get('priceCurrency') != currency:
+                raise ValueError('Unknown or mixed offer currency')
             # AggregateOffer lowPrice is a range, not a specific shop price.
             if offer.get('@type') == 'AggregateOffer' or 'lowPrice' in offer or 'highPrice' in offer:
                 raise ValueError('Aggregate price range')
@@ -135,10 +152,13 @@ def desired_rules(wishes, overrides, profiles):
         if not isinstance(monitoring, dict):
             raise ValueError('monitoring must be an object or false')
         override = overrides.get(wish_id, {})
-        url = monitoring.get('url') or override.get('url') or wish.get('localUrl') or wish.get('originalUrl')
+        url = wish.get('originalUrl')
         if not url:
             continue
         public_url(url)
+        # Legacy rules for local shops must not redirect source-only monitoring.
+        if override.get('url') != url:
+            override = {}
         host = urlparse(url).hostname
         profile_key = monitoring.get('profile', host)
         if 'profile' in monitoring and profile_key not in profiles:

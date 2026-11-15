@@ -25,7 +25,7 @@ class ExportTest(unittest.TestCase):
         self.assertEqual(m.parse_snapshot('Ціна: 100 грн\nЄ в наявності\nНемає в наявності', RULE)[1], 'unknown')
 
     def test_failed_check_keeps_original_timestamp(self):
-        old = {'gift': {'price': 100, 'checkedAt': '2026-11-01T00:00:00+00:00'}}
+        old = {'gift': {'price': 100, 'url': RULE['url'], 'checkedAt': '2026-11-01T00:00:00+00:00'}}
         result, failed = m.export({'gift': RULE}, [{'id': 'gift'}], old, lambda path: {'url': RULE['url'], 'last_error': 'blocked'})
         self.assertFalse(failed)
         self.assertEqual(result['gift']['checkedAt'], old['gift']['checkedAt'])
@@ -53,6 +53,13 @@ class ExportTest(unittest.TestCase):
         _, failed = m.export({'gift': RULE}, [{'id': 'gift'}], {}, api, diagnostics)
         self.assertTrue(failed)
         self.assertEqual(diagnostics['gift'], 'export_error')
+
+    def test_old_shop_price_is_removed_when_source_changes(self):
+        old = {'gift': {'price': 100, 'url': 'https://old.example/item'}}
+        result, failed = m.export({'gift': RULE}, [{'id': 'gift'}], old,
+                                  lambda _: {'url': RULE['url'], 'last_error': 'blocked'})
+        self.assertEqual(result, {})
+        self.assertFalse(failed)
 
     def test_inactive_mapping_is_removed(self):
         result, failed = m.export({'gift': RULE}, [], {'gift': {}}, lambda _: self.fail('Unexpected request'))
@@ -102,7 +109,7 @@ class PipelineTest(unittest.TestCase):
             root = Path(folder)
             (root / 'data').mkdir()
             (root / 'config').mkdir()
-            (root / 'data/wishes.json').write_text(json.dumps([{'id': 'gift', 'title': 'Gift', 'localUrl': 'https://shop.example/item'}]))
+            (root / 'data/wishes.json').write_text(json.dumps([{'id': 'gift', 'title': 'Gift', 'originalUrl': 'https://shop.example/item'}]))
             for name in ['shop-profiles', 'price-watches']:
                 (root / f'config/{name}.json').write_text('{}')
             with patch.object(sys, 'argv', ['sync-prices.py', '--root', str(root), '--state', str(root / 'private/state.json')]), patch.dict(os.environ, {'CHANGEDETECTION_API_KEY': 'test-key'}), patch.object(m, 'urlopen', request):

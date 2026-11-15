@@ -41,7 +41,7 @@ SOURCE_REASONS = {
     'Watch filter failed': 'filter_error',
     'Expected exactly one structured Product': 'no_unique_product',
     'No structured offers': 'no_offer',
-    'Unknown or non-UAH offer': 'unsupported_currency',
+    'Unknown or mixed offer currency': 'unsupported_currency',
     'Aggregate price range': 'price_range',
     'No exact structured price': 'no_exact_price',
     'Invalid structured price': 'invalid_price',
@@ -79,10 +79,17 @@ def export(config, wishes, previous, api, diagnostics=None):
                 raise ValueError('Watch has not been checked yet')
             if checked < 0 or checked > datetime.now(timezone.utc).timestamp() + 300:
                 raise ValueError('Invalid check timestamp')
-            price, stock = (parse_snapshot(api(watch + '/history/latest', text=True), rule)
-                            if rule.get('priceRegex') else Page(api(watch + '/history/latest?html=1', text=True)).observation())
+            if rule.get('priceRegex'):
+                price, stock = parse_snapshot(api(watch + '/history/latest', text=True), rule)
+                currency = rule.get('currency', 'UAH')
+                if not isinstance(currency, str) or not re.fullmatch('[A-Z]{3}', currency):
+                    raise ValueError('Invalid configured currency')
+            else:
+                page = Page(api(watch + '/history/latest?html=1', text=True))
+                price, stock = page.observation()
+                currency = page.currency()
             result[wish_id] = {
-                'price': price, 'currency': 'UAH', 'availability': stock,
+                'price': price, 'currency': currency, 'availability': stock,
                 'checkedAt': datetime.fromtimestamp(checked, timezone.utc).isoformat(),
                 'url': url, 'store': rule['store'],
             }
@@ -91,7 +98,7 @@ def export(config, wishes, previous, api, diagnostics=None):
             reason = SOURCE_REASONS.get(str(exc)) if isinstance(exc, ValueError) else None
             diagnostics[wish_id] = reason or 'export_error'
             print(f'{wish_id}: {diagnostics[wish_id]}; retaining previous observation', file=sys.stderr)
-            if wish_id in previous:
+            if wish_id in previous and previous[wish_id].get('url') == url:
                 old = dict(previous[wish_id])
                 old['checkFailed'] = True
                 result[wish_id] = old
@@ -146,11 +153,12 @@ def main():
         temporary.write_text(json.dumps(state, ensure_ascii=False, indent=2) + '\n')
         temporary.chmod(0o600)
         temporary.replace(state_path)
+    desired_config = config
     config, errors = reconcile(config, api, checkpoint)
     diagnostics = {}
     result, failed = export(config, wishes, previous, api, diagnostics)
     for wish_id in errors:
-        if wish_id in previous:
+        if wish_id in previous and previous[wish_id].get('url') == desired_config[wish_id]['url']:
             result[wish_id] = {**previous[wish_id], 'checkFailed': True}
     failed = failed or bool(errors)
     report = {wish['id']: ('disabled' if wish['id'] not in config and wish['id'] not in errors
