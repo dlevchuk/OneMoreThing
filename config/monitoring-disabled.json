@@ -1,18 +1,6 @@
 {
-  "bambu-lab-a1-mini": {
-    "reason": "no_unique_product",
-    "url": "https://us.store.bambulab.com/products/a1-mini"
-  },
-  "baseus-air-car-jump-starter-super-energy-10000mah": {
-    "reason": "no_unique_product",
-    "url": "https://baseusukraine.com.ua/puskozaryadnoe-ustroystvo-buster-baseus-air-car-jump-starter-super-energy-3in1-12v-10000mah"
-  },
   "hidratespark-pro-2-32oz": {
     "reason": "fetch_error",
     "url": "https://hidratespark.com/products/32-oz-hidratespark-pro-2?variant=42031753461869"
-  },
-  "radiomaster-tx15-max-elrs-m2": {
-    "reason": "fetch_error",
-    "url": "https://radiomasterrc.com/products/tx15-max-radio-controller-elrs-m2"
   }
 }
