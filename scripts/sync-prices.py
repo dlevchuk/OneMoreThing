@@ -102,9 +102,10 @@ def export(config, wishes, previous, api, diagnostics=None):
                     raise ValueError('Invalid configured currency')
             else:
                 page = Page(read_snapshot(api, watch + '/history/latest?html=1'))
-                price, stock = page.observation()
-                currency = page.currency()
-                tax_included = page.tax_included()
+                price_source = rule.get('priceSource', 'auto')
+                price, stock = page.observation(price_source)
+                currency = page.currency(price_source)
+                tax_included = page.tax_included(price_source)
             result[wish_id] = {
                 'price': price, 'currency': currency, 'availability': stock,
                 'checkedAt': datetime.fromtimestamp(checked, timezone.utc).isoformat(),

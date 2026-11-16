@@ -119,11 +119,13 @@ class Page(HTMLParser):
             raise ValueError('Invalid structured price')
         return float(price)
 
-    def records(self):
+    def records(self, price_source='auto'):
+        if price_source not in ('auto', 'page_metadata'):
+            raise ValueError('Unknown price source')
         products = self.products()
         if len(products) > 1:
             raise ValueError('Expected exactly one structured Product')
-        offers = products[0].get('offers', []) if products else []
+        offers = products[0].get('offers', []) if products and price_source == 'auto' else []
         offers = [offers] if isinstance(offers, dict) else offers
         records = set()
         if offers:
@@ -132,7 +134,7 @@ class Page(HTMLParser):
             for offer in offers:
                 if not isinstance(offer, dict):
                     raise ValueError('No structured offers')
-                if offer.get('@type') == 'AggregateOffer' or 'lowPrice' in offer or 'highPrice' in offer:
+                if offer.get('@type') == 'AggregateOffer' or (('lowPrice' in offer or 'highPrice' in offer) and 'price' not in offer):
                     raise ValueError('Aggregate price range')
                 specs = offer.get('priceSpecification', [])
                 specs = [specs] if isinstance(specs, dict) else specs
@@ -186,14 +188,14 @@ class Page(HTMLParser):
             raise ValueError('Ambiguous variants or sellers')
         return next(iter(records))
 
-    def currency(self):
-        return self.records()[1]
+    def currency(self, price_source='auto'):
+        return self.records(price_source)[1]
 
-    def tax_included(self):
-        return self.records()[3]
+    def tax_included(self, price_source='auto'):
+        return self.records(price_source)[3]
 
-    def observation(self):
-        price, _, stock, _ = self.records()
+    def observation(self, price_source='auto'):
+        price, _, stock, _ = self.records(price_source)
         return price, stock
 
 

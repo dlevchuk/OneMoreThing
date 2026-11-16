@@ -67,6 +67,18 @@ class StructuredDataTest(unittest.TestCase):
             with self.subTest(content=content), self.assertRaises(ValueError):
                 Page(content).observation()
 
+    def test_exact_offer_price_wins_over_auxiliary_list_price(self):
+        product = {**PRODUCT, 'offers': {**PRODUCT['offers'], 'price': '47999', 'lowPrice': '47999', 'highPrice': '51750'}}
+        self.assertEqual(Page(html(product)).observation(), (47999, 'in_stock'))
+
+    def test_explicit_page_metadata_profile_uses_display_price_not_range_minimum(self):
+        product = {**PRODUCT, 'offers': {'@type': 'AggregateOffer', 'lowPrice': '3690', 'highPrice': '3790', 'priceCurrency': 'UAH'}}
+        page = Page(html(product) + '<meta property="product:price:amount" content="3790"><meta property="product:price:currency" content="UAH">')
+        with self.assertRaises(ValueError):
+            page.observation()
+        self.assertEqual(page.observation('page_metadata'), (3790, 'unknown'))
+        self.assertEqual(page.currency('page_metadata'), 'UAH')
+
     def test_original_currency_is_preserved(self):
         page = Page(html({**PRODUCT, 'offers': {**PRODUCT['offers'], 'priceCurrency': 'USD'}}))
         self.assertEqual(page.observation(), (1234.5, 'in_stock'))
