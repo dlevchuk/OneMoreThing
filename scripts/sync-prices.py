@@ -10,6 +10,7 @@ import re
 import sys
 from urllib.parse import quote, urlparse
 from urllib.request import Request, urlopen
+from urllib.error import HTTPError
 from monitoring import Page, desired_rules, reconcile
 
 
@@ -34,8 +35,20 @@ def parse_snapshot(text, rule):
     return float(value), stock
 
 
+def read_snapshot(api, path):
+    try:
+        return api(path, text=True)
+    except HTTPError as exc:
+        # The first successful check and its saved snapshot become visible separately.
+        if exc.code == 404:
+            exc.close()
+            raise ValueError('Snapshot is not available yet') from None
+        raise
+
+
 SOURCE_REASONS = {
     'Watch has not been checked yet': 'pending',
+    'Snapshot is not available yet': 'pending',
     'Watch is paused': 'paused',
     'Watch fetch failed': 'fetch_error',
     'Watch filter failed': 'filter_error',
@@ -81,12 +94,12 @@ def export(config, wishes, previous, api, diagnostics=None):
                 raise ValueError('Invalid check timestamp')
             tax_included = None
             if rule.get('priceRegex'):
-                price, stock = parse_snapshot(api(watch + '/history/latest', text=True), rule)
+                price, stock = parse_snapshot(read_snapshot(api, watch + '/history/latest'), rule)
                 currency = rule.get('currency', 'UAH')
                 if not isinstance(currency, str) or not re.fullmatch('[A-Z]{3}', currency):
                     raise ValueError('Invalid configured currency')
             else:
-                page = Page(api(watch + '/history/latest?html=1', text=True))
+                page = Page(read_snapshot(api, watch + '/history/latest?html=1'))
                 price, stock = page.observation()
                 currency = page.currency()
                 tax_included = page.tax_included()

@@ -46,6 +46,18 @@ class ExportTest(unittest.TestCase):
                 self.assertFalse(failed)
                 self.assertEqual(diagnostics['gift'], expected)
 
+    def test_first_snapshot_not_ready_is_pending(self):
+        from urllib.error import HTTPError
+        def api(path, text=False):
+            if text:
+                raise HTTPError('http://localhost/snapshot', 404, 'Not found', {}, None)
+            return {'url': RULE['url'], 'last_checked': 1700000000}
+        diagnostics = {}
+        result, failed = m.export({'gift': RULE}, [{'id': 'gift'}], {}, api, diagnostics)
+        self.assertEqual(result, {})
+        self.assertFalse(failed)
+        self.assertEqual(diagnostics['gift'], 'pending')
+
     def test_api_failure_still_fails_service(self):
         def api(path):
             raise OSError('API unavailable')
