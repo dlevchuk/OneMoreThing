@@ -67,6 +67,11 @@ function filteredWishes() {
 }
 
 function priceMarkup(id, compact = false) {
+  if (isWishCompleted(id)) {
+    if (compact) return '';
+    const chart = window.PriceMonitor?.chart(id, undefined, true);
+    return chart ? `<div class="detail-price"><p>Моніторинг завершено. Збережена історія цін.</p>${chart}</div>` : '';
+  }
   const item = window.PriceMonitor?.describe(id);
   if (!item) return '';
   if (compact) return `<span class="notice-price">${escHtml(item.price)}${item.stale ? ' · потребує перевірки' : ''}</span>`;

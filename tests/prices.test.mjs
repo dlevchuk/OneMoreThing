@@ -59,3 +59,31 @@ test('one real point is honest and malicious history data is ignored', async () 
   assert.equal((chart.match(/<circle /g) || []).length, 1);
   assert.doesNotMatch(chart, /<script>/);
 });
+
+test('completed card retains its graph without a current price or monitor', async () => {
+  const item = { ...observation, url: 'https://source.example' };
+  const m = await monitor({}, true, { gift: [
+    { ...item, price: 100, checkedAt: '2026-11-15T10:00:00Z' },
+    { ...item, price: 200 },
+    { ...item, price: 9999, checkedAt: 'invalid' },
+    { ...item, currency: '<script>', checkedAt: '2026-11-15T11:59:00Z' }
+  ] });
+  assert.equal(m.describe('gift', now), null);
+  assert.equal(m.chart('gift', now), '');
+  const chart = m.chart('gift', now, true);
+  assert.match(chart, /Збережена історія ціни/);
+  assert.equal((chart.match(/<circle /g) || []).length, 2);
+  assert.doesNotMatch(chart, /9999|<script>|Графік доповнюватиметься/);
+});
+test('archived graph selects latest source and currency without mixing older series', async () => {
+  const item = { ...observation, url: 'https://source.example' };
+  const m = await monitor({}, true, { gift: [
+    { ...item, price: 9999, checkedAt: '2026-11-15T10:00:00Z' },
+    { ...item, price: 50, currency: 'EUR', url: 'https://new.example' }
+  ] });
+  const chart = m.chart('gift', now, true);
+  assert.match(chart, /EUR/);
+  assert.doesNotMatch(chart, /UAH|9999|Графік доповнюватиметься/);
+  assert.equal((chart.match(/<circle /g) || []).length, 1);
+  assert.equal(m.chart('missing', now, true), '');
+});

@@ -18,15 +18,19 @@ window.PriceMonitor = (() => {
       url: typeof item.url === 'string' ? item.url : ''
     };
   }
-  function chart(id, now = Date.now()) {
-    const item = observations[id];
-    if (!describe(id, now)) return '';
-    const points = (Array.isArray(history[id]) ? history[id] : []).filter(point =>
-      point && point.url === item.url && point.currency === item.currency && point.taxIncluded === item.taxIncluded &&
-      typeof point.price === 'number' && Number.isFinite(point.price) && point.price > 0 &&
-      Number.isFinite(Date.parse(point.checkedAt)) && Date.parse(point.checkedAt) <= now + 300000
-    ).slice(-730).sort((a, b) => Date.parse(a.checkedAt) - Date.parse(b.checkedAt));
-    if (!points.length) return '<p class="price-history-empty">Історія цін почне накопичуватися з наступної перевірки.</p>';
+  function chart(id, now = Date.now(), archived = false) {
+    const validHistory = (Array.isArray(history[id]) ? history[id] : []).filter(point =>
+      point && typeof point.price === 'number' && Number.isFinite(point.price) && point.price > 0 &&
+      typeof point.currency === 'string' && /^[A-Z]{3}$/.test(point.currency) &&
+      typeof point.url === 'string' && Number.isFinite(Date.parse(point.checkedAt)) &&
+      Date.parse(point.checkedAt) <= now + 300000
+    ).sort((a, b) => Date.parse(a.checkedAt) - Date.parse(b.checkedAt));
+    const item = archived ? validHistory.at(-1) : observations[id];
+    if (!item || (!archived && !describe(id, now))) return '';
+    const points = validHistory.filter(point =>
+      point.url === item.url && point.currency === item.currency && point.taxIncluded === item.taxIncluded
+    ).slice(-730);
+    if (!points.length) return archived ? '' : '<p class="price-history-empty">Історія цін почне накопичуватися з наступної перевірки.</p>';
     const prices = points.map(point => point.price);
     const minimum = Math.min(...prices), maximum = Math.max(...prices);
     const first = Date.parse(points[0].checkedAt), last = Date.parse(points.at(-1).checkedAt);
@@ -38,13 +42,13 @@ window.PriceMonitor = (() => {
     const date = value => new Date(value).toLocaleDateString('uk-UA');
     const coordinates = points.map(point => `${x(point).toFixed(2)},${y(point).toFixed(2)}`).join(' ');
     const labels = points.map(point => `<circle cx="${x(point).toFixed(2)}" cy="${y(point).toFixed(2)}" r="3"><title>${escape(date(point.checkedAt))}: ${escape(number(point.price))} ${escape(item.currency)}</title></circle>`).join('');
-    return `<figure class="price-history"><figcaption>Історія ціни · ${escape(item.currency)}${item.taxIncluded === false ? ' · без ПДВ' : ''}</figcaption>
+    return `<figure class="price-history"><figcaption>${archived ? 'Збережена історія ціни' : 'Історія ціни'} · ${escape(item.currency)}${item.taxIncluded === false ? ' · без ПДВ' : ''}</figcaption>
       <svg viewBox="0 0 480 170" role="img" aria-label="Історія ціни: від ${escape(number(minimum))} до ${escape(number(maximum))} ${escape(item.currency)}; ${points.length} спостережень">
         <path class="price-chart-grid" d="M60 25H460 M60 130H460" />
         <text x="4" y="30">${escape(number(maximum))}</text><text x="4" y="135">${escape(number(minimum))}</text>
         <polyline fill="none" points="${coordinates}" />${labels}
         <text x="60" y="160">${escape(date(first))}</text>${last !== first ? `<text x="460" y="160" text-anchor="end">${escape(date(last))}</text>` : ''}
-      </svg><p>${points.length === 1 ? 'Перше спостереження. Графік доповнюватиметься після перевірок.' : `${points.length} спостережень · мін. ${escape(number(minimum))}, макс. ${escape(number(maximum))} ${escape(item.currency)}`}</p></figure>`;
+      </svg><p>${points.length === 1 ? (archived ? 'Збережене спостереження до завершення моніторингу.' : 'Перше спостереження. Графік доповнюватиметься після перевірок.') : `${points.length} спостережень · мін. ${escape(number(minimum))}, макс. ${escape(number(maximum))} ${escape(item.currency)}`}</p></figure>`;
   }
   async function init() {
     const controller = new AbortController();
