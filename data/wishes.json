@@ -45,15 +45,6 @@
     "priority": "want"
   },
   {
-    "id": "arzopa-a1s-14-portable-monitor",
-    "title": "ARZOPA A1S — портативний монітор 14″",
-    "description": "Другий дисплей. Ще одне вікно в кіберпростір — цього разу під власним контролем.",
-    "image": "https://global.arzopa.com/cdn/shop/files/A1S_a69074bf-86b1-46fa-b7ec-f609efb41819.png?v=1784633530",
-    "localUrl": "https://hotline.ua/ua/computer-monitory/arzopa-a1s-black/",
-    "priority": "unsure",
-    "originalUrl": "https://allo.ua/ua/monitory/portativnyj-monitor-arzopa-a1s-14-black-114225.html"
-  },
-  {
     "id": "radiomaster-tx15-max-elrs-m2",
     "title": "RadioMaster TX15 Max — ELRS M2",
     "description": "Пульт для дрона. Небо над містом на короткому радіоканалі.",
@@ -84,7 +75,7 @@
     "title": "Steam Deck OLED",
     "description": "Ігри офлайн. Можна зникнути з мережі, не виходячи з гри.",
     "image": "https://content.rozetka.com.ua/goods/images/big/279840474.png",
-    "originalUrl": "https://www.steamdeck.com/en/oled",
+    "originalUrl": "https://mta.ua/igrovi-pristavki/870848-igrova-pristavka-valve-steam-deck-oled-512gb-black",
     "localUrl": "https://hotline.ua/ua/computer-igrovye-pristavki/valve-steam-deck-oled-512-gb/",
     "priority": "nice"
   },
@@ -97,29 +88,11 @@
     "priority": "unsure"
   },
   {
-    "id": "whisky-stones-gift-set-rozetka",
-    "title": "Набір для віскі — камені й келихи",
-    "description": "Лід без розведення. Навіть після довгої зміни хтось мусить тримати клас.",
-    "image": "https://content.rozetka.com.ua/goods/images/big/562860166.jpg",
-    "localUrl": "https://rozetka.com.ua/ua/193771222/p193771222/",
-    "priority": "unsure",
-    "originalUrl": "https://bohemiaua.com.ua/podarunkoviy-nabir-v-keysi-quadro-2-personi-kaminnya-graviyuvannya-na-zamovlennya.html"
-  },
-  {
-    "id": "herman-miller-aeron-office-chair",
-    "title": "Herman Miller Aeron",
-    "description": "Крісло для довгих підключень. Цінник поводиться як окремий контракт.",
-    "image": "https://www.hermanmiller.com/content/dam/hmi/hmidam/active/2016/08/11/REK_18354_20160811174723758.tif.rendition.1920.1920.jpg",
-    "originalUrl": "https://eustore.hermanmiller.com/products/aeron-office-chair?variant=56420138058107",
-    "localUrl": "https://hotline.ua/dom-ofisnye-kresla/herman-miller-aeron-c-chornij/",
-    "priority": "unsure"
-  },
-  {
     "id": "uniqlo-pufftech-parka-navy",
     "title": "UNIQLO PUFFTECH Parka — Navy",
     "description": "Тепло без зайвого об’єму. Плащ під кислотний дощ — майже оптичний камуфляж.",
     "image": "https://image.uniqlo.com/UQ/ST3/WesternCommon/imagesgoods/470118/item/goods_69_470118_3x4.jpg?width=600",
-    "originalUrl": "https://www.uniqlo.com/us/en/products/E470118-000/00?colorDisplayCode=69&sizeDisplayCode=004",
+    "originalUrl": "https://uniqraine.com.ua/product/ultralehka-kurtka-uniqlo-serii-pufftech-472584-1/",
     "priority": "nice"
   }
 ]

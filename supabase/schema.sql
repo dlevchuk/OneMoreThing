@@ -65,14 +65,11 @@ insert into public.gift_catalog (wish_id, active) values
   ('orpro-dynamic-recovery-8t-9m', true),
   ('hidratespark-pro-2-32oz', true),
   ('oura-ring-5', true),
-  ('arzopa-a1s-14-portable-monitor', true),
   ('radiomaster-tx15-max-elrs-m2', true),
   ('bambu-lab-a1-mini', true),
   ('jelly-bar-berry-gin', true),
   ('steam-deck-oled', true),
   ('ubiquiti-dream-router-5g-max', true),
-  ('whisky-stones-gift-set-rozetka', true),
-  ('herman-miller-aeron-office-chair', true),
   ('uniqlo-pufftech-parka-navy', true)
 on conflict (wish_id) do update set active = excluded.active;
 -- END GENERATED GIFT CATALOG

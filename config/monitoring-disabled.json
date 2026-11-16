@@ -1,8 +1,4 @@
 {
-  "arzopa-a1s-14-portable-monitor": {
-    "reason": "no_exact_price",
-    "url": "https://allo.ua/ua/monitory/portativnyj-monitor-arzopa-a1s-14-black-114225.html"
-  },
   "bambu-lab-a1-mini": {
     "reason": "no_unique_product",
     "url": "https://us.store.bambulab.com/products/a1-mini"
@@ -11,10 +7,6 @@
     "reason": "no_unique_product",
     "url": "https://baseusukraine.com.ua/puskozaryadnoe-ustroystvo-buster-baseus-air-car-jump-starter-super-energy-3in1-12v-10000mah"
   },
-  "herman-miller-aeron-office-chair": {
-    "reason": "fetch_error",
-    "url": "https://eustore.hermanmiller.com/products/aeron-office-chair?variant=56420138058107"
-  },
   "hidratespark-pro-2-32oz": {
     "reason": "fetch_error",
     "url": "https://hidratespark.com/products/32-oz-hidratespark-pro-2?variant=42031753461869"
@@ -22,17 +14,5 @@
   "radiomaster-tx15-max-elrs-m2": {
     "reason": "fetch_error",
     "url": "https://radiomasterrc.com/products/tx15-max-radio-controller-elrs-m2"
-  },
-  "steam-deck-oled": {
-    "reason": "no_unique_product",
-    "url": "https://www.steamdeck.com/en/oled"
-  },
-  "uniqlo-pufftech-parka-navy": {
-    "reason": "no_unique_product",
-    "url": "https://www.uniqlo.com/us/en/products/E470118-000/00?colorDisplayCode=69&sizeDisplayCode=004"
-  },
-  "whisky-stones-gift-set-rozetka": {
-    "reason": "fetch_error",
-    "url": "https://bohemiaua.com.ua/podarunkoviy-nabir-v-keysi-quadro-2-personi-kaminnya-graviyuvannya-na-zamovlennya.html"
   }
 }
