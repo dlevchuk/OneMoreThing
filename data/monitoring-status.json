@@ -1,16 +1,16 @@
 {
-  "arzopa-a1s-14-portable-monitor": "no_exact_price",
-  "bambu-lab-a1-mini": "no_unique_product",
-  "baseus-air-car-jump-starter-super-energy-10000mah": "no_unique_product",
+  "arzopa-a1s-14-portable-monitor": "fetch_error",
+  "bambu-lab-a1-mini": "fetch_error",
+  "baseus-air-car-jump-starter-super-energy-10000mah": "fetch_error",
   "herman-miller-aeron-office-chair": "fetch_error",
   "hidratespark-pro-2-32oz": "fetch_error",
   "jelly-bar-berry-gin": "disabled",
-  "orpro-dynamic-recovery-8t-9m": "ok",
-  "oura-ring-5": "ok",
+  "orpro-dynamic-recovery-8t-9m": "fetch_error",
+  "oura-ring-5": "fetch_error",
   "radiomaster-tx15-max-elrs-m2": "fetch_error",
-  "steam-deck-oled": "no_unique_product",
-  "ubiquiti-dream-router-5g-max": "ok",
-  "uniqlo-pufftech-parka-navy": "no_unique_product",
+  "steam-deck-oled": "fetch_error",
+  "ubiquiti-dream-router-5g-max": "fetch_error",
+  "uniqlo-pufftech-parka-navy": "fetch_error",
   "whisky-stones-gift-set-rozetka": "fetch_error",
-  "xiaomi-portable-electric-air-compressor-2-pro": "ok"
+  "xiaomi-portable-electric-air-compressor-2-pro": "fetch_error"
 }
