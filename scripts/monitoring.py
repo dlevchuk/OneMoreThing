@@ -5,7 +5,7 @@ from html import unescape
 import re
 import json
 from decimal import Decimal, InvalidOperation
-from urllib.parse import urljoin, urlparse, quote
+from urllib.parse import urljoin, urlparse, quote, unquote
 
 PREFIX = 'OneMoreThing/'
 
@@ -201,10 +201,12 @@ def marker(wish_id, url):
     return PREFIX + quote(str(wish_id), safe='') + '/' + hashlib.sha256(url.encode()).hexdigest()[:16]
 
 
-def desired_rules(wishes, overrides, profiles, disabled=None):
+def desired_rules(wishes, overrides, profiles, disabled=None, completed=None):
     rules = {}
     for wish in wishes:
         wish_id = wish['id']
+        if wish_id in (completed or set()):
+            continue
         monitoring = wish.get('monitoring', {})
         if monitoring is False or (isinstance(monitoring, dict) and monitoring.get('enabled') is False):
             continue
@@ -231,7 +233,7 @@ def desired_rules(wishes, overrides, profiles, disabled=None):
     return rules
 
 
-def reconcile(rules, api, checkpoint):
+def reconcile(rules, api, checkpoint, completed=None):
     """Only deterministic names owned by this integration may be updated/paused."""
     watches = api('watch')
     if not isinstance(watches, dict):
@@ -240,6 +242,10 @@ def reconcile(rules, api, checkpoint):
     for uuid, item in watches.items():
         name = (item.get('title') or '').split(' | ', 1)[0]
         if name.startswith(PREFIX):
+            wish_id = unquote(name[len(PREFIX):].split('/', 1)[0])
+            if wish_id in (completed or set()):
+                api('watch/' + quote(uuid, safe=''), method='DELETE')
+                continue
             by_marker.setdefault(name, []).append((uuid, item))
     wanted = {marker(wid, rule['url']) for wid, rule in rules.items() if not rule.get('watchId')}
     resolved, state, errors = {}, {}, {}

@@ -92,6 +92,9 @@ class FakeAPI:
             uuid = 'new-' + str(len(self.watches))
             self.watches[uuid] = dict(payload)
             return {'uuid': uuid}
+        if method == 'DELETE':
+            self.watches.pop(path.split('/')[1])
+            return None
         if method == 'PUT':
             self.watches[path.split('/')[1]].update(payload)
             return 'OK'
@@ -136,6 +139,15 @@ class ReconcileTest(unittest.TestCase):
         rules, _ = reconcile(desired_rules([WISH], {}, {}), api, lambda state: None)
         self.assertEqual(rules['one']['watchId'], 'recovered')
         self.assertFalse(any(call[1] == 'POST' for call in api.calls))
+
+    def test_completed_gift_has_no_rule_and_all_owned_monitors_are_deleted(self):
+        api = FakeAPI()
+        api.watches['done-current'] = {'title': marker('one', WISH['originalUrl']), 'url': WISH['originalUrl']}
+        api.watches['done-retired'] = {'title': marker('one', 'https://old.example'), 'url': 'https://old.example', 'paused': True}
+        rules = desired_rules([WISH], {}, {}, completed={'one'})
+        self.assertEqual(rules, {})
+        reconcile(rules, api, lambda _: None, completed={'one'})
+        self.assertEqual(set(api.watches), {'manual'})
 
     def test_only_original_source_is_used(self):
         wish = {**WISH, 'localUrl': 'https://local.example/item',

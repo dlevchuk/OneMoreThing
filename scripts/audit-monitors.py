@@ -8,6 +8,7 @@ from pathlib import Path
 from urllib.parse import quote
 from urllib.request import Request, urlopen
 from monitoring import desired_rules, marker
+from catalog_status import completed_ids
 
 TERMINAL = {'fetch_error', 'filter_error', 'no_offer', 'no_unique_product', 'price_range',
             'no_exact_price', 'unsupported_currency', 'invalid_price', 'ambiguous_price', 'price_rule_mismatch'}
@@ -15,7 +16,8 @@ TERMINAL = {'fetch_error', 'filter_error', 'no_offer', 'no_unique_product', 'pri
 
 def audit(root, api, prune=False):
     wishes = json.loads((root / 'data/wishes.json').read_text())
-    rules = desired_rules(wishes, json.loads((root / 'config/price-watches.json').read_text()),
+    completed = completed_ids(root)
+    rules = desired_rules([wish for wish in wishes if wish['id'] not in completed], json.loads((root / 'config/price-watches.json').read_text()),
                           json.loads((root / 'config/shop-profiles.json').read_text()))
     watches = api('watch')
     owned, report = {}, {}

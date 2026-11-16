@@ -13,6 +13,7 @@ from urllib.request import Request, urlopen
 from urllib.error import HTTPError
 from monitoring import Page, desired_rules, reconcile
 from price_history import update_history
+from catalog_status import completed_ids
 
 
 def parse_snapshot(text, rule):
@@ -143,6 +144,9 @@ def main():
     if args.plan:
         print(json.dumps(config, ensure_ascii=False, indent=2))
         return 0
+    # Fail closed if the public completion service is unavailable: no deletion/recreation.
+    completed = completed_ids(root)
+    config = desired_rules(wishes, overrides, profiles, disabled, completed)
     target = root / 'data/prices.json'
     previous = json.loads(target.read_text()) if target.exists() else {}
     base = os.environ.get('CHANGEDETECTION_URL', 'http://127.0.0.1:5000').rstrip('/')
@@ -163,7 +167,7 @@ def main():
         try:
             return json.loads(content)
         except ValueError:
-            if method == 'PUT':
+            if method in ('PUT', 'DELETE'):
                 return content
             raise
     state_path = args.state or root / '.monitoring-state/watch-state.json'
@@ -174,14 +178,14 @@ def main():
         temporary.chmod(0o600)
         temporary.replace(state_path)
     desired_config = config
-    config, errors = reconcile(config, api, checkpoint)
+    config, errors = reconcile(config, api, checkpoint, completed)
     diagnostics = {}
     result, failed = export(config, wishes, previous, api, diagnostics)
     for wish_id in errors:
         if wish_id in previous and previous[wish_id].get('url') == desired_config[wish_id]['url']:
             result[wish_id] = {**previous[wish_id], 'checkFailed': True}
     failed = failed or bool(errors)
-    report = {wish['id']: ('disabled' if wish['id'] not in config and wish['id'] not in errors
+    report = {wish['id']: ('completed' if wish['id'] in completed else 'disabled' if wish['id'] not in config and wish['id'] not in errors
                           else errors.get(wish['id']) or diagnostics.get(wish['id']) or ('needs_review' if wish['id'] not in result or result[wish['id']].get('checkFailed') else 'ok'))
               for wish in wishes}
     report_path = root / 'data/monitoring-status.json'
