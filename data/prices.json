@@ -1,8 +1,7 @@
 {
   "orpro-dynamic-recovery-8t-9m": {
     "availability": "in_stock",
-    "checkFailed": true,
-    "checkedAt": "2026-11-16T00:03:47+00:00",
+    "checkedAt": "2026-11-16T16:49:59+00:00",
     "currency": "UAH",
     "price": 3100.0,
     "store": "orpro.com.ua",
@@ -10,8 +9,7 @@
   },
   "oura-ring-5": {
     "availability": "in_stock",
-    "checkFailed": true,
-    "checkedAt": "2026-11-16T00:03:48+00:00",
+    "checkedAt": "2026-11-16T16:50:06+00:00",
     "currency": "USD",
     "price": 399.0,
     "store": "ouraring.com",
@@ -19,8 +17,7 @@
   },
   "ubiquiti-dream-router-5g-max": {
     "availability": "out_of_stock",
-    "checkFailed": true,
-    "checkedAt": "2026-11-16T00:03:49+00:00",
+    "checkedAt": "2026-11-16T16:50:02+00:00",
     "currency": "EUR",
     "price": 449.0,
     "store": "eu.store.ui.com",
@@ -29,8 +26,7 @@
   },
   "xiaomi-portable-electric-air-compressor-2-pro": {
     "availability": "in_stock",
-    "checkFailed": true,
-    "checkedAt": "2026-11-16T00:03:47+00:00",
+    "checkedAt": "2026-11-16T16:50:00+00:00",
     "currency": "UAH",
     "price": 2999.0,
     "store": "mi.ua",
