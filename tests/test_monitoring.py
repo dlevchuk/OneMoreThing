@@ -36,6 +36,37 @@ class StructuredDataTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             Page(html([PRODUCT, PRODUCT])).observation()
 
+    def test_microdata_and_open_graph_agree(self):
+        page = Page('<meta property="product:price:amount" content="3100">'
+                    '<meta property="product:price:currency" content="UAH">'
+                    '<meta itemprop="price" content="3100">'
+                    '<meta itemprop="priceCurrency" content="UAH">'
+                    '<link itemprop="availability" href="https://schema.org/InStock">')
+        self.assertEqual(page.observation(), (3100, 'in_stock'))
+        self.assertEqual(page.currency(), 'UAH')
+        self.assertIsNone(page.tax_included())
+
+    def test_nested_specification_preserves_tax_and_availability(self):
+        page = Page(html({**PRODUCT, 'offers': {'@type': 'Offer',
+            'availability': 'https://schema.org/OutOfStock', 'priceSpecification': {
+                '@type': 'PriceSpecification', 'price': 449, 'priceCurrency': 'EUR',
+                'valueAddedTaxIncluded': False}}}))
+        self.assertEqual(page.observation(), (449, 'out_of_stock'))
+        self.assertEqual(page.currency(), 'EUR')
+        self.assertIs(page.tax_included(), False)
+
+    def test_conflicting_metadata_and_missing_currency_rejected(self):
+        for content in [
+            '<meta property="product:price:amount" content="100"><meta property="product:price:amount" content="200"><meta property="product:price:currency" content="UAH">',
+            '<meta property="product:price:amount" content="3100">',
+            '<meta property="product:price:amount" content="3100"><meta property="product:price:currency" content="UAH">'
+            '<meta itemprop="price" content="3200"><meta itemprop="priceCurrency" content="UAH">',
+            '<meta itemprop="price" content="100"><meta itemprop="price" content="200"><meta itemprop="priceCurrency" content="UAH">',
+            '<meta property="product:pretax_price:amount" content="3100"><meta property="product:pretax_price:currency" content="UAH">',
+        ]:
+            with self.subTest(content=content), self.assertRaises(ValueError):
+                Page(content).observation()
+
     def test_original_currency_is_preserved(self):
         page = Page(html({**PRODUCT, 'offers': {**PRODUCT['offers'], 'priceCurrency': 'USD'}}))
         self.assertEqual(page.observation(), (1234.5, 'in_stock'))

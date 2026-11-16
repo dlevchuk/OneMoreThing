@@ -31,13 +31,26 @@ class Page(HTMLParser):
     def __init__(self, html):
         super().__init__(convert_charrefs=True)
         self.meta, self.blocks, self.title = {}, [], ''
+        self.price_meta = {}
+        self.micro = {}
+        self.micro_products = 0
         self.script = None
         self.in_title = False
         self.feed(html)
 
     def handle_starttag(self, tag, attrs):
         attrs = dict(attrs)
+        if 'itemscope' in attrs and str(attrs.get('itemtype', '')).rstrip('/').endswith('/Product'):
+            self.micro_products += 1
+        for prop in (attrs.get('itemprop') or '').split():
+            if prop in ('price', 'priceCurrency', 'availability'):
+                value = attrs.get('content') or attrs.get('href') or attrs.get('value')
+                if value:
+                    self.micro.setdefault(prop, []).append(value)
         if tag == 'meta':
+            name = attrs.get('property', attrs.get('name', ''))
+            if name.startswith(('product:price:', 'og:price:')):
+                self.price_meta.setdefault(name, set()).add(attrs.get('content', ''))
             self.meta[attrs.get('property', attrs.get('name', ''))] = attrs.get('content', '')
         if tag == 'script' and attrs.get('type', '').split(';')[0].strip().lower() == 'application/ld+json':
             self.script = ''
@@ -90,52 +103,98 @@ class Page(HTMLParser):
         return dict(title=unescape(title).strip()[:300], image=urljoin(url, image) if isinstance(image, str) and image else '',
                     description=description[:1000])
 
-    def currency(self):
+    @staticmethod
+    def stock(value):
+        return {'InStock': 'in_stock', 'LimitedAvailability': 'in_stock',
+                'OutOfStock': 'out_of_stock', 'SoldOut': 'out_of_stock',
+                'Discontinued': 'out_of_stock'}.get(str(value).rsplit('/', 1)[-1], 'unknown')
+
+    @staticmethod
+    def exact_price(value):
+        try:
+            price = Decimal(str(value))
+        except InvalidOperation:
+            raise ValueError('Invalid structured price') from None
+        if not price.is_finite() or not 0 < price <= 10000000 or price.as_tuple().exponent < -2:
+            raise ValueError('Invalid structured price')
+        return float(price)
+
+    def records(self):
         products = self.products()
-        if len(products) != 1:
+        if len(products) > 1:
             raise ValueError('Expected exactly one structured Product')
-        offers = products[0].get('offers', [])
+        offers = products[0].get('offers', []) if products else []
         offers = [offers] if isinstance(offers, dict) else offers
-        if not isinstance(offers, list) or not offers:
-            raise ValueError('No structured offers')
-        currencies = {offer.get('priceCurrency') if isinstance(offer, dict) else None for offer in offers}
-        if len(currencies) != 1:
+        records = set()
+        if offers:
+            if not isinstance(offers, list):
+                raise ValueError('No structured offers')
+            for offer in offers:
+                if not isinstance(offer, dict):
+                    raise ValueError('No structured offers')
+                if offer.get('@type') == 'AggregateOffer' or 'lowPrice' in offer or 'highPrice' in offer:
+                    raise ValueError('Aggregate price range')
+                specs = offer.get('priceSpecification', [])
+                specs = [specs] if isinstance(specs, dict) else specs
+                if not isinstance(specs, list):
+                    raise ValueError('No exact structured price')
+                sources = ([offer] if 'price' in offer else []) + specs
+                if not sources:
+                    raise ValueError('No exact structured price')
+                for source in sources:
+                    if not isinstance(source, dict) or 'price' not in source:
+                        raise ValueError('No exact structured price')
+                    currency = source.get('priceCurrency', offer.get('priceCurrency'))
+                    if offer.get('priceCurrency') and currency != offer['priceCurrency']:
+                        raise ValueError('Unknown or mixed offer currency')
+                    tax = source.get('valueAddedTaxIncluded', offer.get('valueAddedTaxIncluded'))
+                    if tax is not None and not isinstance(tax, bool):
+                        raise ValueError('Invalid tax metadata')
+                    records.add((self.exact_price(source['price']), currency,
+                                 self.stock(offer.get('availability')), tax))
+        else:
+            if self.micro_products > 1:
+                raise ValueError('Expected exactly one structured Product')
+            # Explicit product price metadata only; never use unrelated numbers or pretax fields.
+            for prefix in ('product:price:', 'og:price:'):
+                if any(len(self.price_meta.get(prefix + field, set())) > 1 for field in ('amount', 'currency')):
+                    raise ValueError('Ambiguous variants or sellers')
+                amount, currency = self.meta.get(prefix + 'amount'), self.meta.get(prefix + 'currency')
+                if amount is not None:
+                    records.add((self.exact_price(amount), currency, 'unknown', None))
+            prices = set(self.micro.get('price', []))
+            currencies = set(self.micro.get('priceCurrency', []))
+            if prices:
+                if len(prices) != 1 or len(currencies) != 1:
+                    raise ValueError('Ambiguous variants or sellers')
+                stock_states = {self.stock(value) for value in self.micro.get('availability', [])}
+                stock = stock_states.pop() if len(stock_states) == 1 else 'unknown'
+                records.add((self.exact_price(prices.pop()), currencies.pop(), stock, None))
+            if not records:
+                raise ValueError('No structured offers' if products else 'Expected exactly one structured Product')
+            # OG and microdata may repeat the same price with different stock detail.
+            values = {(r[0], r[1]) for r in records}
+            if len(values) == 1:
+                stock_states = {r[2] for r in records if r[2] != 'unknown'}
+                stock = stock_states.pop() if len(stock_states) == 1 else 'unknown'
+                price, currency = values.pop()
+                records = {(price, currency, stock, None)}
+        currencies = {r[1] for r in records}
+        if len(currencies) != 1 or not all(isinstance(c, str) and re.fullmatch('[A-Z]{3}', c) for c in currencies):
             raise ValueError('Unknown or mixed offer currency')
-        currency = currencies.pop()
-        if not isinstance(currency, str) or not re.fullmatch('[A-Z]{3}', currency):
-            raise ValueError('Unknown or mixed offer currency')
-        return currency
+        if len(records) != 1:
+            raise ValueError('Ambiguous variants or sellers')
+        return next(iter(records))
+
+    def currency(self):
+        return self.records()[1]
+
+    def tax_included(self):
+        return self.records()[3]
 
     def observation(self):
-        products = self.products()
-        if len(products) != 1:
-            raise ValueError('Expected exactly one structured Product')
-        offers = products[0].get('offers', [])
-        if isinstance(offers, dict):
-            offers = [offers]
-        if not isinstance(offers, list) or not offers:
-            raise ValueError('No structured offers')
-        currency = self.currency()
-        candidates = set()
-        for offer in offers:
-            if not isinstance(offer, dict) or offer.get('priceCurrency') != currency:
-                raise ValueError('Unknown or mixed offer currency')
-            # AggregateOffer lowPrice is a range, not a specific shop price.
-            if offer.get('@type') == 'AggregateOffer' or 'lowPrice' in offer or 'highPrice' in offer:
-                raise ValueError('Aggregate price range')
-            try:
-                value = Decimal(str(offer['price']))
-            except (KeyError, InvalidOperation):
-                raise ValueError('No exact structured price') from None
-            if not value.is_finite() or not 0 < value <= 10000000 or value.as_tuple().exponent < -2:
-                raise ValueError('Invalid structured price')
-            availability = str(offer.get('availability', '')).rsplit('/', 1)[-1]
-            stock = {'InStock': 'in_stock', 'LimitedAvailability': 'in_stock', 'OutOfStock': 'out_of_stock',
-                     'SoldOut': 'out_of_stock', 'Discontinued': 'out_of_stock'}.get(availability, 'unknown')
-            candidates.add((float(value), stock))
-        if len(candidates) != 1:
-            raise ValueError('Ambiguous variants or sellers')
-        return candidates.pop()
+        price, _, stock, _ = self.records()
+        return price, stock
 
 
 def marker(wish_id, url):

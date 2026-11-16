@@ -9,7 +9,7 @@ window.PriceMonitor = (() => {
     if (!Number.isFinite(checked) || checked > now + 300000) return null;
     const stale = Boolean(item.checkFailed) || now - checked > 24 * 60 * 60 * 1000;
     return {
-      price: new Intl.NumberFormat('uk-UA', { style: 'currency', currency: item.currency }).format(item.price),
+      price: new Intl.NumberFormat('uk-UA', { style: 'currency', currency: item.currency }).format(item.price) + (item.taxIncluded === false ? ' · без ПДВ' : ''),
       stock: stale ? 'Наявність потребує перевірки' : ({ in_stock: 'Є в наявності', out_of_stock: 'Немає в наявності' }[item.availability] || 'Наявність невідома'),
       checked: new Date(checked).toLocaleString('uk-UA'),
       stale, store: typeof item.store === 'string' ? item.store : '',

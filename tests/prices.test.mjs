@@ -30,3 +30,9 @@ test('source currency is displayed without conversion', async () => {
   const m = await monitor({ usd: { ...observation, currency: 'USD' } });
   assert.match(m.describe('usd', now).price, /USD|\$/);
 });
+
+test('tax-exclusive source price remains explicitly labeled', async () => {
+  const m = await monitor({ net: { ...observation, currency: 'EUR', taxIncluded: false }, gross: { ...observation, taxIncluded: true } });
+  assert.match(m.describe('net', now).price, /без ПДВ/);
+  assert.doesNotMatch(m.describe('gross', now).price, /без ПДВ/);
+});

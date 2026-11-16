@@ -79,6 +79,7 @@ def export(config, wishes, previous, api, diagnostics=None):
                 raise ValueError('Watch has not been checked yet')
             if checked < 0 or checked > datetime.now(timezone.utc).timestamp() + 300:
                 raise ValueError('Invalid check timestamp')
+            tax_included = None
             if rule.get('priceRegex'):
                 price, stock = parse_snapshot(api(watch + '/history/latest', text=True), rule)
                 currency = rule.get('currency', 'UAH')
@@ -88,11 +89,14 @@ def export(config, wishes, previous, api, diagnostics=None):
                 page = Page(api(watch + '/history/latest?html=1', text=True))
                 price, stock = page.observation()
                 currency = page.currency()
+                tax_included = page.tax_included()
             result[wish_id] = {
                 'price': price, 'currency': currency, 'availability': stock,
                 'checkedAt': datetime.fromtimestamp(checked, timezone.utc).isoformat(),
                 'url': url, 'store': rule['store'],
             }
+            if tax_included is not None:
+                result[wish_id]['taxIncluded'] = tax_included
         except (ValueError, KeyError, IndexError, TypeError, OSError, re.error) as exc:
             # Do not log API responses or credentials.
             reason = SOURCE_REASONS.get(str(exc)) if isinstance(exc, ValueError) else None
