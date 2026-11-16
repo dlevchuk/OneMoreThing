@@ -1,4 +1,20 @@
 {
+  "bambu-lab-a1-mini": {
+    "availability": "in_stock",
+    "checkedAt": "2026-11-16T17:28:06+00:00",
+    "currency": "UAH",
+    "price": 12800.0,
+    "store": "printforge.store",
+    "url": "https://printforge.store/3d-printers/bambu-lab-a1-mini/"
+  },
+  "baseus-air-car-jump-starter-super-energy-10000mah": {
+    "availability": "out_of_stock",
+    "checkedAt": "2026-11-16T17:28:05+00:00",
+    "currency": "UAH",
+    "price": 3899.0,
+    "store": "miot.ua",
+    "url": "https://miot.ua/avtomobilnoe-pusko-zaryadnoe-ustroystvo-baseus-super-energy-air-car-jump-starter-10000mah-cgnl020101-black-3030379/p42212/"
+  },
   "orpro-dynamic-recovery-8t-9m": {
     "availability": "in_stock",
     "checkedAt": "2026-11-16T17:18:23+00:00",
@@ -14,6 +30,14 @@
     "price": 399.0,
     "store": "ouraring.com",
     "url": "https://ouraring.com/store/rings/oura-ring-5/black"
+  },
+  "radiomaster-tx15-max-elrs-m2": {
+    "availability": "in_stock",
+    "checkedAt": "2026-11-16T17:28:05+00:00",
+    "currency": "UAH",
+    "price": 12270.0,
+    "store": "fpvmaster.net.ua",
+    "url": "https://fpvmaster.net.ua/ua/p2829558243-radiomaster-tx15-max.html"
   },
   "ubiquiti-dream-router-5g-max": {
     "availability": "out_of_stock",
