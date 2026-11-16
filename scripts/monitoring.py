@@ -201,7 +201,7 @@ def marker(wish_id, url):
     return PREFIX + quote(str(wish_id), safe='') + '/' + hashlib.sha256(url.encode()).hexdigest()[:16]
 
 
-def desired_rules(wishes, overrides, profiles):
+def desired_rules(wishes, overrides, profiles, disabled=None):
     rules = {}
     for wish in wishes:
         wish_id = wish['id']
@@ -213,6 +213,8 @@ def desired_rules(wishes, overrides, profiles):
         override = overrides.get(wish_id, {})
         url = wish.get('originalUrl')
         if not url:
+            continue
+        if (disabled or {}).get(wish_id, {}).get('url') == url:
             continue
         public_url(url)
         # Legacy rules for local shops must not redirect source-only monitoring.

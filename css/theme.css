@@ -542,3 +542,12 @@ html.matrix-arriving .site-footer {
 .detail-price { margin: 1rem 0; padding: .8rem; border: 1px solid currentColor; font-size: .85rem; }
 .detail-price p { margin: .4rem 0; }
 .detail-price a { color: inherit; text-decoration: underline; }
+
+.price-history { margin: 1rem 0 0; }
+.price-history figcaption { font-size: .8rem; margin-bottom: .5rem; }
+.price-history svg { width: 100%; height: auto; overflow: visible; color: #66d9a0; }
+.price-history polyline { stroke: currentColor; stroke-width: 2; vector-effect: non-scaling-stroke; }
+.price-history circle { fill: currentColor; }
+.price-history text { fill: currentColor; font-size: 10px; font-family: inherit; }
+.price-chart-grid { fill: none; stroke: currentColor; stroke-opacity: .2; stroke-width: 1; }
+.price-history p, .price-history-empty { opacity: .8; font-size: .75rem; }

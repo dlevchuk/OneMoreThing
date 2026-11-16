@@ -1,0 +1,35 @@
+{
+  "orpro-dynamic-recovery-8t-9m": [
+    {
+      "checkedAt": "2026-11-16T00:03:47+00:00",
+      "currency": "UAH",
+      "price": 3100.0,
+      "url": "https://orpro.com.ua/uk/dinamichni-stropi/3-dinamichna-stropa-orpro-8000-kg9-metriv-series-2.html"
+    }
+  ],
+  "oura-ring-5": [
+    {
+      "checkedAt": "2026-11-16T00:03:48+00:00",
+      "currency": "USD",
+      "price": 399.0,
+      "url": "https://ouraring.com/store/rings/oura-ring-5/black"
+    }
+  ],
+  "ubiquiti-dream-router-5g-max": [
+    {
+      "checkedAt": "2026-11-16T00:03:49+00:00",
+      "currency": "EUR",
+      "price": 449.0,
+      "taxIncluded": false,
+      "url": "https://eu.store.ui.com/eu/en/category/cloud-gateways-wifi-integrated/products/udr-5g-max-eu"
+    }
+  ],
+  "xiaomi-portable-electric-air-compressor-2-pro": [
+    {
+      "checkedAt": "2026-11-16T00:03:47+00:00",
+      "currency": "UAH",
+      "price": 2999.0,
+      "url": "https://mi.ua/ru/avtokompressory/nasos-xiaomi-portable-electric-air-compressor-2-pro-bhr9099gl.html"
+    }
+  ]
+}

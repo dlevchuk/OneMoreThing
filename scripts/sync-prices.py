@@ -12,6 +12,7 @@ from urllib.parse import quote, urlparse
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError
 from monitoring import Page, desired_rules, reconcile
+from price_history import update_history
 
 
 def parse_snapshot(text, rule):
@@ -136,7 +137,9 @@ def main():
     overrides = json.loads((root / 'config/price-watches.json').read_text())
     profiles = json.loads((root / 'config/shop-profiles.json').read_text())
     wishes = json.loads((root / 'data/wishes.json').read_text())
-    config = desired_rules(wishes, overrides, profiles)
+    disabled_path = root / 'config/monitoring-disabled.json'
+    disabled = json.loads(disabled_path.read_text()) if disabled_path.exists() else {}
+    config = desired_rules(wishes, overrides, profiles, disabled)
     if args.plan:
         print(json.dumps(config, ensure_ascii=False, indent=2))
         return 0
@@ -190,6 +193,13 @@ def main():
         temp = target.with_suffix('.tmp')
         temp.write_text(content)
         temp.replace(target)
+    history_path = root / 'data/price-history.json'
+    history = json.loads(history_path.read_text()) if history_path.exists() else {}
+    history = update_history(history, previous)
+    history = update_history(history, result)
+    history_temp = history_path.with_suffix('.tmp')
+    history_temp.write_text(json.dumps(history, ensure_ascii=False, indent=2, sort_keys=True) + '\n')
+    history_temp.replace(history_path)
     return 1 if failed else 0
 
 

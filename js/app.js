@@ -71,7 +71,7 @@ function priceMarkup(id, compact = false) {
   if (!item) return '';
   if (compact) return `<span class="notice-price">${escHtml(item.price)}${item.stale ? ' · потребує перевірки' : ''}</span>`;
   const url = safeUrl(item.url);
-  return `<div class="detail-price"><strong>Остання відома ціна: ${escHtml(item.price)}</strong><p>${escHtml(item.stock)}</p><p>Перевірено: ${escHtml(item.checked)}${item.stale ? ' · дані потребують оновлення' : ''}</p>${url ? `<a href="${escHtml(url)}" target="_blank" rel="noopener noreferrer">${escHtml(item.store || 'Магазин')}</a>` : ''}</div>`;
+  return `<div class="detail-price"><strong>Остання відома ціна: ${escHtml(item.price)}</strong><p>${escHtml(item.stock)}</p><p>Перевірено: ${escHtml(item.checked)}${item.stale ? ' · дані потребують оновлення' : ''}</p>${url ? `<a href="${escHtml(url)}" target="_blank" rel="noopener noreferrer">${escHtml(item.store || 'Магазин')}</a>` : ''}${window.PriceMonitor?.chart(id) || ''}</div>`;
 }
 
 function buildCard(wish) {

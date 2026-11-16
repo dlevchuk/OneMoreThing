@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 
-async function monitor(data, ok = true) {
-  const context = vm.createContext({ window: {}, fetch: async () => ({ ok, json: async () => data }), Intl, Date, AbortController, setTimeout, clearTimeout });
+async function monitor(data, ok = true, history = {}) {
+  const context = vm.createContext({ window: {}, fetch: async url => ({ ok, json: async () => url.includes('price-history') ? history : data }), Intl, Date, AbortController, setTimeout, clearTimeout });
   vm.runInContext(readFileSync(new URL('../js/prices.js', import.meta.url), 'utf8'), context);
   await context.window.PriceMonitor.init();
   return context.window.PriceMonitor;
@@ -35,4 +35,27 @@ test('tax-exclusive source price remains explicitly labeled', async () => {
   const m = await monitor({ net: { ...observation, currency: 'EUR', taxIncluded: false }, gross: { ...observation, taxIncluded: true } });
   assert.match(m.describe('net', now).price, /без ПДВ/);
   assert.doesNotMatch(m.describe('gross', now).price, /без ПДВ/);
+});
+
+test('chart draws real points and filters other currencies and sources', async () => {
+  const item = { ...observation, url: 'https://source.example' };
+  const m = await monitor({ gift: item }, true, { gift: [
+    { ...item, price: 100, checkedAt: '2026-11-15T10:00:00Z' },
+    { ...item, price: 200 },
+    { ...item, price: 9999, currency: 'USD' },
+    { ...item, price: 9999, url: 'https://other.example' }
+  ] });
+  const chart = m.chart('gift', now);
+  assert.match(chart, /<polyline/);
+  assert.equal((chart.match(/<circle /g) || []).length, 2);
+  assert.doesNotMatch(chart, /9999/);
+  assert.match(chart, /2 спостережень/);
+});
+test('one real point is honest and malicious history data is ignored', async () => {
+  const item = { ...observation, url: 'https://source.example' };
+  const m = await monitor({ gift: item }, true, { gift: [item, { ...item, price: '<script>' }, { ...item, checkedAt: 'invalid' }] });
+  const chart = m.chart('gift', now);
+  assert.match(chart, /Перше спостереження/);
+  assert.equal((chart.match(/<circle /g) || []).length, 1);
+  assert.doesNotMatch(chart, /<script>/);
 });
