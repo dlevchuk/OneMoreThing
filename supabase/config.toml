@@ -1,3 +1,6 @@
 # GitHub OIDC is verified inside this server-only function.
 [functions.sync-catalog]
 verify_jwt = false
+
+[functions.wish-import-queue]
+verify_jwt = false

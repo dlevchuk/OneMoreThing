@@ -1,11 +1,17 @@
 name: Add wishlist card from URL
 
 on:
+  schedule:
+    - cron: '3-58/5 * * * *'
+  workflow_run:
+    workflows: ['Deploy to GitHub Pages']
+    types: [completed]
+    branches: [main]
   workflow_dispatch:
     inputs:
       url:
-        description: Product page URL
-        required: true
+        description: Product page URL (leave empty when processing queue)
+        required: false
         type: string
       priority:
         description: Priority
@@ -16,10 +22,15 @@ on:
         description: Add without monitoring if the price cannot be parsed
         type: boolean
         default: false
+      process_queue:
+        description: Process one pending owner request instead of a manual URL
+        type: boolean
+        default: false
 
 permissions:
   contents: write
   actions: write
+  id-token: write
 
 concurrency:
   group: wishlist-import
@@ -27,8 +38,9 @@ concurrency:
 
 jobs:
   import:
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success')
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
         with:
@@ -36,27 +48,41 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Import product and synchronize catalog
+      - name: Prepare manual or owner import
+        id: request
         env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           PRODUCT_URL: ${{ inputs.url }}
           PRIORITY: ${{ inputs.priority }}
           ALLOW_UNMONITORED: ${{ inputs.allow_unmonitored }}
-        run: |
-          args=()
-          if [ "$ALLOW_UNMONITORED" = "true" ]; then args+=(--allow-unmonitored); fi
-          python3 -B scripts/add-wish.py --priority "$PRIORITY" "${args[@]}" -- "$PRODUCT_URL"
+          PROCESS_QUEUE: ${{ inputs.process_queue }}
+        run: node scripts/prepare-wish-import.mjs
+      - name: Import product and synchronize catalog
+        if: steps.request.outputs.has_request == 'true'
+        run: node scripts/import-prepared-wish.mjs
       - name: Validate
+        if: steps.request.outputs.has_request == 'true'
         run: |
           npm test
           python3 -B -m unittest discover -s tests -p 'test_*.py'
       - name: Publish card
+        if: steps.request.outputs.has_request == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           git add -- data/wishes.json supabase/schema.sql
-          if git diff --cached --quiet; then exit 0; fi
           git config user.name 'Wishlist importer'
           git config user.email 'wishlist-importer@users.noreply.github.com'
-          git commit -m 'Add wishlist card from product URL'
-          git push origin HEAD:main
+          if ! git diff --cached --quiet; then
+            git commit -m 'Add wishlist card from product URL'
+            git fetch origin main
+            git rebase origin/main
+            git push origin HEAD:main
+          fi
           gh workflow run deploy.yml --ref main
+      - name: Update owner request status
+        if: always() && steps.request.outputs.queued == 'true'
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          IMPORT_RESULT: ${{ job.status }}
+        run: node scripts/finish-wish-import.mjs

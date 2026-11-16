@@ -82,6 +82,29 @@ window.OwnerManager = (() => {
     await window.BookingManager?.refresh();
   }
 
-  return { init, refreshIdentity, requestLink, signOut, setCompleted,
+  async function requestImport(url, priority, allowUnmonitored = false) {
+    if (!client || !owner) throw new Error('Увійди як власник.');
+    let parsed;
+    try { parsed = new URL(url.trim()); } catch { throw new Error('Вкажи повне посилання на товар.'); }
+    if (!['https:', 'http:'].includes(parsed.protocol) || parsed.username || parsed.password ||
+        url.trim().length > 3000 || !['want', 'nice', 'unsure'].includes(priority) || typeof allowUnmonitored !== 'boolean') {
+      throw new Error('Перевір посилання та пріоритет.');
+    }
+    const { data, error } = await client.rpc('request_wish_import', {
+      p_url: url.trim(), p_priority: priority, p_allow_unmonitored: allowUnmonitored
+    });
+    if (error) throw new Error(error.message === 'import_rate_limit' ? 'Забагато запитів. Спробуй пізніше.' :
+      error.code === '42501' ? 'Увійди як власник повторно.' : 'Не вдалося додати запит. Спробуй ще раз.');
+    return data;
+  }
+
+  async function listImports() {
+    if (!client || !owner) throw new Error('Увійди як власник.');
+    const { data, error } = await client.rpc('list_wish_imports');
+    if (error) throw new Error('Не вдалося оновити статуси. Спробуй пізніше.');
+    return Array.isArray(data) ? data : [];
+  }
+
+  return { init, refreshIdentity, requestLink, signOut, setCompleted, requestImport, listImports,
     onUpdate: fn => listeners.push(fn), get isOwner() { return owner; } };
 })();

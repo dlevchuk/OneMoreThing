@@ -16,3 +16,14 @@
 #owner-note { resize: vertical; max-width: 100%; }
 .header-nav { flex-wrap: wrap; }
 @media (max-width:640px) { .filter-btn { flex-basis: calc(50% - 4px); } }
+
+.owner-page [hidden] { display: none !important; }
+.owner-panel h2 { font: 600 1.6rem/1.2 var(--display); }
+.owner-import-option { display: flex; align-items: flex-start; gap: .65rem; line-height: 1.4; }
+.owner-import-option input { flex: 0 0 auto; margin-top: .25rem; }
+.owner-import-hint { color: var(--muted); font-size: .9rem; }
+.owner-import-jobs { padding-left: 1.3rem; }
+.owner-import-jobs li { padding: .75rem 0; border-bottom: 1px solid var(--line); }
+.owner-import-jobs a { color: var(--matrix); overflow-wrap: anywhere; }
+.owner-import-jobs p { margin: .35rem 0; font-size: .9rem; }
+.owner-import-jobs .is-error { color: #ff9999; }

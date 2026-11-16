@@ -1,0 +1,10 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { spawnSync } from 'node:child_process';
+const job = JSON.parse(readFileSync(join(process.env.RUNNER_TEMP, 'wish-import-request.json'), 'utf8'));
+const args = ['-B', 'scripts/add-wish.py', '--priority', job.priority];
+if (job.allowUnmonitored) args.push('--allow-unmonitored');
+args.push('--', job.url);
+const child = spawnSync('python3', args, { stdio: 'inherit' });
+if (child.error) throw new Error('Could not start importer');
+process.exit(child.status ?? 1);

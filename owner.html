@@ -44,7 +44,7 @@
     <section class="owner-panel" aria-labelledby="owner-title">
       <p class="eyebrow">КАНАЛ ВЛАСНИКА</p>
       <h1 id="owner-title">Вхід до керування</h1>
-      <p>Отримай одноразове посилання на свою пошту. Доступ відкрито лише власнику дошки.</p>
+      <p id="owner-intro">Отримай одноразове посилання на свою пошту. Доступ відкрито лише власнику дошки.</p>
       <form id="owner-login" class="dialog-form">
         <label class="form-group" for="owner-email">Email<input id="owner-email" class="form-input" type="email" autocomplete="email" required maxlength="254" /></label>
         <button id="owner-send" type="submit" class="dialog-btn dialog-btn--submit">Надіслати посилання</button>
@@ -52,11 +52,27 @@
       <p id="owner-message" class="owner-message" role="status" aria-live="polite"></p>
       <div id="owner-signed-in" hidden><a href="board.html" class="dialog-btn dialog-btn--submit">Керувати контрактами →</a><button id="owner-signout" type="button" class="dialog-btn dialog-btn--cancel">Вийти</button></div>
     </section>
+    <section id="owner-import-panel" class="owner-panel" aria-labelledby="wish-import-title" hidden>
+      <p class="eyebrow">НОВИЙ КОНТРАКТ</p>
+      <h2 id="wish-import-title">Додати бажання</h2>
+      <p>Встав посилання на товар. Назва, фото й ціна перевіряться автоматично, а бажання з’явиться на публічній дошці.</p>
+      <form id="wish-import-form" class="dialog-form">
+        <label class="form-group" for="wish-import-url">Посилання на товар<input id="wish-import-url" class="form-input" type="url" inputmode="url" required maxlength="3000" placeholder="https://магазин/товар" /></label>
+        <label class="form-group" for="wish-import-priority">Пріоритет<select id="wish-import-priority" class="form-input"><option value="want">Червона пігулка — найвищий</option><option value="nice">Чистий лід — середній</option><option value="unsure" selected>Мертвий канал — найнижчий</option></select></label>
+        <label class="owner-import-option"><input id="wish-import-unmonitored" type="checkbox" /> Додати без моніторингу, якщо ціна не читається</label>
+        <button id="wish-import-submit" type="submit" class="dialog-btn dialog-btn--submit">Додати бажання</button>
+      </form>
+      <p id="wish-import-message" class="owner-message" role="status" aria-live="polite"></p>
+      <p class="owner-import-hint">Обробка й публікація відбуваються автоматично та можуть зайняти кілька хвилин.</p>
+      <h3>Останні запити</h3>
+      <ol id="wish-import-jobs" class="owner-import-jobs" aria-label="Стан додавання бажань"></ol>
+    </section>
   </main>
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js" integrity="sha384-BWcjm9OdFth9TbhCxZPdm+gAOUMAzQy9nmTs12ioXdCcbVnJaPMn+fMUoQCLt60R" crossorigin="anonymous"></script>
   <script defer src="js/supabase-config.js?v=0"></script>
   <script defer src="js/client.js?v=0"></script>
   <script defer src="js/owner.js?v=0"></script>
   <script defer src="js/owner-page.js?v=0"></script>
+  <script defer src="js/owner-import.js?v=0"></script>
 </body>
 </html>

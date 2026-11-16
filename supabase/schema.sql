@@ -94,6 +94,106 @@ $$;
 revoke all on function public.sync_gift_catalog(text[], bigint, text) from public, anon, authenticated;
 grant execute on function public.sync_gift_catalog(text[], bigint, text) to service_role;
 
+-- Private owner import queue. Browser access is only through checked owner RPCs.
+create table if not exists private.wish_import_jobs (
+  id uuid primary key default pg_catalog.gen_random_uuid(),
+  owner_id uuid not null references auth.users(id) on delete cascade,
+  product_url text not null,
+  priority text not null check (priority in ('want','nice','unsure')),
+  allow_unmonitored boolean not null default false,
+  status text not null default 'queued' check (status in ('queued','processing','done','failed')),
+  attempts integer not null default 0,
+  processing_run_id bigint,
+  lease_until timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+alter table private.wish_import_jobs enable row level security;
+revoke all on private.wish_import_jobs from public, anon, authenticated;
+grant select, insert, update on private.wish_import_jobs to service_role;
+create unique index if not exists wish_import_pending_url on private.wish_import_jobs(owner_id, product_url)
+  where status in ('queued','processing');
+create index if not exists wish_import_owner_created on private.wish_import_jobs(owner_id, created_at desc);
+
+create or replace function private.request_wish_import_impl(p_url text, p_priority text, p_allow_unmonitored boolean)
+returns uuid language plpgsql security definer set search_path = ''
+as $$
+declare existing_id uuid; new_id uuid;
+begin
+  if auth.uid() is null or not public.is_site_owner() then raise exception 'forbidden' using errcode='42501'; end if;
+  if p_url is null or char_length(btrim(p_url)) > 3000 or btrim(p_url) !~ '^https?://[^[:space:]]+$'
+     or p_url ~ '[[:cntrl:]]' or p_url ~ '^https?://[^/]*@'
+     or p_priority is null or p_priority not in ('want','nice','unsure') or p_allow_unmonitored is null then
+    raise exception 'invalid_import';
+  end if;
+  perform pg_catalog.pg_advisory_xact_lock(1869440818,1);
+  select id into existing_id from private.wish_import_jobs
+    where owner_id=auth.uid() and product_url=btrim(p_url) and status in ('queued','processing');
+  if existing_id is not null then return existing_id; end if;
+  if (select count(*) from private.wish_import_jobs where owner_id=auth.uid() and created_at > now()-interval '1 hour') >= 20 then
+    raise exception 'import_rate_limit';
+  end if;
+  insert into private.wish_import_jobs(owner_id,product_url,priority,allow_unmonitored)
+    values(auth.uid(),btrim(p_url),p_priority,p_allow_unmonitored) returning id into new_id;
+  return new_id;
+end;
+$$;
+create or replace function private.list_wish_imports_impl()
+returns jsonb language plpgsql security definer set search_path = ''
+as $$
+begin
+  if auth.uid() is null or not public.is_site_owner() then raise exception 'forbidden' using errcode='42501'; end if;
+  return coalesce((select jsonb_agg(to_jsonb(j)) from (
+    select id, product_url, priority, status, created_at, updated_at
+    from private.wish_import_jobs where owner_id=auth.uid() order by created_at desc limit 10
+  ) j), '[]'::jsonb);
+end;
+$$;
+revoke all on function private.request_wish_import_impl(text,text,boolean) from public, anon;
+revoke all on function private.list_wish_imports_impl() from public, anon;
+grant usage on schema private to authenticated;
+grant execute on function private.request_wish_import_impl(text,text,boolean), private.list_wish_imports_impl() to authenticated;
+
+create or replace function public.request_wish_import(p_url text,p_priority text,p_allow_unmonitored boolean default false)
+returns uuid language sql security invoker set search_path = ''
+as $$ select private.request_wish_import_impl(p_url,p_priority,p_allow_unmonitored); $$;
+create or replace function public.list_wish_imports()
+returns jsonb language sql security invoker set search_path = ''
+as $$ select private.list_wish_imports_impl(); $$;
+revoke all on function public.request_wish_import(text,text,boolean), public.list_wish_imports() from public, anon;
+grant execute on function public.request_wish_import(text,text,boolean), public.list_wish_imports() to authenticated;
+
+create or replace function public.claim_wish_import(p_run_id bigint)
+returns jsonb language plpgsql security invoker set search_path = ''
+as $$
+declare picked private.wish_import_jobs;
+begin
+  if p_run_id is null or p_run_id <= 0 then raise exception 'invalid_worker'; end if;
+  update private.wish_import_jobs set status='failed', updated_at=now()
+    where status='processing' and lease_until<now() and attempts>=3;
+  select * into picked from private.wish_import_jobs
+    where (status='queued' or (status='processing' and lease_until<now())) and attempts<3
+    order by created_at limit 1 for update skip locked;
+  if not found then return null; end if;
+  update private.wish_import_jobs set status='processing', processing_run_id=p_run_id,
+    lease_until=now()+interval '20 minutes', attempts=attempts+1, updated_at=now() where id=picked.id;
+  return jsonb_build_object('id',picked.id,'url',picked.product_url,'priority',picked.priority,'allowUnmonitored',picked.allow_unmonitored);
+end;
+$$;
+create or replace function public.finish_wish_import(p_id uuid,p_run_id bigint,p_success boolean)
+returns boolean language plpgsql security invoker set search_path = ''
+as $$
+begin
+  if p_success is null then raise exception 'invalid_result'; end if;
+  update private.wish_import_jobs set status=case when p_success then 'done' else 'failed' end,
+    lease_until=null, updated_at=now()
+    where id=p_id and status='processing' and processing_run_id=p_run_id;
+  return found;
+end;
+$$;
+revoke all on function public.claim_wish_import(bigint), public.finish_wish_import(uuid,bigint,boolean) from public, anon, authenticated;
+grant execute on function public.claim_wish_import(bigint), public.finish_wish_import(uuid,bigint,boolean) to service_role;
+
 -- BEGIN GENERATED GIFT CATALOG
 update public.gift_catalog set active = false;
 insert into public.gift_catalog (wish_id, active) values

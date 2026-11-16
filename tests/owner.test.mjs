@@ -77,3 +77,21 @@ test('Invalid callbacks and nonowners cannot finish login', async () => {
   await assert.rejects(outsider.manager.init(), /не має доступу/);
   assert.ok(outsider.calls.some(([name]) => name === 'signout'));
 });
+
+test('only verified owners can request imports or read request status', async () => {
+  const outsider = harness({ allowed: false });
+  await outsider.manager.init();
+  await assert.rejects(outsider.manager.requestImport('https://shop.example/item', 'want'), /Увійди/);
+  await assert.rejects(outsider.manager.listImports(), /Увійди/);
+  assert.ok(!outsider.calls.some(([name]) => name === 'request_wish_import'));
+  const owner = harness();
+  await owner.manager.init();
+  await owner.manager.requestImport(' https://shop.example/item ', 'want', true);
+  const args = owner.calls.find(([name]) => name === 'request_wish_import')[1];
+  assert.equal(args.p_url, 'https://shop.example/item');
+  assert.equal(args.p_priority, 'want');
+  assert.equal(args.p_allow_unmonitored, true);
+  await assert.rejects(owner.manager.requestImport('javascript:alert(1)', 'want'), /Перевір/);
+  await assert.rejects(owner.manager.requestImport('https://user:password@shop.example/item', 'want'), /Перевір/);
+  assert.equal((await owner.manager.listImports()).length, 0);
+});

@@ -19,6 +19,8 @@
     if (!remaining) clearInterval(timer);
   }
   function render() {
+    document.getElementById('owner-title').textContent = manager.isOwner ? 'Кабінет власника' : 'Вхід до керування';
+    document.getElementById('owner-intro').textContent = manager.isOwner ? 'Керуй контрактами та додавай нові бажання.' : 'Отримай одноразове посилання на свою пошту. Доступ відкрито лише власнику дошки.';
     login.hidden = manager.isOwner;
     signedIn.hidden = !manager.isOwner;
     if (manager.isOwner) message('Вхід виконано. Тепер можна керувати контрактами.');
