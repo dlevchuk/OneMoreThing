@@ -84,6 +84,17 @@ class StructuredDataTest(unittest.TestCase):
         self.assertEqual(page.observation(), (1234.5, 'in_stock'))
         self.assertEqual(page.currency(), 'USD')
 
+    def test_preflight_rejects_unreadable_price_unless_explicitly_disabled(self):
+        card = importer.make_card(WISH['originalUrl'], html(PRODUCT))
+        result, check = importer.preflight_card(card, html(PRODUCT), {})
+        self.assertEqual(check['price'], 1234.5)
+        self.assertNotIn('monitoring', result)
+        with self.assertRaises(ValueError):
+            importer.preflight_card(card, '<html>No price</html>', {})
+        result, check = importer.preflight_card(card, '<html>No price</html>', {}, True)
+        self.assertIs(result['monitoring'], False)
+        self.assertEqual(check['status'], 'unmonitored')
+
     def test_import_card_from_url_and_relative_image(self):
         card = importer.make_card(WISH['originalUrl'], html(PRODUCT), 'want')
         self.assertEqual(card['title'], PRODUCT['name'])

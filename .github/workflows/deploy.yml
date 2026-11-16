@@ -34,8 +34,13 @@ jobs:
 
       - name: Test price monitoring
         run: |
-          node --test tests/prices.test.mjs
+          npm test
           python3 -B -m unittest discover -s tests -p 'test_*.py'
+
+      - name: Synchronize live booking catalog
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+        run: node scripts/sync-live-catalog.mjs
 
       - name: Build site into dist/
         env:

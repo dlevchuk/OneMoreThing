@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import ipaddress
 import json
+import os
 from pathlib import Path
 import re
 import socket
@@ -42,6 +43,27 @@ def make_card(url, html, priority='unsure', title=None):
             'originalUrl': url, 'priority': priority}
 
 
+def probe_source(url, html, profiles):
+    profile = profiles.get(urlparse(url).hostname, {})
+    if profile.get('priceRegex'):
+        raise ValueError('This source requires a text-selector check before automatic import')
+    source = profile.get('priceSource', 'auto')
+    page = Page(html)
+    price, stock = page.observation(source)
+    return {'price': price, 'currency': page.currency(source), 'availability': stock}
+
+
+def preflight_card(card, html, profiles, allow_unmonitored=False):
+    try:
+        result = probe_source(card['originalUrl'], html, profiles)
+        return card, result
+    except ValueError as exc:
+        if not allow_unmonitored:
+            raise ValueError('Source price is not readable: ' + str(exc) +
+                             '. Choose another source or explicitly allow an unmonitored card.') from None
+        return {**card, 'monitoring': False}, {'status': 'unmonitored', 'reason': str(exc)}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('url')
@@ -49,6 +71,7 @@ def main():
     parser.add_argument('--title', help='Override title when the shop metadata needs correction')
     parser.add_argument('--root', type=Path, default=Path(__file__).resolve().parents[1])
     parser.add_argument('--preview', action='store_true')
+    parser.add_argument('--allow-unmonitored', action='store_true', help='Explicitly allow a card whose price cannot be parsed; monitoring stays disabled')
     args = parser.parse_args()
     path = args.root / 'data/wishes.json'
     wishes = json.loads(path.read_text())
@@ -57,7 +80,7 @@ def main():
            for w in wishes):
         print('This URL already exists; no changes')
         return
-    request = Request(checked_url(args.url), headers={'User-Agent': 'WishlistMetadataImporter/1.0'})
+    request = Request(checked_url(args.url), headers={'User-Agent': 'Mozilla/5.0'})
     with build_opener(PublicRedirects()).open(request, timeout=30) as response:
         if 'html' not in response.headers.get_content_type():
             raise ValueError('Expected an HTML product page')
@@ -66,6 +89,18 @@ def main():
             raise ValueError('Page exceeds 2 MB')
         html = content.decode(response.headers.get_content_charset() or 'utf-8', errors='replace')
     card = make_card(args.url, html, args.priority, args.title)
+    profiles = json.loads((args.root / 'config/shop-profiles.json').read_text())
+    try:
+        card, source = preflight_card(card, html, profiles, args.allow_unmonitored)
+    except ValueError as exc:
+        if os.environ.get('GITHUB_STEP_SUMMARY'):
+            with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
+                summary.write('### Source check failed\nNo card was added. Choose another product page or explicitly allow a card without monitoring.\n')
+        parser.error(str(exc))
+    print(json.dumps({'sourceCheck': source}, ensure_ascii=False))
+    if os.environ.get('GITHUB_STEP_SUMMARY'):
+        with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
+            summary.write('### Source check\n' + ('Price verified: ' + str(source['price']) + ' ' + source['currency'] if 'price' in source else 'Added without monitoring by explicit request') + '\n')
     print(json.dumps(card, ensure_ascii=False, indent=2))
     if args.preview:
         return

@@ -12,6 +12,10 @@ on:
         type: choice
         options: [unsure, want, nice]
         default: unsure
+      allow_unmonitored:
+        description: Add without monitoring if the price cannot be parsed
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -36,7 +40,11 @@ jobs:
         env:
           PRODUCT_URL: ${{ inputs.url }}
           PRIORITY: ${{ inputs.priority }}
-        run: python3 -B scripts/add-wish.py --priority "$PRIORITY" -- "$PRODUCT_URL"
+          ALLOW_UNMONITORED: ${{ inputs.allow_unmonitored }}
+        run: |
+          args=()
+          if [ "$ALLOW_UNMONITORED" = "true" ]; then args+=(--allow-unmonitored); fi
+          python3 -B scripts/add-wish.py --priority "$PRIORITY" "${args[@]}" -- "$PRODUCT_URL"
       - name: Validate
         run: |
           npm test

@@ -57,6 +57,43 @@ $$;
 revoke all on function public.set_gift_completed(text, boolean, text) from public, anon;
 grant execute on function public.set_gift_completed(text, boolean, text) to authenticated;
 
+-- Server-only catalog sync: preserves completion, notes, reservations and owner rights.
+create table if not exists private.catalog_sync_state (
+  singleton boolean primary key default true check (singleton),
+  run_id bigint not null,
+  commit_sha text not null
+);
+alter table private.catalog_sync_state enable row level security;
+revoke all on private.catalog_sync_state from public, anon, authenticated;
+grant usage on schema private to service_role;
+grant select, insert, update on private.catalog_sync_state to service_role;
+
+create or replace function public.sync_gift_catalog(p_ids text[], p_run_id bigint, p_sha text)
+returns boolean language plpgsql security invoker set search_path = ''
+as $$
+begin
+  if p_ids is null or cardinality(p_ids) < 1 or cardinality(p_ids) > 500
+     or p_run_id is null or p_run_id <= 0 or p_sha is null or p_sha !~ '^[a-f0-9]{40}$'
+     or exists (select 1 from unnest(p_ids) as x(id) where id is null or id !~ '^[A-Za-z0-9_-]{1,100}$')
+     or (select count(distinct id) from unnest(p_ids) as x(id)) <> cardinality(p_ids) then
+    raise exception 'invalid_catalog';
+  end if;
+  perform pg_catalog.pg_advisory_xact_lock(1869440817, 1);
+  if exists (select 1 from private.catalog_sync_state where singleton and run_id > p_run_id) then
+    return false;
+  end if;
+  update public.gift_catalog set active = false where active and not (wish_id = any(p_ids));
+  insert into public.gift_catalog (wish_id, active)
+    select id, true from unnest(p_ids) as x(id)
+    on conflict (wish_id) do update set active = true where not gift_catalog.active;
+  insert into private.catalog_sync_state (singleton, run_id, commit_sha) values (true, p_run_id, p_sha)
+    on conflict (singleton) do update set run_id = excluded.run_id, commit_sha = excluded.commit_sha;
+  return true;
+end;
+$$;
+revoke all on function public.sync_gift_catalog(text[], bigint, text) from public, anon, authenticated;
+grant execute on function public.sync_gift_catalog(text[], bigint, text) to service_role;
+
 -- BEGIN GENERATED GIFT CATALOG
 update public.gift_catalog set active = false;
 insert into public.gift_catalog (wish_id, active) values

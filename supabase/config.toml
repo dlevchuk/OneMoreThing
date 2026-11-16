@@ -1,0 +1,3 @@
+# GitHub OIDC is verified inside this server-only function.
+[functions.sync-catalog]
+verify_jwt = false
