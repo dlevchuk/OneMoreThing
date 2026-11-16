@@ -39,6 +39,14 @@
     "store": "fpvmaster.net.ua",
     "url": "https://fpvmaster.net.ua/ua/p2829558243-radiomaster-tx15-max.html"
   },
+  "steam-deck-oled": {
+    "availability": "in_stock",
+    "checkedAt": "2026-11-16T17:18:17+00:00",
+    "currency": "UAH",
+    "price": 47999.0,
+    "store": "mta.ua",
+    "url": "https://mta.ua/igrovi-pristavki/870848-igrova-pristavka-valve-steam-deck-oled-512gb-black"
+  },
   "ubiquiti-dream-router-5g-max": {
     "availability": "out_of_stock",
     "checkedAt": "2026-11-16T16:50:02+00:00",
@@ -47,6 +55,14 @@
     "store": "eu.store.ui.com",
     "taxIncluded": false,
     "url": "https://eu.store.ui.com/eu/en/category/cloud-gateways-wifi-integrated/products/udr-5g-max-eu"
+  },
+  "uniqlo-pufftech-parka-navy": {
+    "availability": "unknown",
+    "checkedAt": "2026-11-16T17:15:07+00:00",
+    "currency": "UAH",
+    "price": 3790.0,
+    "store": "UNIQRAINE",
+    "url": "https://uniqraine.com.ua/product/ultralehka-kurtka-uniqlo-serii-pufftech-472584-1/"
   },
   "xiaomi-portable-electric-air-compressor-2-pro": {
     "availability": "in_stock",
