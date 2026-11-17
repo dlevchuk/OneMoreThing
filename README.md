@@ -57,7 +57,7 @@ CSS: `style.css` — база й сторінки; `theme.css` — неонов�
 
 ## Публікація
 
-У GitHub відкрий **Settings → Pages** і вибери **Source → GitHub Actions**. Workflow `.github/workflows/deploy.yml` запускає тести, синхронізує каталог бронювань, збирає `dist/` з `index.html`, `board.html`, `owner.html`, `css/`, `js/`, `assets/` та `data/` і деплоїть його. Якщо вже існує новіший коміт, синхронізація каталогу пропускається (її виконає новіший деплой).
+У GitHub відкрий **Settings → Pages** і вибери **Source → GitHub Actions**. Workflow `.github/workflows/deploy.yml` запускає тести, синхронізує каталог бронювань, збирає `dist/` з `index.html`, `board.html`, `owner.html`, `css/`, `js/`, `assets/` та `data/` і деплоїть його. Застарілий запуск (на `main` уже є новіший коміт, або новіший деплой уже синхронізував каталог, наприклад після повторного запуску старого workflow) завершується без помилки, але **нічого не публікує**: збірка, upload і deploy пропускаються, а в підсумку запуску з’являється «Deploy skipped».
 
 CSP на сторінках не дозволяє inline-стилі й inline-скрипти: стилі — лише у `css/*.css`, а динамічні значення задаються через CSSOM.
 
@@ -69,27 +69,44 @@ CSP на сторінках не дозволяє inline-стилі й inline-с
 
 Гості можуть закріплювати (бронювати) за собою контракти на подарунки, щоб інші відвідувачі бачили, що подарунок уже обрано, або перемикати фільтр «Тільки вільні».
 
-### Як налаштувати Supabase без збереження ключів у репозиторії:
+### Розгортання на чистому проєкті Supabase
+
+> **Одного застосування `supabase/schema.sql` недостатньо.** Схема створює лише структуру: таблиця `gift_catalog` лишається **порожньою**. Каталог заповнює Edge Function `sync-catalog` під час деплою (крок 6). Поки каталог порожній, дошка показує всі подарунки «вільними», але бронювання й «Позначити виконаним» відхиляються помилкою `invalid_wish` («Некоректний контракт»).
+
+Порядок кроків важливий: Edge Function має існувати **до** першого деплою, інакше крок синхронізації завершиться помилкою й деплой зупиниться (так задумано).
 
 1. Зареєструйся на [supabase.com](https://supabase.com) і створи новий безкоштовний проект.
-2. У меню зліва відкрий **SQL Editor**, створи новий запит («New query»), скопіюй вміст файлу `supabase/schema.sql` і натисни **Run**. Це створить:
-   - таблицю `reservations`;
-   - правила безпеки Row Level Security (RLS);
-   - безпечну функцію скасування за кодом скасування;
-   - Realtime-підписку для синхронізації в реальному часі без перезавантаження сторінки.
-   Каталог подарунків схема не заповнює: він з’явиться після першого деплою.
-3. Перейди в **Project Settings → API** (або Data API) і скопіюй:
-   - **Project URL**
-   - **anon / public** API Key
-4. Додай секрети у свій GitHub-репозиторій:
-   - Відкрий репозиторій на GitHub → **Settings → Secrets and variables → Actions**.
-   - Натисни **New repository secret** і створи:
-     - `SUPABASE_URL` — встав свій Project URL.
-     - `SUPABASE_ANON_KEY` — встав свій anon public key.
-5. Увімкни деплой через Actions:
-   - У GitHub відкрий **Settings → Pages**.
-   - У полі **Build and deployment → Source** вибери **GitHub Actions**.
-6. При кожному пуші до гілки `main` GitHub Action (`.github/workflows/deploy.yml`) автоматично підставить секрети у файл `js/supabase-config.js` під час збірки. У відкритому репозиторії ключів не буде!
+2. **Схема.** У **SQL Editor** створи новий запит («New query»), скопіюй вміст `supabase/schema.sql` і натисни **Run**. Це створить таблиці, RLS, RPC бронювання/скасування, чергу імпорту й Realtime-підписку. Каталог лишається порожнім.
+3. **Edge Functions.** Розгорни обидві функції з `supabase/functions/` (`sync-catalog` і `wish-import-queue`), наприклад `supabase functions deploy sync-catalog wish-import-queue`. Налаштування `verify_jwt = false` береться з `supabase/config.toml` (підпис GitHub OIDC перевіряється всередині функцій). `SUPABASE_URL` і `SUPABASE_SERVICE_ROLE_KEY` Supabase підставляє у функції сам. Для форку чи іншого репозиторію спершу виправ у `policy.mjs` обох функцій назву репозиторію, його ID, ID власника та workflow.
+4. Перейди в **Project Settings → API** (або Data API) і скопіюй **Project URL** та **anon / public** API Key.
+5. **Секрети GitHub:** репозиторій → **Settings → Secrets and variables → Actions** → **New repository secret**:
+   - `SUPABASE_URL` — Project URL;
+   - `SUPABASE_ANON_KEY` — anon public key.
+   Потім **Settings → Pages → Build and deployment → Source → GitHub Actions**.
+6. **Синхронізація каталогу (обов’язковий крок).** Запусти деплой: запушити в `main` або **Actions → Deploy to GitHub Pages → Run workflow**. Крок **«Synchronize live booking catalog»** має завершитися успішно й вивести `Catalog synchronized: N gifts; applied=true`. Саме він переносить `data/wishes.json` у `gift_catalog`. Якщо він пише «Deploy skipped» (застарілий запуск), перезапусти деплой з актуального коміту.
+7. **Перевірка.** У SQL Editor:
+   ```sql
+   select count(*) filter (where active) as active, count(*) as total from public.gift_catalog;
+   ```
+   `active` має дорівнювати кількості записів у `data/wishes.json` (`jq length data/wishes.json`). Якщо там 0 — крок 6 не відпрацював, бронювання працювати не буде.
+8. Власник і вхід — див. розділ «Вхід власника та виконані контракти» нижче.
+
+При кожному наступному пуші до `main` workflow `.github/workflows/deploy.yml` підставляє секрети у `js/supabase-config.js` під час збірки й заново синхронізує каталог. У відкритому репозиторії ключів немає.
+
+Помилки кроку 6: `HTTP 404` — функція `sync-catalog` не розгорнута (крок 3); `HTTP 403` — токен GitHub не збігається з політикою довіри в `policy.mjs`; `HTTP 502` — не застосована схема (немає `sync_gift_catalog`) або недоступний GitHub/БД.
+
+**Аварійний обхід** (лише якщо Edge Function тимчасово недоступна): заповни каталог вручну в SQL Editor, підставивши всі `id` з `data/wishes.json`:
+
+```sql
+insert into public.gift_catalog (wish_id, active) values
+  ('id-1', true),
+  ('id-2', true)
+on conflict (wish_id) do update set active = true;
+```
+
+Це тимчасова міра: наступний успішний деплой приведе каталог у відповідність до `data/wishes.json` (зайві ID буде вимкнено).
+
+**Повторне застосування `schema.sql` на вже працюючому проєкті** каталог не чіпає, тому окрема синхронізація не потрібна.
 
 #### Локальна розробка:
 Для локального тестування скопіюй `supabase/config.example.js` у `js/supabase-config.js` (цей файл у `.gitignore` і не потрапить у git) і вкажи ключі там, або нічого не вказуй — тоді сайт автоматично працюватиме в локальному демо-режимі через `localStorage`. Швидкий старт: `npm run dev`.
@@ -102,7 +119,7 @@ CSP на сторінках не дозволяє inline-стилі й inline-с
 
 Налаштування нового Supabase-проєкту:
 
-1. Виконай `supabase/schema.sql`.
+1. Виконай `supabase/schema.sql` і синхронізуй каталог (кроки 2–7 розділу «Розгортання на чистому проєкті Supabase»): без каталогу «Позначити виконаним» не працює.
 2. Створи та підтвердь користувача власника через Authentication → Users.
 3. Вимкни відкриту реєстрацію та anonymous sign-ins. Клієнт також використовує `shouldCreateUser: false`.
 4. Адміністратор додає UUID створеного користувача в `private.site_owners.user_id`. Ця таблиця недоступна клієнтам; RLS і RPC перевіряють `auth.uid()`, а не email чи user metadata. Повторне застосування схеми не скидає власників і виконані стани.
@@ -347,16 +364,17 @@ Workflow публікації викликає серверну Edge Function `s
 issuer/audience, незмінні ID репозиторію та власника, `main`, точний workflow
 і середовище `github-pages`. Список подарунків читається з підтвердженого
 незмінного коміту GitHub, а не з довільного тіла запиту. Застарілий коміт не
-публікується (відповідь 409 вважається «вже є новіший деплой», крок не падає);
-старіші workflow не можуть перезаписати новіший каталог.
+синхронізується: функція відповідає 409, а крок виставляє `superseded=true`, після чого сайт
+не публікується (перевіряється `tests/sync-live-catalog.test.mjs`); старіші workflow не можуть
+перезаписати ні новіший каталог, ні новіший сайт.
 
 RPC `sync_gift_catalog` доступний лише серверній ролі. Він атомарно додає ID,
 активує поточні й вимикає видалені. Виконані стани, подяки, бронювання та права
 власника зберігаються. Привілейований ключ залишається лише в Supabase Edge
 Function, його немає ні в GitHub secrets, ні у браузері. Новий постійний секрет
-для workflow не потрібен. Якщо синхронізація БД не вдалася (крім 409), деплой зупиняється.
+для workflow не потрібен. Якщо синхронізація БД не вдалася (крім застарілого запуску), деплой зупиняється з помилкою.
 
-Разове встановлення серверної частини для іншого проєкту: застосувати
+Разове встановлення серверної частини для іншого проєкту (порядок і перевірка — у розділі «Розгортання на чистому проєкті Supabase»): застосувати
 `supabase/schema.sql`, розгорнути `supabase/functions/sync-catalog` з
 `verify_jwt = false` (підпис GitHub OIDC перевіряється в самій функції), указати
 в політиці довіри свій репозиторій, його ID та workflow. Для цього проєкту
