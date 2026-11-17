@@ -1,7 +1,7 @@
 {
   "bambu-lab-a1-mini": {
     "availability": "in_stock",
-    "checkedAt": "2026-11-16T17:28:06+00:00",
+    "checkedAt": "2026-11-16T23:28:07+00:00",
     "currency": "UAH",
     "price": 12800.0,
     "store": "printforge.store",
@@ -9,7 +9,7 @@
   },
   "baseus-air-car-jump-starter-super-energy-10000mah": {
     "availability": "out_of_stock",
-    "checkedAt": "2026-11-16T17:28:05+00:00",
+    "checkedAt": "2026-11-16T23:28:06+00:00",
     "currency": "UAH",
     "price": 3899.0,
     "store": "miot.ua",
@@ -17,7 +17,7 @@
   },
   "orpro-dynamic-recovery-8t-9m": {
     "availability": "in_stock",
-    "checkedAt": "2026-11-16T17:18:23+00:00",
+    "checkedAt": "2026-11-16T23:18:23+00:00",
     "currency": "UAH",
     "price": 3100.0,
     "store": "orpro.com.ua",
@@ -25,7 +25,7 @@
   },
   "oura-ring-5": {
     "availability": "in_stock",
-    "checkedAt": "2026-11-16T16:50:06+00:00",
+    "checkedAt": "2026-11-16T22:50:07+00:00",
     "currency": "USD",
     "price": 399.0,
     "store": "ouraring.com",
@@ -33,7 +33,7 @@
   },
   "radiomaster-tx15-max-elrs-m2": {
     "availability": "in_stock",
-    "checkedAt": "2026-11-16T17:28:05+00:00",
+    "checkedAt": "2026-11-16T23:28:06+00:00",
     "currency": "UAH",
     "price": 12270.0,
     "store": "fpvmaster.net.ua",
@@ -41,15 +41,15 @@
   },
   "steam-deck-oled": {
     "availability": "in_stock",
-    "checkedAt": "2026-11-16T17:18:17+00:00",
+    "checkedAt": "2026-11-16T23:18:17+00:00",
     "currency": "UAH",
-    "price": 47999.0,
+    "price": 47699.0,
     "store": "mta.ua",
     "url": "https://mta.ua/igrovi-pristavki/870848-igrova-pristavka-valve-steam-deck-oled-512gb-black"
   },
   "ubiquiti-dream-router-5g-max": {
     "availability": "out_of_stock",
-    "checkedAt": "2026-11-16T16:50:02+00:00",
+    "checkedAt": "2026-11-16T22:50:03+00:00",
     "currency": "EUR",
     "price": 449.0,
     "store": "eu.store.ui.com",
@@ -58,7 +58,7 @@
   },
   "uniqlo-pufftech-parka-navy": {
     "availability": "unknown",
-    "checkedAt": "2026-11-16T17:15:07+00:00",
+    "checkedAt": "2026-11-16T23:15:07+00:00",
     "currency": "UAH",
     "price": 3790.0,
     "store": "UNIQRAINE",
@@ -66,7 +66,7 @@
   },
   "xiaomi-portable-electric-air-compressor-2-pro": {
     "availability": "in_stock",
-    "checkedAt": "2026-11-16T16:50:00+00:00",
+    "checkedAt": "2026-11-16T22:50:01+00:00",
     "currency": "UAH",
     "price": 2999.0,
     "store": "mi.ua",
