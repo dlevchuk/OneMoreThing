@@ -42,12 +42,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
+      # Порожня черга (найчастіший випадок) потребує лише scripts/. Node вже є на runner.
       - uses: actions/checkout@v4
         with:
           ref: main
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
+          sparse-checkout: scripts
       - name: Prepare manual or owner import
         id: request
         env:
@@ -57,20 +56,21 @@ jobs:
           ALLOW_UNMONITORED: ${{ inputs.allow_unmonitored }}
           PROCESS_QUEUE: ${{ inputs.process_queue }}
         run: node scripts/prepare-wish-import.mjs
-      - name: Import product and synchronize catalog
+      - name: Fetch the full repository
+        if: steps.request.outputs.has_request == 'true'
+        run: git sparse-checkout disable
+      - name: Import product
         if: steps.request.outputs.has_request == 'true'
         run: node scripts/import-prepared-wish.mjs
       - name: Validate
         if: steps.request.outputs.has_request == 'true'
-        run: |
-          npm test
-          python3 -B -m unittest discover -s tests -p 'test_*.py'
+        run: npm test
       - name: Publish card
         if: steps.request.outputs.has_request == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          git add -- data/wishes.json supabase/schema.sql
+          git add -- data/wishes.json
           git config user.name 'Wishlist importer'
           git config user.email 'wishlist-importer@users.noreply.github.com'
           if ! git diff --cached --quiet; then

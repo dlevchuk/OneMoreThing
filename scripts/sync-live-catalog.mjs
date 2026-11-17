@@ -17,7 +17,12 @@ console.log(`::add-mask::${token}`);
 const result = await fetch(`${base}/functions/v1/sync-catalog`, {
   method: 'POST', headers: { Authorization: `Bearer ${token}` }, signal: AbortSignal.timeout(60000)
 });
-if (!result.ok) throw new Error(`Catalog synchronization failed (HTTP ${result.status}); deployment stopped`);
-const summary = await result.json();
-if (!summary.ok) throw new Error('Catalog synchronization did not complete');
-console.log(`Catalog synchronized: ${summary.count} gifts; applied=${summary.applied}`);
+if (result.status === 409) {
+  // A newer commit already exists on main, so its own deploy will synchronize the catalog.
+  console.log('::warning::Newer commit detected; catalog sync skipped for this run');
+} else {
+  if (!result.ok) throw new Error(`Catalog synchronization failed (HTTP ${result.status}); deployment stopped`);
+  const summary = await result.json();
+  if (!summary.ok) throw new Error('Catalog synchronization did not complete');
+  console.log(`Catalog synchronized: ${summary.count} gifts; applied=${summary.applied}`);
+}

@@ -29,13 +29,8 @@ jobs:
         id: pages
         uses: actions/configure-pages@v5
 
-      - name: Check gift catalog
-        run: node scripts/sync-catalog.mjs --check
-
-      - name: Test price monitoring
-        run: |
-          npm test
-          python3 -B -m unittest discover -s tests -p 'test_*.py'
+      - name: Test (JS and Python)
+        run: npm test
 
       - name: Synchronize live booking catalog
         env:

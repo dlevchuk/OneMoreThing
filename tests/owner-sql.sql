@@ -2,7 +2,11 @@
 begin;
 insert into auth.users(id) values('00000000-0000-0000-0000-000000000001'),('00000000-0000-0000-0000-000000000002');
 insert into private.site_owners(user_id) values('00000000-0000-0000-0000-000000000001');
-select set_config('omt.test_wish', (select wish_id from public.gift_catalog where active limit 1), true);
+-- The catalog is filled by the deploy-time sync, so the test brings its own fixture (rolled back at the end).
+insert into public.gift_catalog (wish_id, active, completed_at, completion_note)
+  values ('owner-test-gift', true, null, '')
+  on conflict (wish_id) do update set active = true, completed_at = null, completion_note = '';
+select set_config('omt.test_wish', 'owner-test-gift', true);
 select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000002', true);
 set local role authenticated;
 do $$ begin

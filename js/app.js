@@ -86,7 +86,7 @@ function buildCard(wish) {
   const isReserved = isWishReserved(wish.id);
   return `
     <button class="notice-select${wish.id === selectedWishId ? ' is-selected' : ''}" type="button" aria-pressed="${wish.id === selectedWishId}" aria-label="Відкрити досьє: ${escHtml(wish.title)}">
-      ${image ? `<span class="notice-thumb"><img src="${escHtml(image)}" alt="" loading="lazy" /></span>` : '<span class="notice-thumb notice-thumb--empty" aria-hidden="true">✧</span>'}
+      ${image ? `<span class="notice-thumb"><img src="${escHtml(image)}" alt="" loading="lazy" referrerpolicy="no-referrer" /></span>` : '<span class="notice-thumb notice-thumb--empty" aria-hidden="true">✧</span>'}
       <span class="notice-copy">
         <span class="notice-priority notice-priority--${escHtml(priorityKey)}" aria-label="${cfg.label} (${cfg.ariaLabel})">
           <span class="ice-indicator" aria-hidden="true">
@@ -128,7 +128,7 @@ function renderDetails(wish) {
 
   const markup = `
     <div class="detail-topline"><span>⬡ МАТРИЦЯ / ДОСЬЄ</span><span>№ ${String(wishes.indexOf(wish) + 1).padStart(2, '0')}</span></div>
-    ${image ? `<div class="detail-image"><img src="${escHtml(image)}" alt="${escHtml(wish.title)}" /></div>` : ''}
+    ${image ? `<div class="detail-image"><img src="${escHtml(image)}" alt="${escHtml(wish.title)}" referrerpolicy="no-referrer" /></div>` : ''}
     <div class="detail-content">
       <span class="card-priority card-priority--${escHtml(priorityKey)}" aria-label="${cfg.label} (${cfg.ariaLabel})">
         <span class="ice-indicator" aria-hidden="true">
@@ -217,6 +217,22 @@ function renderGrid(animate = true) {
   updateCategoryCounts();
 }
 
+// Зламане зображення (хотлінк) замінюється заглушкою. Подія error не спливає, тому capture.
+function imageFallback(event) {
+  const img = event.target;
+  if (!(img instanceof HTMLImageElement)) return;
+  const thumb = img.closest('.notice-thumb');
+  if (thumb) {
+    thumb.classList.add('notice-thumb--empty');
+    thumb.setAttribute('aria-hidden', 'true');
+    thumb.textContent = '✧';
+  } else {
+    img.closest('.detail-image')?.remove();
+  }
+}
+grid.addEventListener('error', imageFallback, true);
+details.addEventListener('error', imageFallback, true);
+
 // Один listener на grid замість перевішування при кожному рендері
 grid.addEventListener('click', event => {
   const button = event.target.closest('.notice-select');
@@ -277,14 +293,14 @@ ownerForm?.addEventListener('submit', async event => {
   finally { savingStatus = false; button.disabled = false; }
 });
 
-async function init() {
-  await window.PriceMonitor?.init();
+// no-cache: після імпорту нова картка з'являється одразу, а не після життя кешу Pages.
+async function loadWishes() {
   try {
-    const response = await fetch('data/wishes.json');
+    const response = await fetch('data/wishes.json', { cache: 'no-cache' });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const data = await response.json();
     const seen = new Set();
-    wishes = (Array.isArray(data) ? data : [])
+    return (Array.isArray(data) ? data : [])
       .filter(item => item && typeof item.title === 'string')
       .map((item, i) => {
         let id = item.id || `wish-${i}`;
@@ -296,7 +312,15 @@ async function init() {
     console.error('Не вдалося завантажити список бажань:', error);
     emptyState.querySelector('.empty-title').textContent = 'Зв’язок обірвався';
     emptyState.querySelector('.empty-sub').textContent = 'Перезавантаж сторінку пізніше. Мережа іноді зникає.';
+    return [];
   }
+}
+
+async function init() {
+  // Ціни не блокують показ карток: обидва запити йдуть паралельно.
+  const [, loaded] = await Promise.all([window.PriceMonitor?.init(), loadWishes()]);
+  wishes = loaded;
+
   if (toggleAvailable) {
     toggleAvailable.addEventListener('change', () => {
       onlyAvailable = toggleAvailable.checked;
