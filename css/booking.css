@@ -1,5 +1,6 @@
 /* ==========================================================================
    Cyberpunk Booking System Styles (Supabase Integration)
+   Містить також колишній labels.css (підписи вкладок пріоритетів).
    ========================================================================== */
 
 /* --- Card Badge for Reserved Items --- */
@@ -45,6 +46,43 @@
 .notice-status-tag--free .status-dot {
   background: var(--matrix);
   box-shadow: 0 0 6px var(--matrix);
+}
+
+/* --- Підписи під назвами вкладок пріоритетів --- */
+.filter-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  line-height: 1.1;
+  text-align: left;
+}
+
+.filter-sub {
+  font: 500 .5rem var(--mono);
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  opacity: .72;
+}
+
+@media (max-width: 640px) {
+  .filter-btn {
+    gap: 5px;
+  }
+
+  /* Звільняємо місце для дворядкових підписів на вузьких екранах. */
+  .filter-btn .ice-indicator {
+    display: none;
+  }
+
+  .filter-text {
+    align-items: center;
+    text-align: center;
+  }
+
+  .filter-sub {
+    font-size: .44rem;
+  }
 }
 
 /* --- Filter Availability Toggle & Controls Actions --- */
@@ -283,6 +321,12 @@
   transform: translateX(4px);
 }
 
+/* Кнопка "Показати код скасування" (раніше inline style) */
+.booking-btn-token {
+  width: 100%;
+  margin-bottom: 8px;
+}
+
 /* Prominent Cancel Button */
 .booking-btn-cancel {
   display: inline-flex;
@@ -376,6 +420,13 @@ dialog.cyber-dialog::backdrop {
   backdrop-filter: blur(8px);
   overflow: hidden;
   overscroll-behavior: contain;
+}
+
+/* На мобільних без blur: економимо GPU */
+@media (max-width: 640px) {
+  dialog.cyber-dialog::backdrop {
+    backdrop-filter: none;
+  }
 }
 
 .dialog-box {

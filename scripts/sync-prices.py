@@ -75,8 +75,9 @@ def export(config, wishes, previous, api, diagnostics=None):
     for wish_id, rule in config.items():
         if wish_id not in active:
             continue
+        # Defined before the try block: the except branch needs it even if the rule is malformed.
+        url = rule.get('url')
         try:
-            url = rule['url']
             if urlparse(url).scheme not in ('http', 'https') or not urlparse(url).hostname:
                 raise ValueError('Invalid shop URL')
             watch = 'watch/' + quote(rule['watchId'], safe='')

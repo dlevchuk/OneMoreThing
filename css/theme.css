@@ -1,4 +1,5 @@
-/* Matrix green neon layer for the cyberpunk notice board. */
+/* Matrix green neon layer for the cyberpunk notice board.
+   Містить також колишній perf.css: легший фон і матричний перехід. */
 :root {
   --neon: #42ff62;
   --neon-soft: #a5ff55;
@@ -14,14 +15,25 @@
   pointer-events: none;
 }
 
+/* Легший фон: градієнти замість filter: blur(110px). */
+.ambient {
+  filter: none;
+  opacity: 1;
+}
+
 .ambient--one {
-  background: var(--neon);
-  opacity: .15;
+  background: radial-gradient(closest-side, rgba(66, 255, 98, .2), transparent);
 }
 
 .ambient--two {
-  background: var(--neon-soft);
-  opacity: .11;
+  background: radial-gradient(closest-side, rgba(165, 255, 85, .14), transparent);
+}
+
+/* На мобільних не анімуємо фон: економимо GPU і батарею */
+@media (max-width: 640px) {
+  .ambient {
+    animation: none;
+  }
 }
 
 body::after {
@@ -33,6 +45,9 @@ body::after {
   background: repeating-linear-gradient(0deg, rgba(0, 0, 0, .2) 0 1px, transparent 1px 3px), radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, .5));
 }
 
+/* ==========================================================================
+   Матричний перехід (синхронізовано з js/transition.js: .32s = REVEAL_MS)
+   ========================================================================== */
 #matrix-arriving-veil {
   display: none;
 }
@@ -51,6 +66,7 @@ html.matrix-arriving body {
   inset: 0;
   overflow: hidden;
   pointer-events: none;
+  will-change: opacity;
 }
 
 .matrix-transition-shade {
@@ -66,27 +82,42 @@ html.matrix-arriving body {
   height: 100%;
 }
 
-/* Leaving state */
+/* Вихід: зупиняємо все, що зайве перемальовується */
 .matrix-leaving .matrix-transition-shade {
-  animation: matrix-shade-in .42s cubic-bezier(.2, .7, .25, 1) forwards;
+  animation: matrix-shade-in .36s cubic-bezier(.2, .7, .25, 1) forwards;
 }
 
 .matrix-leaving main,
 .matrix-leaving .site-footer {
-  animation: matrix-depart .38s ease-in forwards;
+  animation: matrix-depart .34s ease-in forwards;
 }
 
-/* Arriving state */
+.matrix-leaving .hero .eyebrow,
+.matrix-leaving .hero h1 em::before,
+.matrix-leaving .hero h1 em::after {
+  animation: none;
+}
+
+.matrix-leaving .ambient {
+  animation-play-state: paused;
+}
+
+/* Вхід: завіса тримається, поки JS не додасть .matrix-revealing.
+   Якщо JS не відпрацював, failsafe сам прибере завісу через 2.5с. */
 html.matrix-arriving .matrix-rain-transition {
-  animation: matrix-shade-out .48s cubic-bezier(.2, .7, .25, 1) forwards;
+  animation: matrix-veil-failsafe .3s 2.5s forwards;
 }
 
-html.matrix-arriving main {
-  animation: matrix-arrive .48s cubic-bezier(.2, .7, .25, 1) both;
+html.matrix-revealing .matrix-rain-transition {
+  animation: matrix-shade-out .32s cubic-bezier(.2, .7, .25, 1) forwards;
 }
 
-html.matrix-arriving .site-footer {
-  animation: matrix-arrive .48s .05s cubic-bezier(.2, .7, .25, 1) both;
+html.matrix-revealing main {
+  animation: matrix-arrive .32s cubic-bezier(.2, .7, .25, 1) both;
+}
+
+html.matrix-revealing .site-footer {
+  animation: matrix-arrive .32s .03s cubic-bezier(.2, .7, .25, 1) both;
 }
 
 @keyframes matrix-shade-in {
@@ -106,6 +137,17 @@ html.matrix-arriving .site-footer {
 
   to {
     opacity: 0;
+  }
+}
+
+@keyframes matrix-veil-failsafe {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+    visibility: hidden;
   }
 }
 

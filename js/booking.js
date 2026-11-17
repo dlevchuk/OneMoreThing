@@ -399,7 +399,7 @@ window.BookingManager = (() => {
             </p>
           </div>
           <div class="booking-reserved-actions">
-            ${isMine ? `<button type="button" class="dialog-btn dialog-btn--cancel" id="btn-show-token" style="width:100%;margin-bottom:8px">Показати код скасування</button>` : ''}
+            ${isMine ? `<button type="button" class="dialog-btn dialog-btn--cancel booking-btn-token" id="btn-show-token">Показати код скасування</button>` : ''}
             <button type="button" class="booking-btn-cancel" id="btn-cancel-action" data-wish-id="${esc(wish.id)}">
               <span aria-hidden="true">✕</span> Зняти бронювання
             </button>

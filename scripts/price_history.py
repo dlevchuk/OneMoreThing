@@ -2,6 +2,16 @@
 from datetime import datetime
 import math
 
+VALUE_FIELDS = ('price', 'currency', 'url', 'taxIncluded')
+
+
+def _time(point):
+    return datetime.fromisoformat(point['checkedAt'].replace('Z', '+00:00'))
+
+
+def _same_value(first, second):
+    return all(first.get(field) == second.get(field) for field in VALUE_FIELDS)
+
 
 def update_history(history, observations, limit=730):
     result = {wid: list(points) for wid, points in history.items() if isinstance(points, list)}
@@ -17,10 +27,15 @@ def update_history(history, observations, limit=730):
         points = result.setdefault(wid, [])
         key = lambda p: (p.get('checkedAt'), p.get('url'), p.get('currency'), p.get('taxIncluded'))
         index = next((i for i, old in enumerate(points) if key(old) == key(point)), None)
-        if index is None:
-            points.append(point)
-        else:
+        if index is not None:
             points[index] = point
-        points.sort(key=lambda p: datetime.fromisoformat(p['checkedAt'].replace('Z', '+00:00')))
+        elif (len(points) >= 2 and _time(point) > _time(points[-1])
+              and _same_value(points[-1], point) and _same_value(points[-2], point)):
+            # Flat stretch: keep its first point and slide the last one forward,
+            # so an unchanged price never grows the file beyond two points.
+            points[-1] = point
+        else:
+            points.append(point)
+        points.sort(key=_time)
         result[wid] = points[-limit:]
     return result

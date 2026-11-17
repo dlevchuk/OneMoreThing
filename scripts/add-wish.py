@@ -8,7 +8,6 @@ import os
 from pathlib import Path
 import re
 import socket
-import subprocess
 from urllib.parse import urlparse
 from urllib.request import Request, build_opener, HTTPRedirectHandler
 from monitoring import Page, public_url
@@ -109,7 +108,7 @@ def main():
     temporary = path.with_suffix('.tmp')
     temporary.write_text(json.dumps(wishes + [card], ensure_ascii=False, indent=2) + '\n')
     temporary.replace(path)
-    subprocess.run(['node', 'scripts/sync-catalog.mjs'], cwd=args.root, check=True)
+    # The booking catalog is synchronized by the deploy workflow (Edge Function sync-catalog).
 
 
 if __name__ == '__main__':

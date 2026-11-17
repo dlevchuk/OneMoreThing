@@ -2,13 +2,18 @@
 -- Схема Supabase для бронювання подарунків (OneMoreThing)
 -- Ідемпотентна: працює і на чистому проєкті, і як міграція зі старої схеми.
 -- Supabase Dashboard -> SQL Editor -> New query -> Run
+--
+-- УВАГА: на чистому проєкті одного запуску цієї схеми недостатньо.
+-- Каталог подарунків (public.gift_catalog) тут НЕ заповнюється:
+-- його синхронізує Edge Function sync-catalog під час кожного деплою
+-- з data/wishes.json. Повторний запуск схеми каталог не чіпає.
 -- ====================================================================
 
 begin;
 
 create extension if not exists pgcrypto with schema extensions;
 
--- Каталог змінює лише власник БД. Генерується з data/wishes.json.
+-- Каталог змінює лише сервер (sync_gift_catalog) і власник сайту (set_gift_completed).
 create table if not exists public.gift_catalog (
   wish_id text primary key,
   active boolean not null default true
@@ -193,23 +198,6 @@ end;
 $$;
 revoke all on function public.claim_wish_import(bigint), public.finish_wish_import(uuid,bigint,boolean) from public, anon, authenticated;
 grant execute on function public.claim_wish_import(bigint), public.finish_wish_import(uuid,bigint,boolean) to service_role;
-
--- BEGIN GENERATED GIFT CATALOG
-update public.gift_catalog set active = false;
-insert into public.gift_catalog (wish_id, active) values
-  ('baseus-air-car-jump-starter-super-energy-10000mah', true),
-  ('xiaomi-portable-electric-air-compressor-2-pro', true),
-  ('orpro-dynamic-recovery-8t-9m', true),
-  ('hidratespark-pro-2-32oz', true),
-  ('oura-ring-5', true),
-  ('radiomaster-tx15-max-elrs-m2', true),
-  ('bambu-lab-a1-mini', true),
-  ('jelly-bar-berry-gin', true),
-  ('steam-deck-oled', true),
-  ('ubiquiti-dream-router-5g-max', true),
-  ('uniqlo-pufftech-parka-navy', true)
-on conflict (wish_id) do update set active = excluded.active;
--- END GENERATED GIFT CATALOG
 
 -- 1. Публічна таблиця: лише те, що можна показувати всім
 create table if not exists public.reservations (

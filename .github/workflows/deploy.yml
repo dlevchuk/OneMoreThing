@@ -29,20 +29,18 @@ jobs:
         id: pages
         uses: actions/configure-pages@v5
 
-      - name: Check gift catalog
-        run: node scripts/sync-catalog.mjs --check
+      - name: Test (JS and Python)
+        run: npm test
 
-      - name: Test price monitoring
-        run: |
-          npm test
-          python3 -B -m unittest discover -s tests -p 'test_*.py'
-
+      # Застарілий запуск (новіший коміт/деплой уже є) завершується успішно, але нічого не публікує.
       - name: Synchronize live booking catalog
+        id: catalog
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
         run: node scripts/sync-live-catalog.mjs
 
       - name: Build site into dist/
+        if: steps.catalog.outputs.superseded != 'true'
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
@@ -71,10 +69,12 @@ jobs:
           } > dist/js/supabase-config.js
 
       - name: Upload Pages artifact
+        if: steps.catalog.outputs.superseded != 'true'
         uses: actions/upload-pages-artifact@v3
         with:
           path: dist
 
       - name: Deploy to GitHub Pages
+        if: steps.catalog.outputs.superseded != 'true'
         id: deployment
         uses: actions/deploy-pages@v4

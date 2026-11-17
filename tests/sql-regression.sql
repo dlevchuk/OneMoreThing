@@ -2,10 +2,14 @@
 begin;
 truncate public.reservations cascade;
 truncate public.reservation_attempts;
+-- The catalog is filled by the deploy-time sync, so the test brings its own fixture (rolled back at the end).
+insert into public.gift_catalog (wish_id, active, completed_at, completion_note)
+  values ('regression-gift', true, null, '')
+  on conflict (wish_id) do update set active = true, completed_at = null, completion_note = '';
 
 do $$
 declare
-  v_wish text := (select wish_id from public.gift_catalog where active limit 1);
+  v_wish text := 'regression-gift';
   v_failed boolean := false;
 begin
   begin

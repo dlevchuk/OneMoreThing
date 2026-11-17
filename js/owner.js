@@ -8,20 +8,26 @@ window.OwnerManager = (() => {
   let subscribed = false;
   const listeners = [];
   const notify = () => listeners.forEach(fn => fn());
+  // Listeners are notified only when the owner state really changes,
+  // so periodic token refreshes never flicker the UI.
+  function setOwner(value) {
+    if (owner === value) return;
+    owner = value;
+    notify();
+  }
 
   async function refreshIdentity() {
     const version = ++generation;
-    owner = false;
-    notify();
-    if (!client) return false;
+    if (!client) { setOwner(false); return false; }
     const { data: sessionData } = await client.auth.getSession();
-    if (!sessionData?.session) return false;
+    if (version !== generation) return owner;
+    if (!sessionData?.session) { setOwner(false); return false; }
     const { data, error } = await client.auth.getUser();
-    if (error || !data?.user || version !== generation) return false;
+    if (version !== generation) return owner;
+    if (error || !data?.user) { setOwner(false); return false; }
     const result = await client.rpc('is_site_owner');
-    if (version !== generation) return false;
-    owner = !result.error && result.data === true;
-    notify();
+    if (version !== generation) return owner;
+    setOwner(!result.error && result.data === true);
     return owner;
   }
 
@@ -44,8 +50,9 @@ window.OwnerManager = (() => {
       }
       if (!subscribed) client.auth.onAuthStateChange((event) => {
         // Supabase auth callbacks must finish before further auth/API calls.
-        if (event === 'SIGNED_OUT') { generation++; owner = false; notify(); }
-        else if (event !== 'INITIAL_SESSION') setTimeout(() => { refreshIdentity().catch(() => {}); }, 0);
+        // TOKEN_REFRESHED and INITIAL_SESSION do not change who the user is.
+        if (event === 'SIGNED_OUT') { generation++; setOwner(false); }
+        else if (event === 'SIGNED_IN' || event === 'USER_UPDATED') setTimeout(() => { refreshIdentity().catch(() => {}); }, 0);
       });
       subscribed = true;
       await refreshIdentity();
@@ -71,8 +78,7 @@ window.OwnerManager = (() => {
     const { error } = await client.auth.signOut();
     if (error) throw new Error('Не вдалося вийти. Спробуй ще раз.');
     generation++;
-    owner = false;
-    notify();
+    setOwner(false);
   }
 
   async function setCompleted(wishId, completed, note = '') {
