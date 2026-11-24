@@ -1,13 +1,13 @@
 {
   "bambu-lab-a1-mini": "ok",
   "baseus-air-car-jump-starter-super-energy-10000mah": "ok",
-  "hidratespark-pro-2-32oz": "disabled",
+  "hidratespark-pro-2-32oz": "completed",
   "jelly-bar-berry-gin": "completed",
   "orpro-dynamic-recovery-8t-9m": "ok",
-  "oura-ring-5": "ok",
+  "oura-ring-5": "ambiguous_price",
   "radiomaster-tx15-max-elrs-m2": "ok",
   "steam-deck-oled": "ok",
   "ubiquiti-dream-router-5g-max": "ok",
   "uniqlo-pufftech-parka-navy": "ok",
-  "xiaomi-portable-electric-air-compressor-2-pro": "ok"
+  "xiaomi-portable-electric-air-compressor-2-pro": "completed"
 }

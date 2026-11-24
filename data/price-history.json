@@ -13,7 +13,7 @@
       "url": "https://printforge.store/3d-printers/bambu-lab-a1-mini/"
     },
     {
-      "checkedAt": "2026-11-18T11:28:10+00:00",
+      "checkedAt": "2026-11-24T20:03:11+00:00",
       "currency": "UAH",
       "price": 12800.0,
       "url": "https://printforge.store/3d-printers/bambu-lab-a1-mini/"
@@ -33,7 +33,7 @@
       "url": "https://miot.ua/avtomobilnoe-pusko-zaryadnoe-ustroystvo-baseus-super-energy-air-car-jump-starter-10000mah-cgnl020101-black-3030379/p42212/"
     },
     {
-      "checkedAt": "2026-11-18T11:28:09+00:00",
+      "checkedAt": "2026-11-24T20:03:11+00:00",
       "currency": "UAH",
       "price": 3899.0,
       "url": "https://miot.ua/avtomobilnoe-pusko-zaryadnoe-ustroystvo-baseus-super-energy-air-car-jump-starter-10000mah-cgnl020101-black-3030379/p42212/"
@@ -65,7 +65,7 @@
       "url": "https://orpro.com.ua/uk/dinamichni-stropi/3-dinamichna-stropa-orpro-8000-kg9-metriv-series-2.html"
     },
     {
-      "checkedAt": "2026-11-18T11:18:25+00:00",
+      "checkedAt": "2026-11-24T20:03:04+00:00",
       "currency": "UAH",
       "price": 3100.0,
       "url": "https://orpro.com.ua/uk/dinamichni-stropi/3-dinamichna-stropa-orpro-8000-kg9-metriv-series-2.html"
@@ -111,7 +111,7 @@
       "url": "https://fpvmaster.net.ua/ua/p2829558243-radiomaster-tx15-max.html"
     },
     {
-      "checkedAt": "2026-11-18T11:28:09+00:00",
+      "checkedAt": "2026-11-24T20:03:13+00:00",
       "currency": "UAH",
       "price": 12270.0,
       "url": "https://fpvmaster.net.ua/ua/p2829558243-radiomaster-tx15-max.html"
@@ -134,6 +134,12 @@
       "checkedAt": "2026-11-18T11:18:20+00:00",
       "currency": "UAH",
       "price": 47699.0,
+      "url": "https://mta.ua/igrovi-pristavki/870848-igrova-pristavka-valve-steam-deck-oled-512gb-black"
+    },
+    {
+      "checkedAt": "2026-11-24T20:03:07+00:00",
+      "currency": "UAH",
+      "price": 46999.0,
       "url": "https://mta.ua/igrovi-pristavki/870848-igrova-pristavka-valve-steam-deck-oled-512gb-black"
     }
   ],
@@ -160,7 +166,7 @@
       "url": "https://eu.store.ui.com/eu/en/category/cloud-gateways-wifi-integrated/products/udr-5g-max-eu"
     },
     {
-      "checkedAt": "2026-11-18T10:50:06+00:00",
+      "checkedAt": "2026-11-24T20:02:54+00:00",
       "currency": "EUR",
       "price": 449.0,
       "taxIncluded": false,
@@ -184,6 +190,12 @@
       "checkedAt": "2026-11-18T11:15:10+00:00",
       "currency": "UAH",
       "price": 3790.0,
+      "url": "https://uniqraine.com.ua/product/ultralehka-kurtka-uniqlo-serii-pufftech-472584-1/"
+    },
+    {
+      "checkedAt": "2026-11-24T20:03:13+00:00",
+      "currency": "UAH",
+      "price": 3990.0,
       "url": "https://uniqraine.com.ua/product/ultralehka-kurtka-uniqlo-serii-pufftech-472584-1/"
     }
   ],

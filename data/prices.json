@@ -1,7 +1,7 @@
 {
   "bambu-lab-a1-mini": {
     "availability": "in_stock",
-    "checkedAt": "2026-11-18T11:28:10+00:00",
+    "checkedAt": "2026-11-24T20:03:11+00:00",
     "currency": "UAH",
     "price": 12800.0,
     "store": "printforge.store",
@@ -9,7 +9,7 @@
   },
   "baseus-air-car-jump-starter-super-energy-10000mah": {
     "availability": "out_of_stock",
-    "checkedAt": "2026-11-18T11:28:09+00:00",
+    "checkedAt": "2026-11-24T20:03:11+00:00",
     "currency": "UAH",
     "price": 3899.0,
     "store": "miot.ua",
@@ -17,7 +17,7 @@
   },
   "orpro-dynamic-recovery-8t-9m": {
     "availability": "in_stock",
-    "checkedAt": "2026-11-18T11:18:25+00:00",
+    "checkedAt": "2026-11-24T20:03:04+00:00",
     "currency": "UAH",
     "price": 3100.0,
     "store": "orpro.com.ua",
@@ -25,6 +25,7 @@
   },
   "oura-ring-5": {
     "availability": "in_stock",
+    "checkFailed": true,
     "checkedAt": "2026-11-18T10:50:10+00:00",
     "currency": "USD",
     "price": 399.0,
@@ -33,7 +34,7 @@
   },
   "radiomaster-tx15-max-elrs-m2": {
     "availability": "in_stock",
-    "checkedAt": "2026-11-18T11:28:09+00:00",
+    "checkedAt": "2026-11-24T20:03:13+00:00",
     "currency": "UAH",
     "price": 12270.0,
     "store": "fpvmaster.net.ua",
@@ -41,15 +42,15 @@
   },
   "steam-deck-oled": {
     "availability": "in_stock",
-    "checkedAt": "2026-11-18T11:18:20+00:00",
+    "checkedAt": "2026-11-24T20:03:07+00:00",
     "currency": "UAH",
-    "price": 47699.0,
+    "price": 46999.0,
     "store": "mta.ua",
     "url": "https://mta.ua/igrovi-pristavki/870848-igrova-pristavka-valve-steam-deck-oled-512gb-black"
   },
   "ubiquiti-dream-router-5g-max": {
-    "availability": "out_of_stock",
-    "checkedAt": "2026-11-18T10:50:06+00:00",
+    "availability": "in_stock",
+    "checkedAt": "2026-11-24T20:02:54+00:00",
     "currency": "EUR",
     "price": 449.0,
     "store": "eu.store.ui.com",
@@ -58,18 +59,10 @@
   },
   "uniqlo-pufftech-parka-navy": {
     "availability": "unknown",
-    "checkedAt": "2026-11-18T11:15:10+00:00",
+    "checkedAt": "2026-11-24T20:03:13+00:00",
     "currency": "UAH",
-    "price": 3790.0,
+    "price": 3990.0,
     "store": "UNIQRAINE",
     "url": "https://uniqraine.com.ua/product/ultralehka-kurtka-uniqlo-serii-pufftech-472584-1/"
-  },
-  "xiaomi-portable-electric-air-compressor-2-pro": {
-    "availability": "unknown",
-    "checkedAt": "2026-11-18T10:50:04+00:00",
-    "currency": "UAH",
-    "price": 2999.0,
-    "store": "mi.ua",
-    "url": "https://mi.ua/ru/avtokompressory/nasos-xiaomi-portable-electric-air-compressor-2-pro-bhr9099gl.html"
   }
 }
