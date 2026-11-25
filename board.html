@@ -94,6 +94,7 @@
               <span class="filter-count" data-count-for="unsure"></span>
             </button>
             <button class="filter-btn" data-filter="completed" id="filter-completed" aria-pressed="false" aria-controls="wishlist-grid"><span>✓ Виконані</span><span class="filter-count" data-count-for="completed"></span></button>
+            <button class="filter-btn" data-filter="archived" id="filter-archived" aria-pressed="false" aria-controls="wishlist-grid"><span>Архів</span><span class="filter-count" data-count-for="archived"></span></button>
           </nav>
         </div>
         <div class="controls-actions">
@@ -208,7 +209,7 @@
       <p id="owner-status-wish" class="dialog-subtitle"></p>
       <p class="dialog-subtitle">Поточне бронювання буде закрито. Повернення у вільні не відновлює попередню бронь.</p>
       <form id="owner-status-form" class="dialog-form">
-        <label class="form-group" id="owner-note-group">Подяка (необов’язково, видима всім)<textarea id="owner-note" class="form-input" maxlength="500" rows="3"></textarea></label>
+        <label class="form-group" id="owner-note-group"><span id="owner-note-label">Подяка (необов’язково, видима всім)</span><textarea id="owner-note" class="form-input" maxlength="500" rows="3"></textarea></label>
         <p id="owner-status-error" class="dialog-error-msg" role="alert" hidden></p>
         <div class="dialog-actions"><button type="button" class="dialog-btn dialog-btn--cancel" data-close-dialog>Назад</button><button type="submit" class="dialog-btn dialog-btn--submit">Підтвердити</button></div>
       </form>

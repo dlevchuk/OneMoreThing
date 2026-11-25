@@ -143,3 +143,21 @@ test('Completed gifts render escaped public notes and cannot be reserved', async
   assert.ok(!widget.includes('btn-reserve-action'));
   await assert.rejects(h.manager.reserve('gift', { name: 'guest' }), /уже отримано/);
 });
+
+test('Archived gifts show an escaped reason and cannot be reserved', async () => {
+  const h = harness();
+  const from = h.client.from;
+  const gift = { wish_id: 'gift', archived_at: '2026-11-12T00:00:00Z', archive_reason: '<b>Reason</b>' };
+  h.client.from = table => table === 'gift_catalog'
+    ? { select: () => ({ eq: async () => ({ data: [gift], error: null }) }) }
+    : from(table);
+  const init = h.manager.init();
+  h.requests.shift()({ data: [], error: null });
+  await init;
+  assert.equal(h.manager.isArchived('gift'), true);
+  assert.equal(h.manager.isCompleted('gift'), false);
+  const widget = h.manager.renderDetailWidget({ id: 'gift' });
+  assert.match(widget, /&lt;b&gt;Reason/);
+  assert.doesNotMatch(widget, /btn-reserve-action/);
+  await assert.rejects(h.manager.reserve('gift', { name: 'guest' }), /в архіві/);
+});

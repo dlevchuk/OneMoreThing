@@ -88,6 +88,16 @@ window.OwnerManager = (() => {
     await window.BookingManager?.refresh();
   }
 
+  async function archiveWish(wishId, reason) {
+    if (!client || !owner) throw new Error('Увійди як власник.');
+    const note = reason.trim();
+    if (!note || [...note].length > 500) throw new Error('Вкажи причину архівації (до 500 символів).');
+    const { error } = await client.rpc('archive_gift', { p_wish_id: wishId, p_reason: note });
+    if (error) throw new Error(error.code === '42501' ? 'Недостатньо прав. Увійди повторно.' :
+      error.message === 'invalid_wish' ? 'Контракт уже не активний.' : 'Не вдалося архівувати контракт. Спробуй ще раз.');
+    await window.BookingManager?.refresh();
+  }
+
   async function requestImport(url, priority, allowUnmonitored = false) {
     if (!client || !owner) throw new Error('Увійди як власник.');
     let parsed;
@@ -111,6 +121,6 @@ window.OwnerManager = (() => {
     return Array.isArray(data) ? data : [];
   }
 
-  return { init, refreshIdentity, requestLink, signOut, setCompleted, requestImport, listImports,
+  return { init, refreshIdentity, requestLink, signOut, setCompleted, archiveWish, requestImport, listImports,
     onUpdate: fn => listeners.push(fn), get isOwner() { return owner; } };
 })();

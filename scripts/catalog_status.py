@@ -1,4 +1,4 @@
-"""Read only the public completion state already exposed to the wishlist browser."""
+"""Read only the public status of completed and archived wishes already exposed to the wishlist browser."""
 import json
 from pathlib import Path
 import re
@@ -31,7 +31,7 @@ def completed_ids(root, opener=urlopen):
     result = set()
     offset = 0
     while True:
-        request = Request(base + '/rest/v1/gift_catalog?select=wish_id&active=eq.true&completed_at=not.is.null&limit=1000&offset=' + str(offset),
+        request = Request(base + '/rest/v1/gift_catalog?select=wish_id&active=eq.true&or=(completed_at.not.is.null,archived_at.not.is.null)&limit=1000&offset=' + str(offset),
                           headers={'apikey': key, 'Authorization': 'Bearer ' + key})
         with opener(request, timeout=20) as response:
             rows = json.loads(response.read(1_000_001))

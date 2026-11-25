@@ -13,7 +13,7 @@ begin;
 
 create extension if not exists pgcrypto with schema extensions;
 
--- Каталог змінює лише сервер (sync_gift_catalog) і власник сайту (set_gift_completed).
+-- Каталог змінює лише сервер (sync_gift_catalog) і власник сайту через RPC.
 create table if not exists public.gift_catalog (
   wish_id text primary key,
   active boolean not null default true
@@ -22,7 +22,9 @@ alter table public.gift_catalog enable row level security;
 revoke all on public.gift_catalog from public, anon, authenticated;
 alter table public.gift_catalog add column if not exists completed_at timestamptz;
 alter table public.gift_catalog add column if not exists completion_note text not null default '';
-grant select (wish_id, active, completed_at, completion_note) on public.gift_catalog to anon, authenticated;
+alter table public.gift_catalog add column if not exists archived_at timestamptz;
+alter table public.gift_catalog add column if not exists archive_reason text not null default '';
+grant select (wish_id, active, completed_at, completion_note, archived_at, archive_reason) on public.gift_catalog to anon, authenticated;
 drop policy if exists "Public gift status" on public.gift_catalog;
 create policy "Public gift status" on public.gift_catalog for select to anon, authenticated using (active);
 
@@ -48,7 +50,7 @@ begin
   if not public.is_site_owner() then raise exception 'forbidden' using errcode = '42501'; end if;
   if p_completed is null or char_length(coalesce(p_note, '')) > 500 then raise exception 'invalid_status'; end if;
   perform pg_catalog.pg_advisory_xact_lock(1869440817, 1);
-  if not exists (select 1 from public.gift_catalog where wish_id = p_wish_id and active) then
+  if not exists (select 1 from public.gift_catalog where wish_id = p_wish_id and active and archived_at is null) then
     raise exception 'invalid_wish';
   end if;
   update public.gift_catalog
@@ -61,6 +63,24 @@ end;
 $$;
 revoke all on function public.set_gift_completed(text, boolean, text) from public, anon;
 grant execute on function public.set_gift_completed(text, boolean, text) to authenticated;
+
+create or replace function public.archive_gift(p_wish_id text, p_reason text)
+returns void language plpgsql security definer set search_path = ''
+as $$
+declare
+  v_reason text := regexp_replace(coalesce(p_reason, ''), '^[[:space:]]+|[[:space:]]+$', '', 'g');
+begin
+  if not public.is_site_owner() then raise exception 'forbidden' using errcode = '42501'; end if;
+  if char_length(v_reason) not between 1 and 500 then raise exception 'invalid_archive_reason'; end if;
+  perform pg_catalog.pg_advisory_xact_lock(1869440817, 1);
+  update public.gift_catalog set archived_at = pg_catalog.clock_timestamp(), archive_reason = v_reason
+    where wish_id = p_wish_id and active and completed_at is null and archived_at is null;
+  if not found then raise exception 'invalid_wish'; end if;
+  delete from public.reservations where wish_id = p_wish_id;
+end;
+$$;
+revoke all on function public.archive_gift(text, text) from public, anon;
+grant execute on function public.archive_gift(text, text) to authenticated;
 
 -- Server-only catalog sync: preserves completion, notes, reservations and owner rights.
 create table if not exists private.catalog_sync_state (
@@ -339,6 +359,10 @@ begin
   perform pg_advisory_xact_lock(1869440817, 1);
   if not exists (select 1 from public.gift_catalog where wish_id = p_wish_id and active) then
     raise exception 'invalid_wish';
+  end if;
+
+  if exists (select 1 from public.gift_catalog where wish_id = p_wish_id and archived_at is not null) then
+    raise exception 'gift_archived';
   end if;
 
   if exists (select 1 from public.gift_catalog where wish_id = p_wish_id and completed_at is not null) then

@@ -16,8 +16,9 @@ class CompletionTest(unittest.TestCase):
                 return io.BytesIO(('window.SUPABASE_CONFIG = ' + json.dumps({'url': 'https://test.supabase.co', 'anonKey': 'public-key\n'}) + ';').encode())
             self.assertEqual(request.get_header('Apikey'), 'public-key')
             self.assertIn('select=wish_id', request.full_url)
-            self.assertIn('completed_at=not.is.null', request.full_url)
+            self.assertIn('or=(completed_at.not.is.null,archived_at.not.is.null)', request.full_url)
             self.assertNotIn('completion_note', request.full_url)
+            self.assertNotIn('archive_reason', request.full_url)
             return io.BytesIO(b'[{"wish_id":"done"}]')
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory); (root / 'config').mkdir()
