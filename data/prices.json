@@ -1,7 +1,7 @@
 {
   "bambu-lab-a1-mini": {
     "availability": "in_stock",
-    "checkedAt": "2026-11-25T14:03:11+00:00",
+    "checkedAt": "2026-11-25T20:03:11+00:00",
     "currency": "UAH",
     "price": 12800.0,
     "store": "printforge.store",
@@ -9,19 +9,11 @@
   },
   "baseus-air-car-jump-starter-super-energy-10000mah": {
     "availability": "out_of_stock",
-    "checkedAt": "2026-11-25T14:03:11+00:00",
+    "checkedAt": "2026-11-25T20:03:11+00:00",
     "currency": "UAH",
     "price": 3899.0,
     "store": "miot.ua",
     "url": "https://miot.ua/avtomobilnoe-pusko-zaryadnoe-ustroystvo-baseus-super-energy-air-car-jump-starter-10000mah-cgnl020101-black-3030379/p42212/"
-  },
-  "orpro-dynamic-recovery-8t-9m": {
-    "availability": "in_stock",
-    "checkedAt": "2026-11-25T14:03:04+00:00",
-    "currency": "UAH",
-    "price": 3100.0,
-    "store": "orpro.com.ua",
-    "url": "https://orpro.com.ua/uk/dinamichni-stropi/3-dinamichna-stropa-orpro-8000-kg9-metriv-series-2.html"
   },
   "oura-ring-5": {
     "availability": "in_stock",
@@ -34,7 +26,7 @@
   },
   "radiomaster-tx15-max-elrs-m2": {
     "availability": "in_stock",
-    "checkedAt": "2026-11-25T14:03:13+00:00",
+    "checkedAt": "2026-11-25T20:03:13+00:00",
     "currency": "UAH",
     "price": 12270.0,
     "store": "fpvmaster.net.ua",
@@ -42,15 +34,15 @@
   },
   "steam-deck-oled": {
     "availability": "in_stock",
-    "checkedAt": "2026-11-25T14:03:07+00:00",
+    "checkedAt": "2026-11-25T20:03:07+00:00",
     "currency": "UAH",
-    "price": 46999.0,
+    "price": 55199.0,
     "store": "mta.ua",
     "url": "https://mta.ua/igrovi-pristavki/870848-igrova-pristavka-valve-steam-deck-oled-512gb-black"
   },
   "ubiquiti-dream-router-5g-max": {
     "availability": "in_stock",
-    "checkedAt": "2026-11-25T14:02:54+00:00",
+    "checkedAt": "2026-11-25T20:02:54+00:00",
     "currency": "EUR",
     "price": 449.0,
     "store": "eu.store.ui.com",
@@ -59,7 +51,7 @@
   },
   "uniqlo-pufftech-parka-navy": {
     "availability": "unknown",
-    "checkedAt": "2026-11-25T14:03:13+00:00",
+    "checkedAt": "2026-11-25T20:03:13+00:00",
     "currency": "UAH",
     "price": 3990.0,
     "store": "UNIQRAINE",
