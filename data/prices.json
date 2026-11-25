@@ -1,7 +1,7 @@
 {
   "bambu-lab-a1-mini": {
     "availability": "in_stock",
-    "checkedAt": "2026-11-25T02:03:11+00:00",
+    "checkedAt": "2026-11-25T08:03:11+00:00",
     "currency": "UAH",
     "price": 12800.0,
     "store": "printforge.store",
@@ -9,7 +9,7 @@
   },
   "baseus-air-car-jump-starter-super-energy-10000mah": {
     "availability": "out_of_stock",
-    "checkedAt": "2026-11-25T02:03:11+00:00",
+    "checkedAt": "2026-11-25T08:03:11+00:00",
     "currency": "UAH",
     "price": 3899.0,
     "store": "miot.ua",
@@ -17,7 +17,7 @@
   },
   "orpro-dynamic-recovery-8t-9m": {
     "availability": "in_stock",
-    "checkedAt": "2026-11-25T02:03:04+00:00",
+    "checkedAt": "2026-11-25T08:03:04+00:00",
     "currency": "UAH",
     "price": 3100.0,
     "store": "orpro.com.ua",
@@ -34,7 +34,7 @@
   },
   "radiomaster-tx15-max-elrs-m2": {
     "availability": "in_stock",
-    "checkedAt": "2026-11-25T02:03:13+00:00",
+    "checkedAt": "2026-11-25T08:03:13+00:00",
     "currency": "UAH",
     "price": 12270.0,
     "store": "fpvmaster.net.ua",
@@ -42,7 +42,7 @@
   },
   "steam-deck-oled": {
     "availability": "in_stock",
-    "checkedAt": "2026-11-25T02:03:07+00:00",
+    "checkedAt": "2026-11-25T08:03:07+00:00",
     "currency": "UAH",
     "price": 46999.0,
     "store": "mta.ua",
@@ -50,7 +50,7 @@
   },
   "ubiquiti-dream-router-5g-max": {
     "availability": "in_stock",
-    "checkedAt": "2026-11-25T02:02:54+00:00",
+    "checkedAt": "2026-11-25T08:02:54+00:00",
     "currency": "EUR",
     "price": 449.0,
     "store": "eu.store.ui.com",
@@ -59,7 +59,7 @@
   },
   "uniqlo-pufftech-parka-navy": {
     "availability": "unknown",
-    "checkedAt": "2026-11-25T02:03:13+00:00",
+    "checkedAt": "2026-11-25T08:03:13+00:00",
     "currency": "UAH",
     "price": 3990.0,
     "store": "UNIQRAINE",
