@@ -16,6 +16,11 @@ do $$ begin
     raise exception 'Nonowner mutation allowed';
   exception when insufficient_privilege then null;
   end;
+  begin
+    perform public.archive_gift(current_setting('omt.test_wish'), 'injected');
+    raise exception 'Nonowner archive allowed';
+  exception when insufficient_privilege then null;
+  end;
 end $$;
 reset role;
 truncate public.reservations cascade;
@@ -44,6 +49,33 @@ select public.reserve_gift(current_setting('omt.test_wish'), 'new guest', 'ABCDE
 select public.set_gift_completed(current_setting('omt.test_wish'), false, '');
 do $$ begin
   if not exists(select 1 from public.reservations where wish_id=current_setting('omt.test_wish')) then raise exception 'Repeated reopen canceled new reservation'; end if;
+end $$;
+do $$ begin
+  begin
+    perform public.archive_gift(current_setting('omt.test_wish'), E' \n\t ');
+    raise exception 'Blank archive reason accepted';
+  exception when others then if sqlerrm <> 'invalid_archive_reason' then raise; end if;
+  end;
+end $$;
+select public.archive_gift(current_setting('omt.test_wish'), ' No longer needed ');
+do $$ begin
+  if not exists(select 1 from public.gift_catalog where wish_id=current_setting('omt.test_wish')
+    and archived_at is not null and completed_at is null and archive_reason='No longer needed') then
+    raise exception 'Archive status or reason missing';
+  end if;
+  if exists(select 1 from public.reservations where wish_id=current_setting('omt.test_wish')) then
+    raise exception 'Archived reservation not closed';
+  end if;
+  begin
+    perform public.reserve_gift(current_setting('omt.test_wish'), 'guest', '0123456789AB');
+    raise exception 'Archived gift reserved';
+  exception when others then if sqlerrm <> 'gift_archived' then raise; end if;
+  end;
+  begin
+    perform public.set_gift_completed(current_setting('omt.test_wish'), true, '');
+    raise exception 'Archived gift marked completed';
+  exception when others then if sqlerrm <> 'invalid_wish' then raise; end if;
+  end;
 end $$;
 reset role;
 do $$ begin

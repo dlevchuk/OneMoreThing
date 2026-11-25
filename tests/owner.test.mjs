@@ -95,3 +95,19 @@ test('only verified owners can request imports or read request status', async ()
   await assert.rejects(owner.manager.requestImport('https://user:password@shop.example/item', 'want'), /Перевір/);
   assert.equal((await owner.manager.listImports()).length, 0);
 });
+
+test('Archiving requires a verified owner and a nonblank reason', async () => {
+  const outsider = harness({ allowed: false });
+  await outsider.manager.init();
+  await assert.rejects(outsider.manager.archiveWish('gift', 'Reason'), /Увійди/);
+  assert.ok(!outsider.calls.some(([name]) => name === 'archive_gift'));
+
+  const owner = harness();
+  await owner.manager.init();
+  await assert.rejects(owner.manager.archiveWish('gift', ' \t '), /Вкажи причину/);
+  await owner.manager.archiveWish('gift', '  No longer needed  ');
+  const calls = owner.calls.filter(([name]) => name === 'archive_gift');
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0][1].p_wish_id, 'gift');
+  assert.equal(calls[0][1].p_reason, 'No longer needed');
+});

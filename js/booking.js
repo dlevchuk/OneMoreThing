@@ -26,7 +26,8 @@ window.BookingManager = (() => {
     invalid_name: 'Імʼя має бути від 1 до 60 символів.',
     invalid_wish: 'Некоректний контракт.',
     invalid_token: 'Некоректний код скасування.',
-    gift_completed: 'Цей подарунок уже отримано.'
+    gift_completed: 'Цей подарунок уже отримано.',
+    gift_archived: 'Цей контракт в архіві.'
   };
 
   // ---- Токен скасування ----
@@ -118,7 +119,7 @@ window.BookingManager = (() => {
       try {
         const [bookings, gifts] = await Promise.all([
           supabaseClient.from('reservations').select('id, wish_id, reserved_by, created_at'),
-          supabaseClient.from('gift_catalog').select('wish_id, completed_at, completion_note').eq('active', true)
+          supabaseClient.from('gift_catalog').select('wish_id, completed_at, completion_note, archived_at, archive_reason').eq('active', true)
         ]);
         if (bookings.error || gifts.error) throw bookings.error || gifts.error;
         (bookings.data || []).forEach(item => next.set(item.wish_id, item));
@@ -134,7 +135,8 @@ window.BookingManager = (() => {
     const ownership = JSON.stringify(Object.keys(getMyBookings()).sort());
     const giftsChanged = nextGifts.size !== giftStatuses.size || [...nextGifts].some(([id, value]) => {
       const previous = giftStatuses.get(id);
-      return !previous || previous.completed_at !== value.completed_at || previous.completion_note !== value.completion_note;
+      return !previous || previous.completed_at !== value.completed_at || previous.completion_note !== value.completion_note ||
+        previous.archived_at !== value.archived_at || previous.archive_reason !== value.archive_reason;
     });
     const changed = giftsChanged || ownership !== ownershipSnapshot || next.size !== reservations.size || [...next].some(([id, value]) => {
       const previous = reservations.get(id);
@@ -158,6 +160,7 @@ window.BookingManager = (() => {
 
   // Повертає код скасування (показати користувачу один раз)
   async function reserve(wishId, { name }) {
+    if (isArchived(wishId)) throw new Error(ERRORS.gift_archived);
     if (isCompleted(wishId)) throw new Error(ERRORS.gift_completed);
     const cleanName = (name || '').trim();
     if (!cleanName) throw new Error('Вкажи свій нікнейм або імʼя.');
@@ -214,6 +217,7 @@ window.BookingManager = (() => {
 
   const isReserved = wishId => reservations.has(wishId);
   const isCompleted = wishId => Boolean(giftStatuses.get(wishId)?.completed_at);
+  const isArchived = wishId => Boolean(giftStatuses.get(wishId)?.archived_at);
   const getGiftStatus = wishId => giftStatuses.get(wishId) || null;
   const getReservation = wishId => reservations.get(wishId) || null;
   const getMyToken = wishId => getMyBookings()[wishId] || '';
@@ -374,6 +378,11 @@ window.BookingManager = (() => {
 
   function renderDetailWidget(wish) {
     if (!wish) return '';
+    if (isArchived(wish.id)) {
+      const gift = getGiftStatus(wish.id);
+      const date = new Intl.DateTimeFormat('uk-UA', { dateStyle: 'long' }).format(new Date(gift.archived_at));
+      return `<div class="booking-widget booking-widget--completed"><strong>КОНТРАКТ В АРХІВІ</strong><p>Архівовано ${esc(date)}</p><p>${esc(gift.archive_reason)}</p></div>`;
+    }
     if (isCompleted(wish.id)) {
       const gift = getGiftStatus(wish.id);
       const date = new Intl.DateTimeFormat('uk-UA', { dateStyle: 'long' }).format(new Date(gift.completed_at));
@@ -449,7 +458,7 @@ window.BookingManager = (() => {
 
   return {
     init, isReserved, getReservation, isMyBooking, reserve, cancel, onUpdate,
-    isCompleted, getGiftStatus, refresh: fetchReservations,
+    isCompleted, isArchived, getGiftStatus, refresh: fetchReservations,
     openBookingModal, openCancelModal, renderDetailWidget, attachDetailListeners,
     get isConfigured() { return isConfigured; }
   };
